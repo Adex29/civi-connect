@@ -1,0 +1,9 @@
+[
+  {
+    "id": "admin-1",
+    "email": "admin@civiconnect.local",
+    "passwordHash": "$2b$10$z6Ylb49Ydktzrpe1gSMtpexpCZaDLHyoQX40cKv8BVBboV0F18pFK",
+    "name": "System Admin",
+    "createdAt": "2026-07-21T00:00:00.000Z"
+  }
+]

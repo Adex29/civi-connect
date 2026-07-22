@@ -1,0 +1,18 @@
+[
+  {
+    "id": "-pJaWppzRExXr4qafVAj4",
+    "fullName": "Jay-ar O. Baniqued",
+    "lrn": "105555088003",
+    "passwordHash": "$2b$10$ouRi61wyZBia/9vUGP6W/.xhT9ENL7eWfpgiF5AVv7zXLIpTQP6Qm",
+    "classroomId": "KGacUYKN3j-Q3RHxWqp_j",
+    "createdAt": "2026-07-21T07:50:25.813Z"
+  },
+  {
+    "id": "d5BcSvdW2ShKcjKeAda2l",
+    "fullName": "Jay-ar O. Baniqued",
+    "lrn": "105555080003",
+    "passwordHash": "$2b$10$A7f70CZRrD0xKOuXf8jet.uWcFecO33NmwwWhg5uDOW7JlnObqmcK",
+    "classroomId": "KGacUYKN3j-Q3RHxWqp_j",
+    "createdAt": "2026-07-21T08:57:20.522Z"
+  }
+]
