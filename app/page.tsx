@@ -70,7 +70,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t py-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        <p>&copy; {new Date().getFullYear()} CiviConnect Capstone Project.</p>
+        <p>&copy; {new Date().getFullYear()} CiviConnect.</p>
       </footer>
     </div>
   );
