@@ -29,9 +29,11 @@ export default async function StudentDashboard() {
   const submissions = readData<Submission>(DataFileType.Submissions)
     .filter(s => s.studentId === student.id || (student.groupId && s.groupId === student.groupId));
 
+  const staggerClasses = ["stagger-1", "stagger-2", "stagger-3", "stagger-4", "stagger-5", "stagger-6"];
+
   return (
     <div className="space-y-8">
-      <div>
+      <div className="animate-fade-in-up">
         <h1 className="text-3xl font-bold tracking-tight">Welcome, {student.fullName}</h1>
         <p className="text-muted-foreground mt-2">
           Select a scenario below to start planning your civic action.
@@ -39,7 +41,7 @@ export default async function StudentDashboard() {
       </div>
 
       {!classroom && (
-        <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-5 flex items-start gap-4">
+        <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-5 flex items-start gap-4 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div>
             <h3 className="font-semibold text-amber-900 dark:text-amber-200">Classroom Unavailable</h3>
@@ -51,7 +53,7 @@ export default async function StudentDashboard() {
       )}
 
       {isArchived && (
-        <div className="rounded-xl bg-slate-500/10 border border-slate-500/20 p-5 flex items-start gap-4">
+        <div className="rounded-xl bg-slate-500/10 border border-slate-500/20 p-5 flex items-start gap-4 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           <Archive className="h-6 w-6 text-slate-600 dark:text-slate-400 shrink-0 mt-0.5" />
           <div>
             <h3 className="font-semibold text-slate-900 dark:text-slate-200">Classroom Archived</h3>
@@ -64,23 +66,26 @@ export default async function StudentDashboard() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {assignedScenarios.length > 0 ? (
-          assignedScenarios.map(scenario => {
+          assignedScenarios.map((scenario, index) => {
             if (!scenario) return null;
             
             const submission = submissions.find(s => s.scenarioId === scenario.id);
             const isCompleted = submission?.status === "completed";
             
             return (
-              <Card key={scenario.id} className="flex flex-col h-full">
+              <Card
+                key={scenario.id}
+                className={`flex flex-col h-full animate-fade-in-up ${staggerClasses[index % staggerClasses.length]} hover:shadow-lg hover:-translate-y-1 transition-all duration-300`}
+              >
                 <CardHeader>
                   <div className="flex justify-between items-start gap-4">
                     <CardTitle className="text-xl line-clamp-2">{scenario.title}</CardTitle>
                     {isCompleted ? (
-                      <Badge className="bg-emerald-500 hover:bg-emerald-600">Completed</Badge>
+                      <Badge className="bg-emerald-600 hover:bg-emerald-700">Completed</Badge>
                     ) : submission ? (
-                      <Badge variant="secondary" className="text-amber-600 bg-amber-100 dark:bg-amber-900/30">In Progress</Badge>
+                      <Badge variant="secondary">In Progress</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50">New</Badge>
+                      <Badge variant="outline">New</Badge>
                     )}
                   </div>
                   <CardDescription className="line-clamp-3 mt-2">
@@ -102,10 +107,10 @@ export default async function StudentDashboard() {
             );
           })
         ) : (
-          <div className="col-span-full flex flex-col items-center justify-center p-12 border border-dashed rounded-lg bg-slate-50 dark:bg-slate-900/50">
-            <BookOpen className="h-12 w-12 text-slate-300 mb-4" />
-            <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">No Scenarios Assigned</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 text-center max-w-md mt-2">
+          <div className="col-span-full flex flex-col items-center justify-center p-12 border border-dashed rounded-lg bg-muted/40 animate-fade-in">
+            <BookOpen className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+            <h3 className="text-lg font-medium text-foreground">No Scenarios Assigned</h3>
+            <p className="text-sm text-muted-foreground text-center max-w-md mt-2">
               Your teacher hasn't assigned any civic scenarios to your classroom yet. Check back later!
             </p>
           </div>
@@ -113,13 +118,16 @@ export default async function StudentDashboard() {
       </div>
       
       {submissions.length > 0 && (
-        <div className="mt-12">
+        <div className="mt-12 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
           <h2 className="text-2xl font-bold tracking-tight mb-4">Your Recent Activity</h2>
           <div className="space-y-4">
-            {submissions.map(sub => {
+            {submissions.map((sub, index) => {
               const scenario = allScenarios.find(s => s.id === sub.scenarioId);
               return (
-                <Card key={sub.id} className="bg-white/50 dark:bg-slate-900/50">
+                <Card
+                  key={sub.id}
+                  className={`bg-card animate-fade-in-up ${staggerClasses[index % staggerClasses.length]} hover:shadow-md transition-shadow duration-200`}
+                >
                   <CardContent className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-4">
                       <div className={`p-2 rounded-full ${sub.status === 'completed' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>

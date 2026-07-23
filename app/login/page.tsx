@@ -43,12 +43,13 @@ export default function LoginPage() {
       }
     } else if (result.status === "success") {
       toast.success(result.message);
-      router.push("/dashboard");
+        // router.push("/dashboard");
+      window.location.href = "/dashboard";
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950 p-4">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold tracking-tight">Student Login</CardTitle>

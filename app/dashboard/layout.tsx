@@ -13,7 +13,7 @@ export default async function StudentDashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Navigation role="student" />
       <main className="flex-1 container mx-auto px-4 md:px-8 py-6 lg:py-8">
         {children}

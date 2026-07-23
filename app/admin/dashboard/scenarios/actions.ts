@@ -1,7 +1,7 @@
 "use server";
 
 import { requireRole } from "@/lib/dal";
-import { createScenario, readData, DataFileType, writeData, createClassroomScenario } from "@/lib/db";
+import { createScenario, readData, DataFileType, createClassroomScenario } from "@/lib/db";
 import { Scenario, ScenarioId, ClassroomScenarioId, ClassroomId, ClassroomScenario } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
@@ -85,25 +85,57 @@ export async function deleteScenarioAction(scenarioId: string): Promise<{ succes
   return { success: true };
 }
 
-export async function assignScenarioAction(scenarioId: string, classroomId: string) {
+
+
+export async function unassignScenarioAction(scenarioId: string, classroomId: string): Promise<{ success: boolean; error?: string }> {
   await requireRole("admin");
 
-  const assignments = readData<ClassroomScenario>(DataFileType.ClassroomScenarios);
-  
-  // Check if already assigned
-  const existing = assignments.find(a => a.scenarioId === scenarioId && a.classroomId === classroomId);
-  if (existing) {
-    return { error: "Scenario is already assigned to this classroom" };
-  }
-
-  createClassroomScenario({
-    id: nanoid() as ClassroomScenarioId,
-    classroomId: classroomId as ClassroomId,
-    scenarioId: scenarioId as ScenarioId,
-    isActive: true,
-    assignedAt: new Date().toISOString(),
-  });
+  const { removeScenarioFromClassroom } = await import("@/lib/db");
+  removeScenarioFromClassroom(scenarioId, classroomId);
 
   revalidatePath("/admin/dashboard/scenarios");
+  revalidatePath("/dashboard");
   return { success: true };
+}
+
+export async function updateScenarioAssignmentsAction(
+  scenarioId: string,
+  targetClassroomIds: string[]
+): Promise<{ success: boolean; error?: string; addedCount?: number; removedCount?: number }> {
+  await requireRole("admin");
+
+  const { removeScenarioFromClassroom } = await import("@/lib/db");
+  const assignments = readData<ClassroomScenario>(DataFileType.ClassroomScenarios);
+
+  // Current active assigned classroom IDs for this scenario
+  const currentAssignedIds: string[] = assignments
+    .filter((a) => a.scenarioId === scenarioId && a.isActive)
+    .map((a) => a.classroomId as string);
+
+  const toAdd = targetClassroomIds.filter((id) => !currentAssignedIds.includes(id));
+  const toRemove = currentAssignedIds.filter((id) => !targetClassroomIds.includes(id));
+
+  // Add new assignments
+  for (const classroomId of toAdd) {
+    createClassroomScenario({
+      id: nanoid() as ClassroomScenarioId,
+      classroomId: classroomId as ClassroomId,
+      scenarioId: scenarioId as ScenarioId,
+      isActive: true,
+      assignedAt: new Date().toISOString(),
+    });
+  }
+
+  // Remove deselected assignments
+  for (const classroomId of toRemove) {
+    removeScenarioFromClassroom(scenarioId, classroomId);
+  }
+
+  revalidatePath("/admin/dashboard/scenarios");
+  revalidatePath("/dashboard");
+  return {
+    success: true,
+    addedCount: toAdd.length,
+    removedCount: toRemove.length,
+  };
 }

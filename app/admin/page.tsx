@@ -42,20 +42,21 @@ export default function AdminLoginPage() {
       }
     } else if (result.status === "success") {
       toast.success(result.message);
-      router.push("/admin/dashboard");
+          //  router.push("/admin/dashboard");
+      window.location.href = "/admin/dashboard";
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-900 p-4">
-      <Card className="w-full max-w-md shadow-2xl border-slate-700 bg-slate-800 text-slate-100">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+      <Card className="w-full max-w-md shadow-lg border-border">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold tracking-tight text-white">Admin Access</CardTitle>
-          <CardDescription className="text-slate-400">Restricted area for CiviConnect administrators.</CardDescription>
+          <CardTitle className="text-2xl font-bold tracking-tight">Admin Access</CardTitle>
+          <CardDescription className="text-muted-foreground">Restricted area for CiviConnect administrators.</CardDescription>
         </CardHeader>
         <CardContent>
           {serverError && (
-            <Alert variant="destructive" className="mb-6 bg-red-900/50 border-red-900 text-red-200">
+            <Alert variant="destructive" className="mb-6">
               <AlertDescription>{serverError}</AlertDescription>
             </Alert>
           )}
@@ -68,11 +69,11 @@ export default function AdminLoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Email Address</FormLabel>
+                    <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="admin@civiconnect.local" className="bg-slate-900 border-slate-700 text-slate-100" {...field} />
+                      <Input placeholder="admin@civiconnect.local" {...field} />
                     </FormControl>
-                    <FormMessage className="text-red-400" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -82,16 +83,16 @@ export default function AdminLoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Password</FormLabel>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" className="bg-slate-900 border-slate-700 text-slate-100" {...field} />
+                      <Input type="password" {...field} />
                     </FormControl>
-                    <FormMessage className="text-red-400" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button type="submit" className="w-full mt-6 bg-emerald-600 hover:bg-emerald-700 text-white" disabled={form.formState.isSubmitting}>
+              <Button type="submit" className="w-full mt-6" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

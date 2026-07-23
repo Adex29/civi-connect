@@ -48,5 +48,25 @@
     "feedback": "",
     "score": null,
     "submittedAt": "2026-07-21T08:59:19.137Z"
+  },
+  {
+    "id": "wxGNaYPbe3vUdSRB-_vCf",
+    "scenarioId": "mSg9windUj82l2sGCkk20",
+    "studentId": "d5BcSvdW2ShKcjKeAda2l",
+    "status": "draft",
+    "content": "1. Multi-Signal Alerts\nSirens/Bells: Install loud sirens or use church bells to signal different flood stages (e.g., one long blast = alert, continuous blasts = immediate evacuation).\n\nColor-Coded Flags: Place flags in central areas (barangay hall, school, chapel):\n\n🟢 Green = Safe\n\n🟡 Yellow = Flood Watch\n\n🔴 Red = Evacuate Immediately\n\nMegaphones: Barangay officials and tanods patrol streets with megaphones to announce warnings.\n\n2. House-to-House Buddy System\nAssign block leaders responsible for checking households, especially elderly, PWDs, and families without communication devices.\n\nLeaders ensure everyone receives the warning and assist with evacuation.\n\n3. Community Information Boards\nPost flood levels and evacuation instructions on barangay bulletin boards and waiting sheds.\n\nUse visual charts (pictures/icons) for residents with limited literacy.\n\n4. Evacuation Encouragement\nPre-Agreement with Residents: Conduct community meetings to explain risks and agree on evacuation triggers (e.g., river water reaching a certain marker).\n\nTrust Building: Share past flood damage photos and testimonies to emphasize urgency.\n\nPositive Reinforcement: Provide small incentives (food packs, priority shelter space) for families who evacuate early.\n\n5. Integration with External Alerts\nCoordinate with PAGASA and LGU for official typhoon/flood bulletins.\n\nBarangay EWS translates these into local signals (sirens, flags, megaphones) for immediate action.",
+    "feedback": "",
+    "score": null,
+    "submittedAt": "2026-07-22T06:18:56.385Z"
+  },
+  {
+    "id": "3z1ZqmO3SiJu8CXqk0xXt",
+    "scenarioId": "7qdPFk6VauK1WMr1KPC89",
+    "studentId": "d5BcSvdW2ShKcjKeAda2l",
+    "status": "draft",
+    "content": "",
+    "feedback": "",
+    "score": null,
+    "submittedAt": "2026-07-22T06:35:23.255Z"
   }
 ]

@@ -5,6 +5,7 @@ import { CreateScenarioDialog } from "./create-scenario-dialog";
 import { AssignScenarioDialog } from "./assign-scenario-dialog";
 import { EditScenarioDialog } from "./edit-scenario-dialog";
 import { DeleteScenarioDialog } from "./delete-scenario-dialog";
+import { UnassignScenarioButton } from "./unassign-scenario-button";
 import { format } from "date-fns";
 
 export default async function ScenariosPage() {
@@ -16,7 +17,7 @@ export default async function ScenariosPage() {
     return assignments
       .filter((a: ClassroomScenario) => a.scenarioId === scenarioId && a.isActive)
       .map((a: ClassroomScenario) => classrooms.find((c: Classroom) => c.id === a.classroomId))
-      .filter((c: Classroom | undefined) => c);
+      .filter((c: Classroom | undefined): c is Classroom => Boolean(c));
   };
 
   return (
@@ -34,6 +35,7 @@ export default async function ScenariosPage() {
       <div className="grid gap-6">
         {scenarios.map((scenario: Scenario) => {
           const assignedTo = getAssignedClassrooms(scenario.id);
+          const assignedClassroomIds = assignedTo.map((c) => c.id);
           
           return (
             <Card key={scenario.id}>
@@ -46,7 +48,12 @@ export default async function ScenariosPage() {
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <AssignScenarioDialog scenarioId={scenario.id} scenarioTitle={scenario.title} classrooms={classrooms} />
+                    <AssignScenarioDialog
+                      scenarioId={scenario.id}
+                      scenarioTitle={scenario.title}
+                      classrooms={classrooms}
+                      assignedClassroomIds={assignedClassroomIds}
+                    />
                     <EditScenarioDialog scenario={scenario} />
                     <DeleteScenarioDialog scenarioId={scenario.id} scenarioTitle={scenario.title} />
                   </div>
@@ -66,9 +73,17 @@ export default async function ScenariosPage() {
                   <h4 className="text-sm font-semibold mb-2">Assigned to:</h4>
                   {assignedTo.length > 0 ? (
                     <div className="flex gap-2 flex-wrap">
-                      {assignedTo.map((c: Classroom | undefined) => c && (
-                        <span key={c.id} className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                      {assignedTo.map((c: Classroom) => (
+                        <span
+                          key={c.id}
+                          className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200 border"
+                        >
                           {c.name}
+                          <UnassignScenarioButton
+                            scenarioId={scenario.id}
+                            classroomId={c.id}
+                            classroomName={c.name}
+                          />
                         </span>
                       ))}
                     </div>

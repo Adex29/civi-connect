@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,91 +11,108 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Loader2 } from "lucide-react";
-import { assignScenarioAction } from "./actions";
+import { Loader2 } from "lucide-react";
+import { updateScenarioAssignmentsAction } from "./actions";
 import { toast } from "sonner";
 import { Classroom } from "@/lib/definitions";
+import { MultiSelectCombobox, ComboboxOption } from "@/components/ui/combobox";
 
-export function AssignScenarioDialog({ scenarioId, scenarioTitle, classrooms }: { scenarioId: string, scenarioTitle: string, classrooms: Classroom[] }) {
+export function AssignScenarioDialog({
+  scenarioId,
+  scenarioTitle,
+  classrooms,
+  assignedClassroomIds = [],
+}: {
+  scenarioId: string;
+  scenarioTitle: string;
+  classrooms: Classroom[];
+  assignedClassroomIds?: string[];
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [classroomId, setClassroomId] = useState<string | null>("");
+  const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>(assignedClassroomIds);
 
-  const activeClassrooms = classrooms.filter(c => c.status === "active");
-
-  const handleAssign = async () => {
-    if (!classroomId) {
-      toast.error("Please select a classroom");
-      return;
+  // Sync state whenever dialog opens or assignedClassroomIds updates
+  useEffect(() => {
+    if (open) {
+      setSelectedClassroomIds(assignedClassroomIds);
     }
-    
+  }, [open, assignedClassroomIds]);
+
+  const activeClassrooms = classrooms.filter((c) => c.status === "active");
+
+  const classroomOptions: ComboboxOption[] = activeClassrooms.map((c) => ({
+    value: c.id,
+    label: c.name,
+    sublabel: `Code: ${c.code}`,
+  }));
+
+  const handleSaveAssignments = async () => {
     setLoading(true);
-    const result = await assignScenarioAction(scenarioId, classroomId);
+    const result = await updateScenarioAssignmentsAction(scenarioId, selectedClassroomIds);
     setLoading(false);
-    
+
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success("Scenario assigned successfully");
+      const messages: string[] = [];
+      if (result.addedCount && result.addedCount > 0) {
+        messages.push(`Assigned to ${result.addedCount} classroom(s)`);
+      }
+      if (result.removedCount && result.removedCount > 0) {
+        messages.push(`Unassigned from ${result.removedCount} classroom(s)`);
+      }
+      if (messages.length === 0) {
+        messages.push("Classroom assignments updated");
+      }
+      toast.success(messages.join(" • "));
       setOpen(false);
-      setClassroomId("");
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={
-        <Button variant="outline" size="sm">
-          Assign to Class
-        </Button>
-      } />
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogTrigger
+        render={
+          <Button variant="outline" size="sm">
+            Assign to Class
+          </Button>
+        }
+      />
+      <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle>Assign Scenario</DialogTitle>
+          <DialogTitle>Manage Classroom Assignments</DialogTitle>
           <DialogDescription>
-            Assign <strong>{scenarioTitle}</strong> to a classroom.
+            Select classrooms to assign <strong>{scenarioTitle}</strong>. Deselect a classroom to remove its assignment.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="classroom">Select Classroom</Label>
-            <Select value={classroomId} onValueChange={setClassroomId}>
-              <SelectTrigger>
-                <span data-slot="select-value" className="flex flex-1 text-left line-clamp-1">
-                  {classroomId ? (
-                    (() => {
-                      const c = activeClassrooms.find(x => x.id === classroomId);
-                      return c ? `${c.name} (${c.code})` : "Select an active classroom";
-                    })()
-                  ) : (
-                    <span className="text-muted-foreground">Select an active classroom</span>
-                  )}
-                </span>
-              </SelectTrigger>
-              <SelectContent>
-                {activeClassrooms.length === 0 ? (
-                  <SelectItem value="none" disabled>No active classrooms found</SelectItem>
-                ) : (
-                  activeClassrooms.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.name} ({c.code})</SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            <Label htmlFor="classroom">Select Classrooms</Label>
+            {activeClassrooms.length === 0 ? (
+              <p className="text-sm text-muted-foreground italic">
+                No active classrooms available.
+              </p>
+            ) : (
+              <MultiSelectCombobox
+                options={classroomOptions}
+                selectedValues={selectedClassroomIds}
+                onSelectChange={setSelectedClassroomIds}
+                placeholder="Select active classroom(s)..."
+                searchPlaceholder="Search classroom name or code..."
+                emptyText="No matching active classrooms found."
+              />
+            )}
           </div>
         </div>
         <DialogFooter>
-          <Button disabled={loading || !classroomId || classroomId === "none"} onClick={handleAssign}>
+          <Button
+            disabled={loading}
+            onClick={handleSaveAssignments}
+          >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Assign Scenario
+            Save Assignments ({selectedClassroomIds.length})
           </Button>
         </DialogFooter>
       </DialogContent>

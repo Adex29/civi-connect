@@ -73,7 +73,8 @@ export async function submitActivityStep(
     return { 
       success: false, 
       feedback: evaluation.feedback, 
-      failedConstraints: evaluation.failedConstraints 
+      failedConstraints: evaluation.failedConstraints,
+      isAiGenerated: evaluation.isAiGenerated ?? false,
     };
   }
 }

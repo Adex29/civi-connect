@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Source_Serif_4, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/query-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
-const inter = Inter({
+const fontSans = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-sans",
+});
+
+const fontSerif = Source_Serif_4({
+  subsets: ["latin"],
+  variable: "--font-serif",
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -22,13 +33,21 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full antialiased dark`}
+      className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans">
-        <QueryProvider>
-          {children}
-          <Toaster richColors position="top-center" />
-        </QueryProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            {children}
+            <Toaster richColors position="top-center" />
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
