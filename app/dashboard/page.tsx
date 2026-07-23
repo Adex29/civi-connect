@@ -1,5 +1,5 @@
 import { getCurrentStudent } from "@/lib/dal";
-import { readData, DataFileType } from "@/lib/db";
+import { getAllClassrooms, getAllClassroomScenarios, getAllScenarios, getAllSubmissions } from "@/lib/db";
 import { Classroom, ClassroomScenario, Scenario, Submission } from "@/lib/definitions";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,14 +11,14 @@ export default async function StudentDashboard() {
   const student = await getCurrentStudent();
   if (!student) return null;
 
-  const classrooms = readData<Classroom>(DataFileType.Classrooms);
+  const classrooms = await getAllClassrooms();
   const classroom = classrooms.find(c => c.id === student.classroomId);
   const isArchived = classroom?.status === "archived";
 
-  const classroomScenarios = readData<ClassroomScenario>(DataFileType.ClassroomScenarios)
-    .filter(cs => cs.classroomId === student.classroomId);
+  const allClassroomScenarios = await getAllClassroomScenarios();
+  const classroomScenarios = allClassroomScenarios.filter(cs => cs.classroomId === student.classroomId);
     
-  const allScenarios = readData<Scenario>(DataFileType.Scenarios);
+  const allScenarios = await getAllScenarios();
   
   // Get scenarios assigned to this student's classroom
   const assignedScenarios = classroomScenarios.map(cs => {
@@ -26,8 +26,8 @@ export default async function StudentDashboard() {
     return { ...scenario, active: cs.isActive };
   }).filter(s => s && s.active);
 
-  const submissions = readData<Submission>(DataFileType.Submissions)
-    .filter(s => s.studentId === student.id || (student.groupId && s.groupId === student.groupId));
+  const allSubmissions = await getAllSubmissions();
+  const submissions = allSubmissions.filter(s => s.studentId === student.id || (student.groupId && s.groupId === student.groupId));
 
   const staggerClasses = ["stagger-1", "stagger-2", "stagger-3", "stagger-4", "stagger-5", "stagger-6"];
 

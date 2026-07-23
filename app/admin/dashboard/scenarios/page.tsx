@@ -1,4 +1,4 @@
-import { readData, DataFileType } from "@/lib/db";
+import { getAllScenarios, getAllClassrooms, getAllClassroomScenarios } from "@/lib/db";
 import { Classroom, ClassroomScenario, Scenario } from "@/lib/definitions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { CreateScenarioDialog } from "./create-scenario-dialog";
@@ -9,9 +9,9 @@ import { UnassignScenarioButton } from "./unassign-scenario-button";
 import { format } from "date-fns";
 
 export default async function ScenariosPage() {
-  const scenarios = readData<Scenario>(DataFileType.Scenarios);
-  const classrooms = readData<Classroom>(DataFileType.Classrooms);
-  const assignments = readData<ClassroomScenario>(DataFileType.ClassroomScenarios);
+  const scenarios = await getAllScenarios();
+  const classrooms = await getAllClassrooms();
+  const assignments = await getAllClassroomScenarios();
 
   const getAssignedClassrooms = (scenarioId: string) => {
     return assignments

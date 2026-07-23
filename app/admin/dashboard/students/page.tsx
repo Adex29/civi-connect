@@ -1,13 +1,13 @@
-import { readData, DataFileType } from "@/lib/db";
+import { getAllStudents, getAllClassrooms, getAllGroups } from "@/lib/db";
 import { Classroom, Student, Group } from "@/lib/definitions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 export default async function StudentsPage() {
-  const students = readData<Student>(DataFileType.Students);
-  const classrooms = readData<Classroom>(DataFileType.Classrooms);
-  const groups = readData<Group>(DataFileType.Groups);
+  const students = await getAllStudents();
+  const classrooms = await getAllClassrooms();
+  const groups = await getAllGroups();
 
   return (
     <div className="space-y-6">

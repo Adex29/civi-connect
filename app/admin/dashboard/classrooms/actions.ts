@@ -1,7 +1,7 @@
 "use server";
 
 import { requireRole, getCurrentAdmin } from "@/lib/dal";
-import { createClassroom, readData, DataFileType, writeData } from "@/lib/db";
+import { createClassroom, findClassroomById, updateClassroom, deleteClassroom } from "@/lib/db";
 import { Classroom, ClassroomId, AdminId } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
@@ -18,7 +18,7 @@ export async function createClassroomAction(name: string, description: string) {
   // Generate 6 character alphanumeric code
   const code = nanoid(6).toUpperCase();
 
-  const classroom = createClassroom({
+  const classroom = await createClassroom({
     id: nanoid() as ClassroomId,
     name,
     code,
@@ -44,8 +44,7 @@ export async function updateClassroomAction(
     return { error: "Classroom name is required" };
   }
 
-  const classrooms = readData<Classroom>(DataFileType.Classrooms);
-  const existing = classrooms.find((c) => c.id === classroomId);
+  const existing = await findClassroomById(classroomId);
   if (!existing) {
     return { error: "Classroom not found" };
   }
@@ -57,8 +56,7 @@ export async function updateClassroomAction(
     status,
   };
 
-  const { updateClassroom } = await import("@/lib/db");
-  updateClassroom(updatedClassroom);
+  await updateClassroom(updatedClassroom);
 
   revalidatePath("/admin/dashboard/classrooms");
   revalidatePath("/dashboard");
@@ -68,8 +66,7 @@ export async function updateClassroomAction(
 export async function deleteClassroomAction(classroomId: string): Promise<{ success: boolean; error?: string }> {
   await requireRole("admin");
 
-  const { deleteClassroom } = await import("@/lib/db");
-  deleteClassroom(classroomId);
+  await deleteClassroom(classroomId);
 
   revalidatePath("/admin/dashboard/classrooms");
   revalidatePath("/dashboard");
@@ -79,12 +76,16 @@ export async function deleteClassroomAction(classroomId: string): Promise<{ succ
 export async function archiveClassroomAction(classroomId: string) {
   await requireRole("admin");
 
-  const classrooms = readData<Classroom>(DataFileType.Classrooms);
-  const updated = classrooms.map(c => 
-    c.id === classroomId ? { ...c, status: "archived" as const } : c
-  );
-  
-  writeData(DataFileType.Classrooms, updated);
+  const existing = await findClassroomById(classroomId);
+  if (!existing) {
+    return { error: "Classroom not found" };
+  }
+
+  await updateClassroom({
+    ...existing,
+    status: "archived",
+  });
+
   revalidatePath("/admin/dashboard/classrooms");
   revalidatePath("/dashboard");
   return { success: true };

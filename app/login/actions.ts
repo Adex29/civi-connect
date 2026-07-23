@@ -19,7 +19,7 @@ export async function loginAction(data: LoginFormInput): Promise<FormState> {
   const { lrn, password } = validatedFields.data;
 
   // 1. Find student
-  const student = findStudentByLrn(lrn);
+  const student = await findStudentByLrn(lrn);
   if (!student) {
     return {
       status: "error",

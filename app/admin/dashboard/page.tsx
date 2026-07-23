@@ -1,12 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { readData, DataFileType } from "@/lib/db";
+import { getAllClassrooms, getAllScenarios, getAllStudents } from "@/lib/db";
 import { Classroom, Scenario, Student } from "@/lib/definitions";
 import { Users, BookOpen, Layers } from "lucide-react";
 
 export default async function AdminDashboardOverview() {
-  const classrooms = readData<Classroom>(DataFileType.Classrooms);
-  const scenarios = readData<Scenario>(DataFileType.Scenarios);
-  const students = readData<Student>(DataFileType.Students);
+  const classrooms = await getAllClassrooms();
+  const scenarios = await getAllScenarios();
+  const students = await getAllStudents();
 
   const activeClassrooms = classrooms.filter((c) => c.status === "active").length;
   

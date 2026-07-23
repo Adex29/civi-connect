@@ -1,8 +1,16 @@
 "use server";
 
 import { requireRole } from "@/lib/dal";
-import { createScenario, readData, DataFileType, createClassroomScenario } from "@/lib/db";
-import { Scenario, ScenarioId, ClassroomScenarioId, ClassroomId, ClassroomScenario } from "@/lib/definitions";
+import {
+  createScenario,
+  findScenarioById,
+  updateScenario,
+  deleteScenario,
+  removeScenarioFromClassroom,
+  getAllClassroomScenarios,
+  createClassroomScenario,
+} from "@/lib/db";
+import { Scenario, ScenarioId, ClassroomScenarioId, ClassroomId } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
 
@@ -18,7 +26,7 @@ export async function createScenarioAction(title: string, description: string, c
     return { error: "At least one constraint must be provided" };
   }
 
-  const scenario = createScenario({
+  const scenario = await createScenario({
     id: nanoid() as ScenarioId,
     title,
     description,
@@ -52,8 +60,7 @@ export async function updateScenarioAction(
     return { error: "At least one constraint must be provided" };
   }
 
-  const scenarios = readData<Scenario>(DataFileType.Scenarios);
-  const existing = scenarios.find((s) => s.id === scenarioId);
+  const existing = await findScenarioById(scenarioId);
   if (!existing) {
     return { error: "Scenario not found" };
   }
@@ -65,8 +72,7 @@ export async function updateScenarioAction(
     constraints,
   };
 
-  const { updateScenario } = await import("@/lib/db");
-  updateScenario(updatedScenario);
+  await updateScenario(updatedScenario);
 
   revalidatePath("/admin/dashboard/scenarios");
   revalidatePath("/dashboard");
@@ -77,21 +83,17 @@ export async function updateScenarioAction(
 export async function deleteScenarioAction(scenarioId: string): Promise<{ success: boolean; error?: string }> {
   await requireRole("admin");
 
-  const { deleteScenario } = await import("@/lib/db");
-  deleteScenario(scenarioId);
+  await deleteScenario(scenarioId);
 
   revalidatePath("/admin/dashboard/scenarios");
   revalidatePath("/dashboard");
   return { success: true };
 }
 
-
-
 export async function unassignScenarioAction(scenarioId: string, classroomId: string): Promise<{ success: boolean; error?: string }> {
   await requireRole("admin");
 
-  const { removeScenarioFromClassroom } = await import("@/lib/db");
-  removeScenarioFromClassroom(scenarioId, classroomId);
+  await removeScenarioFromClassroom(scenarioId, classroomId);
 
   revalidatePath("/admin/dashboard/scenarios");
   revalidatePath("/dashboard");
@@ -104,8 +106,7 @@ export async function updateScenarioAssignmentsAction(
 ): Promise<{ success: boolean; error?: string; addedCount?: number; removedCount?: number }> {
   await requireRole("admin");
 
-  const { removeScenarioFromClassroom } = await import("@/lib/db");
-  const assignments = readData<ClassroomScenario>(DataFileType.ClassroomScenarios);
+  const assignments = await getAllClassroomScenarios();
 
   // Current active assigned classroom IDs for this scenario
   const currentAssignedIds: string[] = assignments
@@ -117,7 +118,7 @@ export async function updateScenarioAssignmentsAction(
 
   // Add new assignments
   for (const classroomId of toAdd) {
-    createClassroomScenario({
+    await createClassroomScenario({
       id: nanoid() as ClassroomScenarioId,
       classroomId: classroomId as ClassroomId,
       scenarioId: scenarioId as ScenarioId,
@@ -128,7 +129,7 @@ export async function updateScenarioAssignmentsAction(
 
   // Remove deselected assignments
   for (const classroomId of toRemove) {
-    removeScenarioFromClassroom(scenarioId, classroomId);
+    await removeScenarioFromClassroom(scenarioId, classroomId);
   }
 
   revalidatePath("/admin/dashboard/scenarios");

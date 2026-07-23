@@ -1,12 +1,12 @@
-import { readData, DataFileType } from "@/lib/db";
+import { getAllSubmissions, getAllStudents, getAllScenarios, getAllClassrooms } from "@/lib/db";
 import { Classroom, Scenario, Student, Submission } from "@/lib/definitions";
 import { SubmissionsView } from "./submissions-view";
 
 export default async function SubmissionsPage() {
-  const submissions = readData<Submission>(DataFileType.Submissions);
-  const students = readData<Student>(DataFileType.Students);
-  const scenarios = readData<Scenario>(DataFileType.Scenarios);
-  const classrooms = readData<Classroom>(DataFileType.Classrooms);
+  const submissions = await getAllSubmissions();
+  const students = await getAllStudents();
+  const scenarios = await getAllScenarios();
+  const classrooms = await getAllClassrooms();
 
   // Sort by newest
   const sortedSubmissions = [...submissions].sort((a, b) => 

@@ -39,7 +39,7 @@ export const getCurrentStudent = cache(async () => {
   const session = await verifySession();
   if (session.role !== "student") return null;
 
-  const student = findStudentById(session.userId);
+  const student = await findStudentById(session.userId);
   if (!student) return null;
 
   // DTO: Exclude password hash
@@ -56,7 +56,7 @@ export const getCurrentAdmin = cache(async () => {
   const session = await verifySession();
   if (session.role !== "admin") return null;
 
-  const admin = findAdminById(session.userId);
+  const admin = await findAdminById(session.userId);
   if (!admin) return null;
 
   // DTO: Exclude password hash

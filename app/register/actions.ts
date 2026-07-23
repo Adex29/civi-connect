@@ -20,7 +20,7 @@ export async function registerAction(data: SignupFormInput): Promise<FormState> 
   const { classCode, fullName, lrn, password, isGroup, groupName } = validatedFields.data;
 
   // 1. Verify class code
-  const classroom = findClassroomByCode(classCode);
+  const classroom = await findClassroomByCode(classCode);
   if (!classroom) {
     return {
       status: "error",
@@ -35,7 +35,7 @@ export async function registerAction(data: SignupFormInput): Promise<FormState> 
   }
 
   // 2. Check LRN uniqueness
-  const existingStudent = findStudentByLrn(lrn);
+  const existingStudent = await findStudentByLrn(lrn);
   if (existingStudent) {
     return {
       status: "error",
@@ -46,11 +46,11 @@ export async function registerAction(data: SignupFormInput): Promise<FormState> 
   // 3. Handle Group Creation/Joining if applicable
   let groupId: string | undefined = undefined;
   if (isGroup && groupName) {
-    const existingGroup = findGroupByName(groupName, classroom.id as string);
+    const existingGroup = await findGroupByName(groupName, classroom.id as string);
     if (existingGroup) {
       groupId = existingGroup.id;
     } else {
-      const newGroup = createGroup({
+      const newGroup = await createGroup({
         id: nanoid() as GroupId,
         name: groupName,
         classroomId: classroom.id,
@@ -65,7 +65,7 @@ export async function registerAction(data: SignupFormInput): Promise<FormState> 
   const passwordHash = await bcrypt.hash(password, salt);
 
   // 5. Create student
-  const student = createStudent({
+  const student = await createStudent({
     id: nanoid() as StudentId,
     fullName,
     lrn,

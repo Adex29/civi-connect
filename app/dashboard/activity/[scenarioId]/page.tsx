@@ -1,5 +1,5 @@
 import { getCurrentStudent } from "@/lib/dal";
-import { readData, DataFileType } from "@/lib/db";
+import { findScenarioById, getAllSubmissions } from "@/lib/db";
 import { Scenario, Submission } from "@/lib/definitions";
 import { ActivityForm } from "./activity-form";
 import { redirect } from "next/navigation";
@@ -19,8 +19,7 @@ export default async function ActivityPage({
 
   const { scenarioId } = await params;
   
-  const scenarios = readData<Scenario>(DataFileType.Scenarios);
-  const scenario = scenarios.find((s) => s.id === scenarioId);
+  const scenario = await findScenarioById(scenarioId);
 
   if (!scenario) {
     return (
@@ -39,7 +38,7 @@ export default async function ActivityPage({
     );
   }
 
-  const submissions = readData<Submission>(DataFileType.Submissions);
+  const submissions = await getAllSubmissions();
   const submission = submissions.find(
     (s) => s.scenarioId === scenarioId && (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
   );

@@ -19,7 +19,7 @@ export async function adminLoginAction(data: AdminLoginFormInput): Promise<FormS
   const { email, password } = validatedFields.data;
 
   // 1. Find admin
-  const admin = findAdminByEmail(email);
+  const admin = await findAdminByEmail(email);
   if (!admin) {
     return {
       status: "error",
