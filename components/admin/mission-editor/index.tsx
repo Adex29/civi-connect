@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   MissionDataConfig,
@@ -9,6 +9,15 @@ import {
   Stakeholder,
   UnexpectedEvent,
 } from "@/lib/definitions";
+import {
+  AlertCircle,
+  HelpCircle,
+  FileText,
+  Users,
+  Zap,
+  Lightbulb,
+  CheckCircle2,
+} from "lucide-react";
 
 import { IssuesTab } from "./issues-tab";
 import { CausesTab } from "./causes-tab";
@@ -115,64 +124,150 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
     onChange(config);
   };
 
+  const parsedIssuesCount = issuesText
+    .split("\n")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0).length;
+
+  const stepsNav = [
+    {
+      value: "issues",
+      stepNum: "1",
+      title: "Priority Issues",
+      icon: AlertCircle,
+      count: `${parsedIssuesCount} items`,
+      hasData: parsedIssuesCount > 0,
+    },
+    {
+      value: "causes",
+      stepNum: "2",
+      title: "Root Causes",
+      icon: HelpCircle,
+      count: `${causes.length} factors`,
+      hasData: causes.length > 0,
+    },
+    {
+      value: "evidence",
+      stepNum: "3",
+      title: "Evidence Library",
+      icon: FileText,
+      count: `${evidence.length} sources`,
+      hasData: evidence.length > 0,
+    },
+    {
+      value: "stakeholders",
+      stepNum: "4",
+      title: "Stakeholders",
+      icon: Users,
+      count: `${stakeholders.length} figures`,
+      hasData: stakeholders.length > 0,
+    },
+    {
+      value: "challenge",
+      stepNum: "6",
+      title: "Challenge Event",
+      icon: Zap,
+      count: `${unexpectedEvent.options?.length || 0} choices`,
+      hasData: Boolean(unexpectedEvent.title),
+    },
+    {
+      value: "tips",
+      stepNum: "Tips",
+      title: "Step Guidance",
+      icon: Lightbulb,
+      count: `${Object.keys(stepTips).length} tips`,
+      hasData: Object.keys(stepTips).length > 0,
+    },
+  ];
+
   return (
-    <Tabs defaultValue="issues" className="flex flex-col space-y-4 w-full">
-      <TabsList className="w-full flex justify-start overflow-x-auto scrollbar-none h-auto p-1">
-        <TabsTrigger value="issues" className="text-xs">Step 1: Issues</TabsTrigger>
-        <TabsTrigger value="causes" className="text-xs">Step 2: Causes</TabsTrigger>
-        <TabsTrigger value="evidence" className="text-xs">Step 3: Evidence</TabsTrigger>
-        <TabsTrigger value="stakeholders" className="text-xs">Step 4: Stakeholders</TabsTrigger>
-        <TabsTrigger value="challenge" className="text-xs">Step 6: Challenge</TabsTrigger>
-        <TabsTrigger value="tips" className="text-xs">Step Tips</TabsTrigger>
-      </TabsList>
+    <Tabs defaultValue="issues" orientation="vertical" className="w-full block">
+      <div className="w-full grid grid-cols-1 lg:grid-cols-[250px_minmax(0,1fr)] gap-6 items-start">
+        {/* Sticky Vertical Sidebar Navigation */}
+        <aside className="lg:sticky lg:top-20 z-10 bg-card border border-border rounded-xl p-2.5 shadow-sm space-y-1">
+          <div className="px-3 py-2 border-b border-border mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+              Mission Steps Navigation
+            </span>
+          </div>
 
-      <IssuesTab
-        issuesText={issuesText}
-        onChange={(val) => {
-          setIssuesText(val);
-          notifyChange({ issuesRawText: val });
-        }}
-      />
+          <TabsList variant="line" className="w-full flex flex-col items-stretch gap-1 h-auto p-0 bg-transparent">
+            {stepsNav.map((step) => {
+              return (
+                <TabsTrigger
+                  key={step.value}
+                  value={step.value}
+                  className="w-full justify-start gap-2.5 px-3 py-2.5 rounded-lg text-left text-xs font-medium transition-all group/trigger data-[state=active]:bg-primary/10 data-[state=active]:text-primary dark:data-[state=active]:bg-primary/20 hover:bg-muted/60"
+                >
+                  <span className="flex items-center justify-center h-6 w-6 rounded-md bg-muted text-[11px] font-bold group-data-[state=active]/trigger:bg-primary group-data-[state=active]/trigger:text-primary-foreground shrink-0 transition-colors">
+                    {step.stepNum}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="truncate font-semibold text-xs">{step.title}</span>
+                      {step.hasData && (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground truncate">{step.count}</p>
+                  </div>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </aside>
 
-      <CausesTab
-        causes={causes}
-        onChange={(nextCauses) => {
-          setCauses(nextCauses);
-          notifyChange({ causes: nextCauses });
-        }}
-      />
+        {/* Content Area - Maximizes 100% of remaining right column */}
+        <main className="w-full min-w-0">
+          <IssuesTab
+            issuesText={issuesText}
+            onChange={(val) => {
+              setIssuesText(val);
+              notifyChange({ issuesRawText: val });
+            }}
+          />
 
-      <EvidenceTab
-        evidence={evidence}
-        onChange={(nextEvidence) => {
-          setEvidence(nextEvidence);
-          notifyChange({ evidence: nextEvidence });
-        }}
-      />
+          <CausesTab
+            causes={causes}
+            onChange={(nextCauses) => {
+              setCauses(nextCauses);
+              notifyChange({ causes: nextCauses });
+            }}
+          />
 
-      <StakeholdersTab
-        stakeholders={stakeholders}
-        onChange={(nextStakeholders) => {
-          setStakeholders(nextStakeholders);
-          notifyChange({ stakeholders: nextStakeholders });
-        }}
-      />
+          <EvidenceTab
+            evidence={evidence}
+            onChange={(nextEvidence) => {
+              setEvidence(nextEvidence);
+              notifyChange({ evidence: nextEvidence });
+            }}
+          />
 
-      <ChallengeTab
-        unexpectedEvent={unexpectedEvent}
-        onChange={(nextEvent) => {
-          setUnexpectedEvent(nextEvent);
-          notifyChange({ unexpectedEvent: nextEvent });
-        }}
-      />
+          <StakeholdersTab
+            stakeholders={stakeholders}
+            onChange={(nextStakeholders) => {
+              setStakeholders(nextStakeholders);
+              notifyChange({ stakeholders: nextStakeholders });
+            }}
+          />
 
-      <TipsTab
-        stepTips={stepTips}
-        onChange={(nextTips) => {
-          setStepTips(nextTips);
-          notifyChange({ stepTips: nextTips });
-        }}
-      />
+          <ChallengeTab
+            unexpectedEvent={unexpectedEvent}
+            onChange={(nextEvent) => {
+              setUnexpectedEvent(nextEvent);
+              notifyChange({ unexpectedEvent: nextEvent });
+            }}
+          />
+
+          <TipsTab
+            stepTips={stepTips}
+            onChange={(nextTips) => {
+              setStepTips(nextTips);
+              notifyChange({ stepTips: nextTips });
+            }}
+          />
+        </main>
+      </div>
     </Tabs>
   );
 }
