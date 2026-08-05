@@ -115,6 +115,15 @@ export interface Group {
   createdAt: string;
 }
 
+export interface MissionDataConfig {
+  issues?: string[];
+  causes?: CauseItem[];
+  evidenceLibrary?: EvidenceItem[];
+  stakeholders?: Stakeholder[];
+  unexpectedEvent?: UnexpectedEvent;
+  stepTips?: Record<number, string>;
+}
+
 export interface Scenario {
   id: ScenarioId;
   title: string;
@@ -124,6 +133,7 @@ export interface Scenario {
   status?: ScenarioStatus;
   createdBy?: AdminId;
   createdAt: string;
+  missionData?: MissionDataConfig;
 }
 
 export interface ClassroomScenario {
@@ -173,11 +183,149 @@ export interface Submission {
   scenarioId: ScenarioId;
   studentId: StudentId;
   groupId?: GroupId;
-  status: string; // "draft" | "completed"
+  status: string; // "draft" | "in_progress" | "completed"
   content: string;
   feedback: string;
   score: number | null;
+  stepProgress?: number; // Current active step (1 to 7)
+  simulationState?: SimulationStateData;
   submittedAt: string;
+}
+
+// --- Civi-Tech Simulation Engine Types ---
+export type StepCategory = 
+  | "identify"
+  | "analyze"
+  | "evidence"
+  | "stakeholders"
+  | "intervention"
+  | "challenge"
+  | "impact";
+
+export interface CauseItem {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export interface EvidenceItem {
+  id: string;
+  title: string;
+  type: string; // e.g. "Government Report", "Community Survey", "News Article", "Photo Evidence", "Interview", "Social Media"
+  snippet: string;
+  fullText: string;
+  imageUrl?: string; // Optional image / photo URL or base64 photo data
+  defaultCredibility: number; // 1-5 stars
+  supports: ("cause" | "solution" | "need")[];
+}
+
+export interface FollowUpQuestion {
+  question: string;
+  answer: string;
+}
+
+export interface Stakeholder {
+  id: string;
+  name: string;
+  role: string;
+  avatarIcon?: string;
+  initialStatement: string;
+  followUps: FollowUpQuestion[];
+}
+
+export interface UnexpectedEvent {
+  title: string;
+  description: string;
+  options: {
+    id: string;
+    text: string;
+    isOptimal: boolean;
+    feedback: string;
+  }[];
+}
+
+export interface InterventionPlanData {
+  projectTitle: string;
+  goal: string;
+  objectives: string;
+  activities: string;
+  stakeholders: string;
+  resources: string;
+  budget: string;
+  timeline: string;
+  expectedOutcomes: string;
+}
+
+export interface ImpactAssessmentData {
+  shortTermImpact: string;
+  longTermImpact: string;
+  possibleRisks: string;
+  whoBenefits: string;
+  whoMightBeAffected: string;
+}
+
+export interface StepScoreBreakdown {
+  communityInvestigation: number; // Step 1 Score (0-100)
+  causeAnalysis: number;           // Step 2 Score (0-100)
+  evidenceEvaluation: number;      // Step 3 Score (0-100)
+  stakeholderAnalysis: number;     // Step 4 Score (0-100)
+  interventionPlanning: number;    // Step 5 Score (0-100)
+  adaptiveDecisionMaking: number;  // Step 6 Score (0-100)
+  impactAssessment: number;        // Step 7 Score (0-100)
+  overallScore: number;            // Average score (0-100)
+}
+
+export interface SimulationStateData {
+  currentStep: number; // 1 to 7 (or 8 for score/reflection, 9 for complete)
+  step1?: {
+    selectedIssue: string;
+    justification: string;
+    feedback?: string;
+    passed?: boolean;
+  };
+  step2?: {
+    orderedCauseIds: string[];
+    feedback?: string;
+    passed?: boolean;
+  };
+  step3?: {
+    evaluatedEvidences: {
+      evidenceId: string;
+      userCredibility: number;
+      selectedSupports: ("cause" | "solution" | "need")[];
+      justification: string;
+    }[];
+    feedback?: string;
+    passed?: boolean;
+  };
+  step4?: {
+    consultedStakeholderIds: string[];
+    interviewNotes: string;
+    askedFollowUps: Record<string, number[]>; // stakeholderId -> array of followUp indices asked
+    feedback?: string;
+    passed?: boolean;
+  };
+  step5?: {
+    plan: InterventionPlanData;
+    feedback?: string;
+    passed?: boolean;
+  };
+  step6?: {
+    selectedOptionId: string;
+    justification: string;
+    feedback?: string;
+    passed?: boolean;
+  };
+  step7?: {
+    impact: ImpactAssessmentData;
+    feedback?: string;
+    passed?: boolean;
+  };
+  scores?: StepScoreBreakdown;
+  reflection?: {
+    answer: string;
+    feedback?: string;
+  };
 }
 
 // --- Session & Forms ---

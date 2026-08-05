@@ -2,15 +2,25 @@
 
 import { getCurrentStudent } from "@/lib/dal";
 import { findScenarioById, getAllSubmissions, createSubmission, updateSubmission } from "@/lib/db";
-import { Submission, SubmissionId } from "@/lib/definitions";
-import { evaluateStudentSubmission } from "@/lib/ai";
+import { Submission, SubmissionId, SimulationStateData } from "@/lib/definitions";
+import {
+  evaluateStep1,
+  evaluateStep2,
+  evaluateStep3,
+  evaluateStep4,
+  evaluateStep5,
+  evaluateStep6,
+  evaluateStep7,
+  evaluateReflection,
+  calculateMissionScores,
+} from "@/lib/ai";
 import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
 
-export async function submitActivityStep(
-  scenarioId: string, 
-  stepIndex: number, 
-  content: string
+export async function processSimulationStepAction(
+  scenarioId: string,
+  stepNumber: number,
+  payload: any
 ) {
   const student = await getCurrentStudent();
   if (!student) return { error: "Not authenticated" };
@@ -19,58 +29,177 @@ export async function submitActivityStep(
   if (!scenario) return { error: "Scenario not found" };
 
   const allSubmissions = await getAllSubmissions();
-  let submission = allSubmissions.find((s: Submission) => s.scenarioId === scenarioId && (s.studentId === student.id || (student.groupId && s.groupId === student.groupId)));
+  let submission = allSubmissions.find(
+    (s: Submission) =>
+      s.scenarioId === scenarioId &&
+      (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
+  );
 
-  // Initialize submission if it doesn't exist
+  // Initialize submission if missing
   if (!submission) {
     submission = await createSubmission({
       id: nanoid() as SubmissionId,
       scenarioId: scenario.id,
       studentId: student.id,
       groupId: student.groupId,
-      status: "draft",
+      status: "in_progress",
       content: "",
       feedback: "",
       score: null,
+      stepProgress: 1,
+      simulationState: { currentStep: 1 },
       submittedAt: new Date().toISOString(),
     });
   }
 
-  // Determine which constraints to evaluate based on step
-  const stepSize = Math.ceil(scenario.constraints.length / 3); // Assume 3 steps
-  const startIndex = stepIndex * stepSize;
-  const endIndex = Math.min(startIndex + stepSize, scenario.constraints.length);
-  const currentConstraints = scenario.constraints.slice(startIndex, endIndex);
+  const state: SimulationStateData = submission.simulationState || { currentStep: 1 };
 
-  // Ask AI to evaluate
-  const evaluation = await evaluateStudentSubmission(
-    scenario.title,
-    scenario.description,
-    currentConstraints,
-    content
+  let evalResult = { passed: true, feedback: "" };
+
+  if (stepNumber === 1) {
+    evalResult = await evaluateStep1(scenario, payload.selectedIssue, payload.justification);
+    if (evalResult.passed) {
+      state.step1 = {
+        selectedIssue: payload.selectedIssue,
+        justification: payload.justification,
+        feedback: evalResult.feedback,
+        passed: true,
+      };
+      state.currentStep = 2;
+    }
+  } else if (stepNumber === 2) {
+    evalResult = await evaluateStep2(scenario, payload.orderedCauseIds);
+    if (evalResult.passed) {
+      state.step2 = {
+        orderedCauseIds: payload.orderedCauseIds,
+        feedback: evalResult.feedback,
+        passed: true,
+      };
+      state.currentStep = 3;
+    }
+  } else if (stepNumber === 3) {
+    evalResult = await evaluateStep3(scenario, payload.evaluatedEvidences);
+    if (evalResult.passed) {
+      state.step3 = {
+        evaluatedEvidences: payload.evaluatedEvidences,
+        feedback: evalResult.feedback,
+        passed: true,
+      };
+      state.currentStep = 4;
+    }
+  } else if (stepNumber === 4) {
+    evalResult = await evaluateStep4(scenario, payload.consultedIds, payload.notes);
+    if (evalResult.passed) {
+      state.step4 = {
+        consultedStakeholderIds: payload.consultedIds,
+        interviewNotes: payload.notes,
+        askedFollowUps: payload.askedFollowUps || {},
+        feedback: evalResult.feedback,
+        passed: true,
+      };
+      state.currentStep = 5;
+    }
+  } else if (stepNumber === 5) {
+    evalResult = await evaluateStep5(scenario, payload.plan);
+    if (evalResult.passed) {
+      state.step5 = {
+        plan: payload.plan,
+        feedback: evalResult.feedback,
+        passed: true,
+      };
+      state.currentStep = 6;
+    }
+  } else if (stepNumber === 6) {
+    evalResult = await evaluateStep6(scenario, payload.selectedOptionText, payload.justification);
+    if (evalResult.passed) {
+      state.step6 = {
+        selectedOptionId: payload.selectedOptionId,
+        justification: payload.justification,
+        feedback: evalResult.feedback,
+        passed: true,
+      };
+      state.currentStep = 7;
+    }
+  } else if (stepNumber === 7) {
+    evalResult = await evaluateStep7(scenario, payload.impact);
+    if (evalResult.passed) {
+      state.step7 = {
+        impact: payload.impact,
+        feedback: evalResult.feedback,
+        passed: true,
+      };
+      // Calculate final score performance breakdown
+      const scores = calculateMissionScores(state);
+      state.scores = scores;
+      state.currentStep = 8; // Step 8 = Performance Scorecard & Reflection
+      submission.score = scores.overallScore;
+    }
+  }
+
+  submission.simulationState = state;
+  submission.stepProgress = state.currentStep;
+  await updateSubmission(submission);
+
+  revalidatePath(`/dashboard/activity/${scenarioId}`);
+
+  return {
+    success: evalResult.passed,
+    feedback: evalResult.feedback,
+    nextStep: state.currentStep,
+    scores: state.scores,
+  };
+}
+
+export async function submitReflectionAction(scenarioId: string, answer: string) {
+  const student = await getCurrentStudent();
+  if (!student) return { error: "Not authenticated" };
+
+  const scenario = await findScenarioById(scenarioId);
+  if (!scenario) return { error: "Scenario not found" };
+
+  const allSubmissions = await getAllSubmissions();
+  let submission = allSubmissions.find(
+    (s: Submission) =>
+      s.scenarioId === scenarioId &&
+      (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
   );
 
-  // If passed, append content and update submission
-  if (evaluation.passed) {
-    submission.content = submission.content ? `${submission.content}\n\n[Step ${stepIndex + 1}]\n${content}` : content;
-    
-    // If it's the last step, mark as completed
-    if (endIndex === scenario.constraints.length) {
-      submission.status = "completed";
-      submission.score = 100; // Simplified scoring
-    }
-    
+  if (!submission) return { error: "Submission not found" };
+
+  const evalResult = await evaluateReflection(scenario, answer);
+
+  if (evalResult.passed) {
+    const state: SimulationStateData = submission.simulationState || { currentStep: 8 };
+    state.reflection = {
+      answer,
+      feedback: evalResult.feedback,
+    };
+    state.currentStep = 9; // Step 9 = Certificate & Complete Screen
+
+    submission.simulationState = state;
+    submission.status = "completed";
+    submission.content = JSON.stringify(state, null, 2);
+    submission.feedback = evalResult.feedback;
+
     await updateSubmission(submission);
-    
+
     revalidatePath(`/dashboard/activity/${scenarioId}`);
-    return { success: true, feedback: evaluation.feedback, isCompleted: submission.status === "completed" };
-  } else {
-    // Return failed feedback, do not save step
-    return { 
-      success: false, 
-      feedback: evaluation.feedback, 
-      failedConstraints: evaluation.failedConstraints,
-      isAiGenerated: evaluation.isAiGenerated ?? false,
+    revalidatePath("/dashboard");
+
+    return {
+      success: true,
+      feedback: evalResult.feedback,
+      completed: true,
     };
   }
+
+  return {
+    success: false,
+    feedback: evalResult.feedback,
+  };
+}
+
+// Legacy export for compatibility
+export async function submitActivityStep(scenarioId: string, stepIndex: number, content: string) {
+  return processSimulationStepAction(scenarioId, stepIndex + 1, { justification: content });
 }

@@ -11,7 +11,223 @@
     ],
     "status": "active",
     "createdBy": "admin-1",
-    "createdAt": "2026-07-21T07:54:44.684Z"
+    "createdAt": "2026-07-21T07:54:44.684Z",
+    "missionData": {
+      "issues": [
+        "Improper Waste Disposal in Waterways",
+        "Lack of Household Waste Segregation",
+        "Weak Policy & Enforcement by Tanods",
+        "Irregular Collection in Narrow Alleys"
+      ],
+      "causes": [
+        {
+          "id": "c2",
+          "title": "Limited Budget for Garbage Collection",
+          "description": "Inadequate funds to hire extra trucks for narrow interior alleys."
+        },
+        {
+          "id": "c1",
+          "title": "Poor Enforcement of Waste Regulations",
+          "description": "Barangay Tanods rarely fine violators or monitor esteros at night."
+        },
+        {
+          "id": "c4",
+          "title": "Rapid Urban Population Growth",
+          "description": "Increased household density generating more daily garbage."
+        },
+        {
+          "id": "c3",
+          "title": "Improper Household Segregation",
+          "description": "Residents mix biodegradable, recyclable, and hazardous waste together."
+        },
+        {
+          "id": "c5",
+          "title": "Lack of Civic Awareness",
+          "description": "Residents do not recognize long-term flooding risks of illegal dumping."
+        }
+      ],
+      "evidenceLibrary": [
+        {
+          "id": "ev1",
+          "title": "Government Solid Waste Compliance Report",
+          "type": "Government Report",
+          "snippet": "Official LGU audit showing Barangay waste collection efficiency is at 45% with zero segregation compliance.",
+          "fullText": "The 2025 Municipal Environment and Natural Resources Office (MENRO) report highlights that 55% of estero blockages stem from unsegregated household plastic bags. Recommends strict enforcement of RA 9003.",
+          "defaultCredibility": 5,
+          "supports": [
+            "cause",
+            "need"
+          ]
+        },
+        {
+          "id": "ev2",
+          "title": "Estero Clean-up Photo & Drainage Survey",
+          "type": "Article Photo",
+          "snippet": "High-resolution photos documenting severe plastic bottleneck accumulation at the Main Bridge canal.",
+          "fullText": "Photographic documentation from the City Engineering Office shows over 3 tons of plastic debris clogging the culvert entrance during July heavy rains.",
+          "imageUrl": "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=800&auto=format&fit=crop&q=80",
+          "defaultCredibility": 4,
+          "supports": [
+            "cause"
+          ]
+        },
+        {
+          "id": "ev3",
+          "title": "Community Resident Satisfaction Survey",
+          "type": "Community Survey",
+          "snippet": "Survey of 200 households indicating 78% complain about irregular garbage truck arrival schedules.",
+          "fullText": "A random sampling survey conducted by local SK volunteers found 78% of residents dump garbage at corners because municipal collection trucks skip narrow interior streets.",
+          "defaultCredibility": 4,
+          "supports": [
+            "cause",
+            "need"
+          ]
+        },
+        {
+          "id": "ev4",
+          "title": "Barangay Annual Budget Report",
+          "type": "Budget Report",
+          "snippet": "Financial statement showing 12% allocation for environmental sanitation and solid waste management.",
+          "fullText": "The 2025 Barangay Budget allocated ₱250,000 for waste management. However, ₱180,000 was spent on truck fuel, leaving minimal funds for educational campaigns or eco-bricks.",
+          "defaultCredibility": 5,
+          "supports": [
+            "cause",
+            "solution"
+          ]
+        },
+        {
+          "id": "ev6",
+          "title": "Local News Feature Story",
+          "type": "Survey News",
+          "snippet": "Regional news coverage of urban flooding in low-lying barangays.",
+          "fullText": "Channel 7 special report: 'Flooding in Sector 4 intensifies as plastic waste chokes urban waterways despite municipal clean-up drives.'",
+          "defaultCredibility": 4,
+          "supports": [
+            "need"
+          ]
+        },
+        {
+          "id": "ev5",
+          "title": "Social Media Community Group Post",
+          "type": "Social Media",
+          "snippet": "Viral Facebook post by a resident complaining about foul odor and blaming neighboring barangays.",
+          "fullText": "Post with 1.2k shares: 'The garbage here is intolerable! Why are people from nearby barangays throwing their trash in our estero at midnight?! Officials do nothing!'",
+          "defaultCredibility": 2,
+          "supports": [
+            "cause"
+          ]
+        },
+        {
+          "id": "ev7",
+          "title": "Sanitation Officer Interview Transcript",
+          "type": "Interview",
+          "snippet": "Interview with Head Barangay Health Worker detailing increased vector-borne diseases near waste sites.",
+          "fullText": "Dr. Santos: 'Accumulated moist trash near esteros has caused a 30% surge in localized skin infections and mosquito breeding in Sitio Riverside.'",
+          "defaultCredibility": 5,
+          "supports": [
+            "need",
+            "solution"
+          ]
+        },
+        {
+          "id": "ev8",
+          "title": "Barangay Topographic & Waterway Map",
+          "type": "Map",
+          "snippet": "GIS mapping highlighting flood vulnerability zones and current garbage collection routes.",
+          "fullText": "Spatial map demonstrating that 4 out of 6 Sitio alleys are inaccessible to standard 6-wheeler municipal garbage trucks.",
+          "defaultCredibility": 5,
+          "supports": [
+            "cause",
+            "solution"
+          ]
+        }
+      ],
+      "stakeholders": [
+        {
+          "id": "st1",
+          "name": "Aling Rosa",
+          "role": "Riverside Household Resident",
+          "initialStatement": "The garbage truck rarely comes into our narrow alley. If we don't dump our trash by the creek, flies swarm inside our small house!",
+          "followUps": [
+            {
+              "question": "Would your family segregate waste if the barangay provided color-coded bins or collection schedules?",
+              "answer": "Yes, definitely! Most of us want a clean street, but we need clear collection times so trash isn't left on the pavement all day."
+            },
+            {
+              "question": "Are residents willing to participate in a weekend sitio clean-up drive?",
+              "answer": "If the Barangay Captain leads it and provides gloves and trash bags, many mothers and youth here will gladly volunteer."
+            }
+          ]
+        },
+        {
+          "id": "st2",
+          "name": "Captain Manuel Cruz",
+          "role": "Barangay Chairman",
+          "initialStatement": "We have limited funds for new mini-dump trucks, but we enforce local ordinances when Tanods catch illegal dumpers at night.",
+          "followUps": [
+            {
+              "question": "Can the Barangay Council authorize partnerships with local junk shops for recyclables?",
+              "answer": "That is a great idea! Selling segregated plastics and metals directly to accredited junk shops can fund our BDRRM environmental project."
+            },
+            {
+              "question": "Why are Tanods struggling to stop midnight dumping?",
+              "answer": "We only have 8 Tanods covering 5 Sitios. Without CCTV or community volunteers, we cannot monitor every corner 24/7."
+            }
+          ]
+        },
+        {
+          "id": "st3",
+          "name": "Engr. Mark Torres",
+          "role": "Municipal Environment Officer (MENRO)",
+          "initialStatement": "Republic Act 9003 mandates barangays to handle segregation and composting. Municipal trucks only collect non-recyclable residual waste.",
+          "followUps": [
+            {
+              "question": "How can the Municipality assist our barangay with narrow alley collection?",
+              "answer": "We can deploy push-carts (pedicabs) or 3-wheeler Eco-Bikes to shuttle waste from inner alleys to the main highway transfer station."
+            }
+          ]
+        }
+      ],
+      "unexpectedEvent": {
+        "title": "Unexpected Challenge: Municipal Waste Budget Reduction",
+        "description": "Due to emergency calamity fund reallocations, the Municipal Government has cut barangay waste subsidies by 30%. Fuel for heavy collection trucks will be reduced next month.",
+        "options": [
+          {
+            "id": "opt1",
+            "text": "Reduce activities and cancel all information campaigns.",
+            "isOptimal": false,
+            "feedback": "Canceling information campaigns stops civic education, leading to worse long-term waste accumulation."
+          },
+          {
+            "id": "opt2",
+            "text": "Mobilize SK youth volunteers to construct community Eco-Pads and partner with local recycling junk shops for self-funded waste collection.",
+            "isOptimal": true,
+            "feedback": "Excellent adaptive decision! Community-led recycling creates a sustainable revenue stream and fosters local ownership."
+          },
+          {
+            "id": "opt3",
+            "text": "Request an immediate emergency loan from the provincial government.",
+            "isOptimal": false,
+            "feedback": "Emergency loans require lengthy legislative approval and do not address root cause sustainability."
+          },
+          {
+            "id": "opt4",
+            "text": "Increase mandatory fines on households by 200%.",
+            "isOptimal": false,
+            "feedback": "Drastic fines without providing collection infrastructure causes resentment and increases illegal midnight dumping."
+          }
+        ]
+      },
+      "stepTips": {
+        "1": "Read carefully. Differentiate symptoms from root issues before prioritizing.",
+        "2": "Analyze cause relationships. Consider which factor triggers the others.",
+        "3": "Balance your evidence library. Combine official reports with community experiences.",
+        "4": "Gather diverse perspectives. Interview both local leaders and grassroots residents.",
+        "5": "Ensure your intervention plan is evidence-based, actionable, and sustainable.",
+        "6": "Anticipate real-world constraints. Adapt your plan without sacrificing core objectives.",
+        "7": "Assess ethical implications. Make sure vulnerable groups are protected and benefit."
+      }
+    }
   },
   {
     "id": "P4ugZ20X0Y-KS_zr_Uoup",
@@ -25,7 +241,139 @@
     ],
     "status": "active",
     "createdBy": "admin-1",
-    "createdAt": "2026-07-21T07:54:44.685Z"
+    "createdAt": "2026-07-21T07:54:44.685Z",
+    "missionData": {
+      "issues": [
+        "Unattended Stagnant Water in Abandoned Lots",
+        "Low Community Participation in Search & Destroy",
+        "Delayed Medical Consultation by Affected Families",
+        "Lack of Insect Repellent & Self-Protection Access"
+      ],
+      "causes": [
+        {
+          "id": "c3",
+          "title": "Insufficient Public Health Education",
+          "description": "Families misunderstand early dengue symptoms, confusing them with simple fever."
+        },
+        {
+          "id": "c2",
+          "title": "Irregular Household Water Storage",
+          "description": "Uncovered water drums (drum/tanke) stored inside homes due to water interruptions."
+        },
+        {
+          "id": "c1",
+          "title": "Neglected Private Abandoned Lots",
+          "description": "Absentee property owners leave containers that accumulate rain water."
+        },
+        {
+          "id": "c4",
+          "title": "Dense Neighborhood Vegetation",
+          "description": "Overgrown weeds and uncleaned gutters providing mosquito resting spots."
+        }
+      ],
+      "evidenceLibrary": [
+        {
+          "id": "ev1",
+          "title": "Barangay Health Center Epidemiological Surveillance Report",
+          "type": "Government Report",
+          "snippet": "42 confirmed dengue cases recorded in Sitio 2 and Sitio 4 within the last 30 days.",
+          "fullText": "City Health Office report indicates a 140% spike in pediatric dengue admissions. High mosquito larval index discovered in stagnant puddles in Sitio 2.",
+          "defaultCredibility": 5,
+          "supports": [
+            "cause",
+            "need"
+          ]
+        },
+        {
+          "id": "ev2",
+          "title": "DOH 4S Strategy Policy Circular",
+          "type": "Government Report",
+          "snippet": "Department of Health guidance emphasizing 4pm daily Search & Destroy drives.",
+          "fullText": "Official DOH protocol highlights that eliminating breeding containers is 10 times more effective than chemical fogging alone.",
+          "defaultCredibility": 5,
+          "supports": [
+            "solution"
+          ]
+        },
+        {
+          "id": "ev3",
+          "title": "Sitio Abandoned Lot Aerial & Photo Inspection",
+          "type": "Article Photo",
+          "snippet": "Photo log showing 12 discarded tires filled with rainwater in fenced empty lot.",
+          "fullText": "Inspection team photos confirm abandoned rubber tires are functioning as primary mosquito breeding hotspots.",
+          "defaultCredibility": 4,
+          "supports": [
+            "cause"
+          ],
+          "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtgq5msvGqXtXJeLuftoYdR2MT7kuiQ0CjUDwzDFcIoVtObPt3PW5qPA55&s=10"
+        },
+        {
+          "id": "ev4",
+          "title": "Parent Survey on Mosquito Repellent Usage",
+          "type": "Community Survey",
+          "snippet": "Survey showing 65% of families cannot afford daily commercial lotion repellents.",
+          "fullText": "Local BHW survey reveals financial hardship prevents low-income households from buying commercial repellents.",
+          "defaultCredibility": 4,
+          "supports": [
+            "need",
+            "solution"
+          ]
+        }
+      ],
+      "stakeholders": [
+        {
+          "id": "st1785828020240",
+          "name": "New Stakeholder",
+          "role": "Community Representative",
+          "initialStatement": "yes yes po",
+          "followUps": [
+            {
+              "question": "What is your main concern?",
+              "answer": "We want clear guidelines and assistance."
+            }
+          ]
+        },
+        {
+          "id": "st1785828074951",
+          "name": "New Stakeholder",
+          "role": "Community Representative",
+          "initialStatement": "Initial statement in the simulation...",
+          "followUps": [
+            {
+              "question": "What is your main concern?",
+              "answer": "We want clear guidelines and assistance."
+            }
+          ]
+        }
+      ],
+      "unexpectedEvent": {
+        "title": "Unexpected Challenge: Chemical Fogging Supply Shortage",
+        "description": "The City Health Office ran out of chemical fogging solution due to high regional demand. How will your team adapt?",
+        "options": [
+          {
+            "id": "opt1",
+            "text": "Cancel all anti-dengue activities until chemical supplies arrive.",
+            "isOptimal": false,
+            "feedback": "Canceling activities allows mosquito larvae to hatch unchecked."
+          },
+          {
+            "id": "opt2",
+            "text": "Double down on manual 'Search and Destroy' clean-up drives and distribute neem-oil natural repellents.",
+            "isOptimal": true,
+            "feedback": "Outstanding decision! Manual container destruction is the most effective biological control."
+          }
+        ]
+      },
+      "stepTips": {
+        "1": "Identify root breeding environments vs individual infection symptoms.",
+        "2": "Analyze how stagnant water storage triggers mosquito population spikes.",
+        "3": "Use official epidemiological reports alongside parent survey evidence.",
+        "4": "Consult municipal health officers and local barangay health workers.",
+        "5": "Design actionable 'Search and Destroy' routines for households.",
+        "6": "Focus on sustainable physical clean-ups when chemical fogging is unavailable.",
+        "7": "Ensure vulnerable children and low-income families receive free protection."
+      }
+    }
   },
   {
     "id": "7VE3D8n8BLQDx0ML4SBA9",
@@ -39,7 +387,98 @@
     ],
     "status": "active",
     "createdBy": "admin-1",
-    "createdAt": "2026-07-21T07:54:44.685Z"
+    "createdAt": "2026-07-21T07:54:44.685Z",
+    "missionData": {
+      "issues": [
+        "Unvaccinated Free-Roaming Stray Dogs",
+        "Irresponsible Pet Ownership & Unconfined Animals",
+        "Lack of Local Barangay Animal Pound Facility",
+        "High Cost of Post-Bite Anti-Rabies Vaccines"
+      ],
+      "causes": [
+        {
+          "id": "c1",
+          "title": "Uncontrolled Animal Breeding",
+          "description": "Pet owners do not spay/neuter pets, leading to unwanted litters."
+        },
+        {
+          "id": "c2",
+          "title": "Lack of Fenced Yards",
+          "description": "Low-income households allow pets to roam streets freely during daytime."
+        },
+        {
+          "id": "c3",
+          "title": "Inadequate City Vet Outreach",
+          "description": "Mass vaccination drives happen only once every two years."
+        }
+      ],
+      "evidenceLibrary": [
+        {
+          "id": "ev1",
+          "title": "City Veterinary Rabies Audit Report",
+          "type": "Government Report",
+          "snippet": "Rabies vaccination coverage in Barangay is at 38%, well below the 70% herd immunity target.",
+          "fullText": "City Vet audit confirms 62% of domestic dogs remain unvaccinated against rabies, posing severe public health risks.",
+          "defaultCredibility": 5,
+          "supports": [
+            "cause",
+            "need"
+          ]
+        },
+        {
+          "id": "ev2",
+          "title": "Barangay Health Center Animal Bite Incident Log",
+          "type": "Community Survey",
+          "snippet": "14 bite incidents reported in past 2 months near elementary school.",
+          "fullText": "Bite log shows 10 out of 14 bites involved unconfined stray dogs during school dismissal hours.",
+          "defaultCredibility": 5,
+          "supports": [
+            "need"
+          ]
+        }
+      ],
+      "stakeholders": [
+        {
+          "id": "st1",
+          "name": "Dr. Fernando Garcia",
+          "role": "City Veterinarian",
+          "initialStatement": "We can provide free rabies vaccine vials if the barangay organizes pet registration and volunteer vaccinators.",
+          "followUps": [
+            {
+              "question": "Can the City Vet help conduct low-cost spay and neuter clinics?",
+              "answer": "Yes! We partner with Humane Society NGOs to provide free spay/neuter for registered low-income pets."
+            }
+          ]
+        }
+      ],
+      "unexpectedEvent": {
+        "title": "Unexpected Challenge: Vaccine Transport Delay",
+        "description": "Free vaccine cold-chain transport from the regional office has been delayed by 2 weeks. How will you proceed?",
+        "options": [
+          {
+            "id": "opt1",
+            "text": "Cancel registration drive and pet owner seminars.",
+            "isOptimal": false,
+            "feedback": "Canceling delays community awareness and pet leash enforcement."
+          },
+          {
+            "id": "opt2",
+            "text": "Proceed with household pet registration, census, and leash enforcement while queueing pets for arrival.",
+            "isOptimal": true,
+            "feedback": "Excellent choice! Preparing the census ensures 100% vaccination efficiency when vaccines arrive."
+          }
+        ]
+      },
+      "stepTips": {
+        "1": "Focus on vaccination rates and responsible pet ownership constraints.",
+        "2": "Trace uncontrolled breeding and unconfined roaming causes.",
+        "3": "Review City Vet audit logs alongside bite incident records.",
+        "4": "Engage veterinary experts and local pet owner associations.",
+        "5": "Build a humane registration and vaccination action plan.",
+        "6": "Maintain momentum with registration census when supplies are delayed.",
+        "7": "Protect both human safety and animal welfare ethically."
+      }
+    }
   },
   {
     "id": "7qdPFk6VauK1WMr1KPC89",
@@ -53,7 +492,98 @@
     ],
     "status": "active",
     "createdBy": "admin-1",
-    "createdAt": "2026-07-21T07:54:44.685Z"
+    "createdAt": "2026-07-21T07:54:44.685Z",
+    "missionData": {
+      "issues": [
+        "Youth Nighttime Loitering & Noise Complaints",
+        "Lack of Productive Evening Recreational Programs",
+        "Friction Between Tanods and Out-of-School Youth",
+        "Inadequate Parental Guidance & Curfew Awareness"
+      ],
+      "causes": [
+        {
+          "id": "c1",
+          "title": "Lack of Evening Youth Spaces",
+          "description": "Barangay plaza lights are turned off at 8 PM, leaving street corners as only hangout spots."
+        },
+        {
+          "id": "c2",
+          "title": "Boredom & Out-of-School Youth Idle Time",
+          "description": "Few athletic, digital, or vocational programs available past school hours."
+        },
+        {
+          "id": "c3",
+          "title": "Punitive Enforcement Friction",
+          "description": "Tanods approach youth confrontationally rather than mentorship-focused."
+        }
+      ],
+      "evidenceLibrary": [
+        {
+          "id": "ev1",
+          "title": "Barangay Peace & Order Incident Blotter",
+          "type": "Government Report",
+          "snippet": "28 noise blotters involving minors logged between 10 PM and 2 AM.",
+          "fullText": "Blotter entries confirm majority of incidents involve loud music and street tambayan altercations near Sitio 3 store.",
+          "defaultCredibility": 5,
+          "supports": [
+            "cause",
+            "need"
+          ]
+        },
+        {
+          "id": "ev2",
+          "title": "SK Youth Needs Assessment Survey",
+          "type": "Community Survey",
+          "snippet": "84% of surveyed youth requested night basketball leagues and e-sports/coding workshops.",
+          "fullText": "Survey reveals youth want structured sports leagues, music jams, and IT skill workshops during weekends.",
+          "defaultCredibility": 4,
+          "supports": [
+            "solution"
+          ]
+        }
+      ],
+      "stakeholders": [
+        {
+          "id": "st1",
+          "name": "Hon. Patricia Cruz",
+          "role": "SK Chairperson",
+          "initialStatement": "We have ₱150,000 in our SK fund ready to support evening sports, arts, and vocational training programs.",
+          "followUps": [
+            {
+              "question": "Can SK organize a weekend night sports league under court lights?",
+              "answer": "Yes! We can sponsor floodlights, referees, and team jerseys to keep youth active in positive sports."
+            }
+          ]
+        }
+      ],
+      "unexpectedEvent": {
+        "title": "Unexpected Challenge: Covered Court Maintenance Closure",
+        "description": "The main barangay covered court will be closed for roof repairs for 3 weeks. How will you adapt youth programs?",
+        "options": [
+          {
+            "id": "opt1",
+            "text": "Cancel all youth activities until court reopens.",
+            "isOptimal": false,
+            "feedback": "Canceling activities leads youth back to unmonitored late-night street corners."
+          },
+          {
+            "id": "opt2",
+            "text": "Pivot to indoor e-sports, chess tournaments, and acoustic music jams at the Barangay Hall Multi-Purpose Room.",
+            "isOptimal": true,
+            "feedback": "Great adaptation! Utilizing indoor facilities keeps youth engaged without needing the covered court."
+          }
+        ]
+      },
+      "stepTips": {
+        "1": "Differentiate constructive youth activities from punitive curfew enforcement.",
+        "2": "Analyze underlying causes of youth boredom and idle evening hours.",
+        "3": "Cross-reference blotter logs with youth survey requests.",
+        "4": "Collaborate with SK leaders and community youth representatives.",
+        "5": "Design restorative justice and skill-building programs.",
+        "6": "Pivot smoothly when sports venues are undergoing repairs.",
+        "7": "Foster youth empowerment and positive community integration."
+      }
+    }
   },
   {
     "id": "mSg9windUj82l2sGCkk20",
@@ -67,6 +597,97 @@
     ],
     "status": "active",
     "createdBy": "admin-1",
-    "createdAt": "2026-07-21T07:54:44.685Z"
+    "createdAt": "2026-07-21T07:54:44.685Z",
+    "missionData": {
+      "issues": [
+        "Hesitation & Delay in Pre-Emptive Evacuation",
+        "Inaccessible Early Warning Signals for Non-Smartphone Users",
+        "Lack of Trained Community Volunteer Rescuers",
+        "Inadequate Facilities at Flood Evacuation Centers"
+      ],
+      "causes": [
+        {
+          "id": "c1",
+          "title": "Fear of Property Theft During Evacuation",
+          "description": "Heads of households stay behind to guard belongings against looters."
+        },
+        {
+          "id": "c2",
+          "title": "Sirens Not Audible in Interior Sitios",
+          "description": "Barangay megaphone warning system does not reach narrow riverbank alleys."
+        },
+        {
+          "id": "c3",
+          "title": "Lack of Color-Coded Flood Level Markers",
+          "description": "Residents cannot visually gauge when river water is reaching critical flood heights."
+        }
+      ],
+      "evidenceLibrary": [
+        {
+          "id": "ev1",
+          "title": "MDRRMO River Inundation & Flood Risk Map",
+          "type": "Map",
+          "snippet": "Riverbank Sitios 1 and 5 reach 1.5-meter flood depth within 45 minutes of heavy rain.",
+          "fullText": "Hydrological audit confirms flash floods inundate low-lying riverbank homes rapidly during Signal No. 2 storms.",
+          "defaultCredibility": 5,
+          "supports": [
+            "cause",
+            "need"
+          ]
+        },
+        {
+          "id": "ev2",
+          "title": "Evacuation Center Capacity & Needs Assessment",
+          "type": "Government Report",
+          "snippet": "Elementary school evacuation center can shelter 80 families with modular tents.",
+          "fullText": "Assessment shows evacuation center has adequate sanitation and modular privacy tents for pre-emptive evacuees.",
+          "defaultCredibility": 5,
+          "supports": [
+            "solution"
+          ]
+        }
+      ],
+      "stakeholders": [
+        {
+          "id": "st1",
+          "name": "Mr. Danilo Reyes",
+          "role": "BDRRM Officer",
+          "initialStatement": "Pre-emptive evacuation saves lives. We need color-coded sirens and trained neighborhood captains.",
+          "followUps": [
+            {
+              "question": "How can we assure residents their homes will be guarded while they are in the evacuation center?",
+              "answer": "We deploy dedicated Tanod Security Patrols and static checkpoints in evacuated Sitios."
+            }
+          ]
+        }
+      ],
+      "unexpectedEvent": {
+        "title": "Unexpected Challenge: Sudden Power Outage & Cell Network Loss",
+        "description": "A severe typhoon knocked out electricity and cellular towers across the barangay. How will you issue early warnings?",
+        "options": [
+          {
+            "id": "opt1",
+            "text": "Wait for power and mobile network signal to be restored.",
+            "isOptimal": false,
+            "feedback": "Waiting for power during a flood emergency leads to casualties."
+          },
+          {
+            "id": "opt2",
+            "text": "Deploy hand-crank sirens, color-coded flags, and house-to-house megaphone Tanod teams.",
+            "isOptimal": true,
+            "feedback": "Outstanding emergency decision! Low-tech physical warning systems save lives when power fails."
+          }
+        ]
+      },
+      "stepTips": {
+        "1": "Prioritize early warning reach and pre-emptive evacuation readiness.",
+        "2": "Examine why residents hesitate to leave homes during typhoons.",
+        "3": "Analyze flood inundation maps alongside evacuation facility audits.",
+        "4": "Consult BDRRM officers and neighborhood Sitio leaders.",
+        "5": "Formulate a multi-channel Early Warning System (sirens, megaphones, flags).",
+        "6": "Use physical low-tech warning tools when power and internet fail.",
+        "7": "Ensure elderly, children, and vulnerable families are safely evacuated first."
+      }
+    }
   }
 ]

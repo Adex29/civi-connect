@@ -115,6 +115,7 @@ async function seed() {
       description: sc.description,
       context: sc.context || null,
       constraints: sc.constraints || [],
+      mission_data: sc.missionData || null,
       status: sc.status || "active",
       created_by: sc.createdBy || null,
       created_at: sc.createdAt,

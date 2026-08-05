@@ -1,11 +1,9 @@
 import { getCurrentStudent } from "@/lib/dal";
 import { findScenarioById, getAllSubmissions } from "@/lib/db";
-import { Scenario, Submission } from "@/lib/definitions";
 import { ActivityForm } from "./activity-form";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
 
 export default async function ActivityPage({
   params,
@@ -18,7 +16,6 @@ export default async function ActivityPage({
   }
 
   const { scenarioId } = await params;
-  
   const scenario = await findScenarioById(scenarioId);
 
   if (!scenario) {
@@ -43,39 +40,18 @@ export default async function ActivityPage({
     (s) => s.scenarioId === scenarioId && (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
   );
 
-  const isCompleted = submission?.status === "completed";
-
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <Link href="/dashboard" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors animate-fade-in">
+    <div className="max-w-6xl mx-auto space-y-6">
+      <Link href="/dashboard" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Dashboard
       </Link>
 
-      <div className="animate-fade-in-up">
-        <h1 className="text-3xl font-bold tracking-tight">{scenario.title}</h1>
-        <p className="text-muted-foreground mt-2 text-lg">
-          {scenario.description}
-        </p>
-      </div>
-
-      {isCompleted ? (
-        <Card className="border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900 animate-scale-in">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3 mb-4">
-              <CheckCircle className="h-8 w-8 text-emerald-500" />
-              <h2 className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">Completed Plan</h2>
-            </div>
-            <div className="bg-card p-6 rounded-md border whitespace-pre-wrap font-medium">
-              {submission?.content}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-          <ActivityForm scenario={scenario} />
-        </div>
-      )}
+      <ActivityForm
+        scenario={scenario}
+        studentName={student.fullName}
+        existingSubmission={submission}
+      />
     </div>
   );
 }

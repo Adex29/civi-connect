@@ -214,3 +214,125 @@ export function MultiSelectCombobox({
     </Popover>
   )
 }
+
+export interface ComboboxProps {
+  options: ComboboxOption[]
+  value?: string
+  onValueChange: (value: string) => void
+  placeholder?: string
+  searchPlaceholder?: string
+  emptyText?: string
+  className?: string
+  disabled?: boolean
+}
+
+export function Combobox({
+  options,
+  value,
+  onValueChange,
+  placeholder = "Select an option...",
+  searchPlaceholder = "Search options...",
+  emptyText = "No options found.",
+  className,
+  disabled = false,
+}: ComboboxProps) {
+  const [open, setOpen] = React.useState(false)
+  const [search, setSearch] = React.useState("")
+
+  const filteredOptions = React.useMemo(() => {
+    if (!search.trim()) return options
+    const query = search.toLowerCase()
+    return options.filter(
+      (opt) =>
+        opt.label.toLowerCase().includes(query) ||
+        (opt.sublabel && opt.sublabel.toLowerCase().includes(query))
+    )
+  }, [options, search])
+
+  const selectedOption = options.find((o) => o.value === value)
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            disabled={disabled}
+            className={cn(
+              "w-full justify-between font-normal h-9 px-3 text-xs bg-background",
+              !value && "text-muted-foreground",
+              className
+            )}
+          >
+            <span className="truncate">
+              {selectedOption ? selectedOption.label : value || placeholder}
+            </span>
+            <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-50 ml-2" />
+          </Button>
+        }
+      />
+      <PopoverContent className="w-[var(--anchor-width)] min-w-[200px] p-0 shadow-lg z-50" align="start">
+        <div className="p-2 border-b flex items-center gap-2">
+          <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <Input
+            placeholder={searchPlaceholder}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-7 border-none shadow-none focus-visible:ring-0 text-xs p-0"
+          />
+          {search && (
+            <X
+              className="h-3.5 w-3.5 shrink-0 cursor-pointer text-muted-foreground hover:text-foreground"
+              onClick={() => setSearch("")}
+            />
+          )}
+        </div>
+
+        <div className="max-h-60 overflow-y-auto p-1 space-y-0.5">
+          {filteredOptions.length === 0 ? (
+            <div className="py-4 text-center text-xs text-muted-foreground">
+              {emptyText}
+            </div>
+          ) : (
+            filteredOptions.map((option) => {
+              const isSelected = option.value === value
+              return (
+                <div
+                  key={option.value}
+                  onClick={() => {
+                    if (!option.disabled) {
+                      onValueChange(option.value)
+                      setOpen(false)
+                      setSearch("")
+                    }
+                  }}
+                  className={cn(
+                    "flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs cursor-pointer transition-colors select-none",
+                    option.disabled
+                      ? "opacity-50 cursor-not-allowed"
+                      : isSelected
+                      ? "bg-accent text-accent-foreground font-semibold"
+                      : "hover:bg-accent/50"
+                  )}
+                >
+                  <div className="flex flex-col min-w-0">
+                    <span className="truncate">{option.label}</span>
+                    {option.sublabel && (
+                      <span className="text-[10px] text-muted-foreground font-normal truncate">
+                        {option.sublabel}
+                      </span>
+                    )}
+                  </div>
+                  {isSelected && <Check className="h-3.5 w-3.5 text-primary shrink-0 ml-2" />}
+                </div>
+              )
+            })
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+

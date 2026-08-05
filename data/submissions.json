@@ -33,11 +33,114 @@
     "id": "vsZCHqJ9SP8MYifzsfgXJ",
     "scenarioId": "ux2EoX1L61w4yPY9vbBwO",
     "studentId": "d5BcSvdW2ShKcjKeAda2l",
-    "status": "draft",
-    "content": "",
-    "feedback": "",
-    "score": null,
-    "submittedAt": "2026-07-21T08:57:34.565Z"
+    "status": "completed",
+    "content": "{\n  \"currentStep\": 9,\n  \"step1\": {\n    \"selectedIssue\": \"Irregular Collection in Narrow Alleys\",\n    \"justification\": \"The priority concern should be Improper Waste Disposal in Waterways. This issue directly impacts public health and safety, as clogged waterways worsen flooding and spread diseases. Addressing it first also creates visible improvements that encourage households to adopt segregation practices and strengthens enforcement efforts.\",\n    \"feedback\": \"Excellent work! Your justification demonstrates strong critical thinking and a deep understanding of community dynamics. You successfully linked the issue of improper waste disposal in waterways to urgent public health and safety concerns, such as flooding and disease. Furthermore, your point about how 'visible improvements' can motivate household cooperation and strengthen enforcement shows great insight into community psychology and civic engagement. Note: If the exercise specifically required you to address 'Irregular Collection in Narrow Alleys,' ensure you clarify why you chose to pivot to waterways, or try to connect the two issues (e.g., how irregular collection in alleys leads residents to dump waste in waterways). Otherwise, your reasoning for this priority is outstanding!\",\n    \"passed\": true\n  },\n  \"step2\": {\n    \"orderedCauseIds\": [\n      \"c1\",\n      \"c3\",\n      \"c5\",\n      \"c2\",\n      \"c4\"\n    ],\n    \"feedback\": \"Your cause ranking recognizes multiple systemic factors. Consider how these causes influence one another in the barangay.\",\n    \"passed\": true\n  },\n  \"step3\": {\n    \"evaluatedEvidences\": [\n      {\n        \"evidenceId\": \"ev2\",\n        \"userCredibility\": 4,\n        \"selectedSupports\": [\n          \"need\"\n        ],\n        \"justification\": \"fegjhst\"\n      }\n    ],\n    \"feedback\": \"Good evaluation! Combining official reports together with community experiences provides balanced evidence.\",\n    \"passed\": true\n  },\n  \"step4\": {\n    \"consultedStakeholderIds\": [\n      \"st1\",\n      \"st2\",\n      \"st3\"\n    ],\n    \"interviewNotes\": \"Aling Rosa\\nRiverside Household Resident\\nStatement:\\n\\\"The garbage truck rarely comes into our narrow alley. If we don't dump our trash by the creek, flies swarm inside our small house!\\\"\\nQ: Would your family segregate waste if the barangay provided color-coded bins or collection schedules?\\n\\\"Yes, definitely! Most of us want a clean street, but we need clear collection times so trash isn't left on the pavement all day.\\\"\\nAsk Follow-Up Question:\\nConsultation Notes & Synthesis\\nSummarize the key insights from your interviews and state how they influence your plan.\",\n    \"askedFollowUps\": {\n      \"st1\": [\n        0\n      ],\n      \"st2\": [\n        0,\n        1\n      ],\n      \"st3\": [\n        0\n      ]\n    },\n    \"feedback\": \"You interviewed key stakeholders and gathered diverse perspectives across local officials and residents.\",\n    \"passed\": true\n  },\n  \"step5\": {\n    \"plan\": {\n      \"projectTitle\": \"Community Action Plan: Barangay Solid Waste Management Crisis\",\n      \"goal\": \"rter\",\n      \"objectives\": \"ertre\",\n      \"activities\": \"erter\",\n      \"stakeholders\": \"erter\",\n      \"resources\": \"erte\",\n      \"budget\": \"erter\",\n      \"timeline\": \"erter\",\n      \"expectedOutcomes\": \"ertert\"\n    },\n    \"feedback\": \"Your intervention plan \\\"Community Action Plan: Barangay Solid Waste Management Crisis\\\" is feasible and addresses the community objective effectively!\",\n    \"passed\": true\n  },\n  \"step6\": {\n    \"selectedOptionId\": \"opt3\",\n    \"justification\": \"yes\",\n    \"feedback\": \"Your response (\\\"Request an immediate emergency loan from the provincial government.\\\") addresses the immediate challenge. Consider whether the revised strategy remains long-term sustainable.\",\n    \"passed\": true\n  },\n  \"step7\": {\n    \"impact\": {\n      \"shortTermImpact\": \"fggh\",\n      \"longTermImpact\": \"fghgf\",\n      \"possibleRisks\": \"fghgf\",\n      \"whoBenefits\": \"fghf\",\n      \"whoMightBeAffected\": \"fhfggf\"\n    },\n    \"feedback\": \"Your impact assessment thoroughly considers ethical implications and community outcomes.\",\n    \"passed\": true\n  },\n  \"scores\": {\n    \"communityInvestigation\": 100,\n    \"causeAnalysis\": 98,\n    \"evidenceEvaluation\": 88,\n    \"stakeholderAnalysis\": 100,\n    \"interventionPlanning\": 90,\n    \"adaptiveDecisionMaking\": 88,\n    \"impactAssessment\": 93,\n    \"overallScore\": 94\n  },\n  \"reflection\": {\n    \"answer\": \"Key Insight 1: Residents dump trash in waterways mainly because garbage trucks cannot access narrow alleys, leading to health risks inside homes.\\n\\nKey Insight 2: Households are willing to segregate waste if the barangay provides clear schedules and color-coded bins, ensuring trash is collected promptly.\\n\\nKey Insight 3: Community members value cleanliness but need reliable systems to avoid leaving waste exposed on the street.\\n\\nInfluence on the Plan\\nThese insights highlight that the plan must prioritize accessible collection systems (e.g., smaller vehicles for alleys, fixed schedules) and segregation support (color-coded bins). By combining infrastructure adjustments with clear communication, the barangay can reduce creek dumping, improve sanitation, and encourage residents to actively participate in waste management.\",\n    \"feedback\": \"Excellent reflection! Your analysis shows outstanding critical thinking and deep empathy for the community. I love how you looked beyond surface-level assumptions to identify the actual root cause of dumping—the physical limitation of narrow alleys—rather than simply blaming a lack of discipline. Your proposed solutions, such as deploying smaller collection vehicles and providing color-coded bins, are both highly practical and deeply responsive to the residents' willingness to cooperate. By bridging the gap between municipal infrastructure and human behavior, you have designed a realistic, dignified, and highly actionable civic plan. Keep up this fantastic, community-centered approach to public service!\"\n  }\n}",
+    "feedback": "Excellent reflection! Your analysis shows outstanding critical thinking and deep empathy for the community. I love how you looked beyond surface-level assumptions to identify the actual root cause of dumping—the physical limitation of narrow alleys—rather than simply blaming a lack of discipline. Your proposed solutions, such as deploying smaller collection vehicles and providing color-coded bins, are both highly practical and deeply responsive to the residents' willingness to cooperate. By bridging the gap between municipal infrastructure and human behavior, you have designed a realistic, dignified, and highly actionable civic plan. Keep up this fantastic, community-centered approach to public service!",
+    "score": 94,
+    "submittedAt": "2026-07-21T08:57:34.565Z",
+    "simulationState": {
+      "currentStep": 9,
+      "step1": {
+        "selectedIssue": "Irregular Collection in Narrow Alleys",
+        "justification": "The priority concern should be Improper Waste Disposal in Waterways. This issue directly impacts public health and safety, as clogged waterways worsen flooding and spread diseases. Addressing it first also creates visible improvements that encourage households to adopt segregation practices and strengthens enforcement efforts.",
+        "feedback": "Excellent work! Your justification demonstrates strong critical thinking and a deep understanding of community dynamics. You successfully linked the issue of improper waste disposal in waterways to urgent public health and safety concerns, such as flooding and disease. Furthermore, your point about how 'visible improvements' can motivate household cooperation and strengthen enforcement shows great insight into community psychology and civic engagement. Note: If the exercise specifically required you to address 'Irregular Collection in Narrow Alleys,' ensure you clarify why you chose to pivot to waterways, or try to connect the two issues (e.g., how irregular collection in alleys leads residents to dump waste in waterways). Otherwise, your reasoning for this priority is outstanding!",
+        "passed": true
+      },
+      "step2": {
+        "orderedCauseIds": [
+          "c1",
+          "c3",
+          "c5",
+          "c2",
+          "c4"
+        ],
+        "feedback": "Your cause ranking recognizes multiple systemic factors. Consider how these causes influence one another in the barangay.",
+        "passed": true
+      },
+      "step3": {
+        "evaluatedEvidences": [
+          {
+            "evidenceId": "ev2",
+            "userCredibility": 4,
+            "selectedSupports": [
+              "need"
+            ],
+            "justification": "fegjhst"
+          }
+        ],
+        "feedback": "Good evaluation! Combining official reports together with community experiences provides balanced evidence.",
+        "passed": true
+      },
+      "step4": {
+        "consultedStakeholderIds": [
+          "st1",
+          "st2",
+          "st3"
+        ],
+        "interviewNotes": "Aling Rosa\nRiverside Household Resident\nStatement:\n\"The garbage truck rarely comes into our narrow alley. If we don't dump our trash by the creek, flies swarm inside our small house!\"\nQ: Would your family segregate waste if the barangay provided color-coded bins or collection schedules?\n\"Yes, definitely! Most of us want a clean street, but we need clear collection times so trash isn't left on the pavement all day.\"\nAsk Follow-Up Question:\nConsultation Notes & Synthesis\nSummarize the key insights from your interviews and state how they influence your plan.",
+        "askedFollowUps": {
+          "st1": [
+            0
+          ],
+          "st2": [
+            0,
+            1
+          ],
+          "st3": [
+            0
+          ]
+        },
+        "feedback": "You interviewed key stakeholders and gathered diverse perspectives across local officials and residents.",
+        "passed": true
+      },
+      "step5": {
+        "plan": {
+          "projectTitle": "Community Action Plan: Barangay Solid Waste Management Crisis",
+          "goal": "rter",
+          "objectives": "ertre",
+          "activities": "erter",
+          "stakeholders": "erter",
+          "resources": "erte",
+          "budget": "erter",
+          "timeline": "erter",
+          "expectedOutcomes": "ertert"
+        },
+        "feedback": "Your intervention plan \"Community Action Plan: Barangay Solid Waste Management Crisis\" is feasible and addresses the community objective effectively!",
+        "passed": true
+      },
+      "step6": {
+        "selectedOptionId": "opt3",
+        "justification": "yes",
+        "feedback": "Your response (\"Request an immediate emergency loan from the provincial government.\") addresses the immediate challenge. Consider whether the revised strategy remains long-term sustainable.",
+        "passed": true
+      },
+      "step7": {
+        "impact": {
+          "shortTermImpact": "fggh",
+          "longTermImpact": "fghgf",
+          "possibleRisks": "fghgf",
+          "whoBenefits": "fghf",
+          "whoMightBeAffected": "fhfggf"
+        },
+        "feedback": "Your impact assessment thoroughly considers ethical implications and community outcomes.",
+        "passed": true
+      },
+      "scores": {
+        "communityInvestigation": 100,
+        "causeAnalysis": 98,
+        "evidenceEvaluation": 88,
+        "stakeholderAnalysis": 100,
+        "interventionPlanning": 90,
+        "adaptiveDecisionMaking": 88,
+        "impactAssessment": 93,
+        "overallScore": 94
+      },
+      "reflection": {
+        "answer": "Key Insight 1: Residents dump trash in waterways mainly because garbage trucks cannot access narrow alleys, leading to health risks inside homes.\n\nKey Insight 2: Households are willing to segregate waste if the barangay provides clear schedules and color-coded bins, ensuring trash is collected promptly.\n\nKey Insight 3: Community members value cleanliness but need reliable systems to avoid leaving waste exposed on the street.\n\nInfluence on the Plan\nThese insights highlight that the plan must prioritize accessible collection systems (e.g., smaller vehicles for alleys, fixed schedules) and segregation support (color-coded bins). By combining infrastructure adjustments with clear communication, the barangay can reduce creek dumping, improve sanitation, and encourage residents to actively participate in waste management.",
+        "feedback": "Excellent reflection! Your analysis shows outstanding critical thinking and deep empathy for the community. I love how you looked beyond surface-level assumptions to identify the actual root cause of dumping—the physical limitation of narrow alleys—rather than simply blaming a lack of discipline. Your proposed solutions, such as deploying smaller collection vehicles and providing color-coded bins, are both highly practical and deeply responsive to the residents' willingness to cooperate. By bridging the gap between municipal infrastructure and human behavior, you have designed a realistic, dignified, and highly actionable civic plan. Keep up this fantastic, community-centered approach to public service!"
+      }
+    },
+    "stepProgress": 8
   },
   {
     "id": "yWdYOIWCpJI0jHTEUCF58",
@@ -47,7 +150,80 @@
     "content": "",
     "feedback": "",
     "score": null,
-    "submittedAt": "2026-07-21T08:59:19.137Z"
+    "submittedAt": "2026-07-21T08:59:19.137Z",
+    "simulationState": {
+      "currentStep": 4,
+      "step1": {
+        "selectedIssue": "Low Community Participation in Search & Destroy",
+        "justification": "The priority concern should be Improper Waste Disposal in Waterways. This issue directly impacts public health and safety, as clogged waterways worsen flooding and spread diseases. Addressing it first also creates visible improvements that encourage households to adopt segregation practices and strengthens enforcement efforts.",
+        "feedback": "Your justification shows excellent critical thinking and a strong understanding of community dynamics! By prioritizing 'Improper Waste Disposal in Waterways,' you are addressing a systemic issue that contributes to multiple public health and safety concerns, including flooding and vector-borne diseases. Your argument that visible environmental improvements can boost community morale and encourage household waste segregation shows a great grasp of behavioral psychology in civic engagement. To make your proposal even stronger, be sure to explicitly connect how clearing waterways directly eliminates stagnant water breeding sites for the Dengue-carrying Aedes mosquito, thereby directly supporting the 'Search & Destroy' objective.",
+        "passed": true
+      },
+      "step2": {
+        "orderedCauseIds": [
+          "c2",
+          "c1",
+          "c3",
+          "c4"
+        ],
+        "feedback": "Your cause ranking recognizes multiple systemic factors. Consider how these causes influence one another in the barangay.",
+        "passed": true
+      },
+      "step3": {
+        "evaluatedEvidences": [
+          {
+            "evidenceId": "ev1",
+            "userCredibility": 5,
+            "selectedSupports": [],
+            "justification": "fwdfedf"
+          },
+          {
+            "evidenceId": "ev2",
+            "userCredibility": 5,
+            "selectedSupports": [
+              "solution"
+            ],
+            "justification": "i;huyu"
+          },
+          {
+            "evidenceId": "ev3",
+            "userCredibility": 4,
+            "selectedSupports": [
+              "solution"
+            ],
+            "justification": "jhgjk"
+          },
+          {
+            "evidenceId": "ev4",
+            "userCredibility": 4,
+            "selectedSupports": [
+              "cause"
+            ],
+            "justification": "khjv"
+          }
+        ],
+        "feedback": "Excellent evaluation! Inspecting all evidence sources provides a comprehensive foundation for your civic intervention plan.",
+        "passed": true
+      },
+      "step4": {
+        "consultedStakeholderIds": [
+          "st1785828020240",
+          "st1785828074951"
+        ],
+        "interviewNotes": "These insights highlight that the plan must prioritize accessible collection systems (e.g., smaller vehicles for alleys, fixed schedules) and segregation support (color-coded bins). By combining infrastructure adjustments with clear communication, the barangay can reduce creek dumping, improve sanitation, and encourage residents to actively participate in waste management.",
+        "askedFollowUps": {
+          "st1785828020240": [
+            0
+          ],
+          "st1785828074951": [
+            0
+          ]
+        },
+        "feedback": "You interviewed key stakeholders and gathered diverse perspectives across local officials and residents.",
+        "passed": true
+      }
+    },
+    "stepProgress": 4
   },
   {
     "id": "wxGNaYPbe3vUdSRB-_vCf",
@@ -57,7 +233,11 @@
     "content": "1. Multi-Signal Alerts\nSirens/Bells: Install loud sirens or use church bells to signal different flood stages (e.g., one long blast = alert, continuous blasts = immediate evacuation).\n\nColor-Coded Flags: Place flags in central areas (barangay hall, school, chapel):\n\n🟢 Green = Safe\n\n🟡 Yellow = Flood Watch\n\n🔴 Red = Evacuate Immediately\n\nMegaphones: Barangay officials and tanods patrol streets with megaphones to announce warnings.\n\n2. House-to-House Buddy System\nAssign block leaders responsible for checking households, especially elderly, PWDs, and families without communication devices.\n\nLeaders ensure everyone receives the warning and assist with evacuation.\n\n3. Community Information Boards\nPost flood levels and evacuation instructions on barangay bulletin boards and waiting sheds.\n\nUse visual charts (pictures/icons) for residents with limited literacy.\n\n4. Evacuation Encouragement\nPre-Agreement with Residents: Conduct community meetings to explain risks and agree on evacuation triggers (e.g., river water reaching a certain marker).\n\nTrust Building: Share past flood damage photos and testimonies to emphasize urgency.\n\nPositive Reinforcement: Provide small incentives (food packs, priority shelter space) for families who evacuate early.\n\n5. Integration with External Alerts\nCoordinate with PAGASA and LGU for official typhoon/flood bulletins.\n\nBarangay EWS translates these into local signals (sirens, flags, megaphones) for immediate action.",
     "feedback": "",
     "score": null,
-    "submittedAt": "2026-07-22T06:18:56.385Z"
+    "submittedAt": "2026-07-22T06:18:56.385Z",
+    "simulationState": {
+      "currentStep": 1
+    },
+    "stepProgress": 1
   },
   {
     "id": "3z1ZqmO3SiJu8CXqk0xXt",

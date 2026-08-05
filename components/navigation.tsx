@@ -37,8 +37,8 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
         {/* Desktop Brand & Nav */}
         <div className="mr-4 hidden md:flex items-center space-x-6">
           <Link href={role === "admin" ? "/admin/dashboard" : "/dashboard"} className="flex items-center space-x-2">
-            <span className="font-bold text-lg tracking-tight">
-              CiviConnect
+            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary via-primary/80 to-indigo-600 bg-clip-text text-transparent">
+              Civi-Tech
             </span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
@@ -65,7 +65,7 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
             />
             <DrawerContent side="left" className="w-72 p-0">
               <DrawerHeader className="p-4 border-b text-left">
-                <DrawerTitle className="text-xl font-bold text-primary">CiviConnect</DrawerTitle>
+                <DrawerTitle className="text-xl font-bold text-primary">Civi-Tech</DrawerTitle>
               </DrawerHeader>
 
               <div className="p-4 space-y-1">
@@ -111,7 +111,7 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
           </Drawer>
           
           <Link href={role === "admin" ? "/admin/dashboard" : "/dashboard"} className="font-bold text-base">
-            CiviConnect
+            Civi-Tech
           </Link>
         </div>
 

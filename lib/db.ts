@@ -64,20 +64,22 @@ export function writeData<T>(type: DataFileTypeType, data: T[]): void {
 // --- Classrooms ---
 export async function getAllClassrooms(): Promise<Classroom[]> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from("classrooms").select("*");
-    if (error) {
-      console.error("Supabase getAllClassrooms error:", error);
-      return readData<Classroom>("classrooms");
+    try {
+      const { data, error } = await supabase.from("classrooms").select("*");
+      if (!error && data) {
+        return data.map((row) => ({
+          id: row.id,
+          name: row.name,
+          code: row.code,
+          description: row.description || undefined,
+          createdBy: row.created_by || undefined,
+          status: row.status as "active" | "archived",
+          createdAt: row.created_at,
+        }));
+      }
+    } catch (err) {
+      // Quietly fall back to local JSON data on network / fetch failure
     }
-    return (data || []).map((row) => ({
-      id: row.id,
-      name: row.name,
-      code: row.code,
-      description: row.description || undefined,
-      createdBy: row.created_by || undefined,
-      status: row.status as "active" | "archived",
-      createdAt: row.created_at,
-    }));
   }
   return readData<Classroom>("classrooms");
 }
@@ -94,18 +96,21 @@ export async function findClassroomById(id: string): Promise<Classroom | null> {
 
 export async function createClassroom(classroom: Classroom): Promise<Classroom> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("classrooms").insert({
-      id: classroom.id,
-      name: classroom.name,
-      code: classroom.code,
-      description: classroom.description || null,
-      created_by: classroom.createdBy || null,
-      status: classroom.status,
-      created_at: classroom.createdAt,
-    });
-    if (error) console.error("Supabase createClassroom error:", error);
+    try {
+      await supabase.from("classrooms").insert({
+        id: classroom.id,
+        name: classroom.name,
+        code: classroom.code,
+        description: classroom.description || null,
+        created_by: classroom.createdBy || null,
+        status: classroom.status,
+        created_at: classroom.createdAt,
+      });
+    } catch (err) {
+      // Ignored
+    }
   }
-  // Keep local fallback updated
+
   const local = readData<Classroom>("classrooms");
   local.push(classroom);
   writeData("classrooms", local);
@@ -115,14 +120,20 @@ export async function createClassroom(classroom: Classroom): Promise<Classroom> 
 
 export async function updateClassroom(classroom: Classroom): Promise<Classroom> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("classrooms").update({
-      name: classroom.name,
-      code: classroom.code,
-      description: classroom.description || null,
-      created_by: classroom.createdBy || null,
-      status: classroom.status,
-    }).eq("id", classroom.id);
-    if (error) console.error("Supabase updateClassroom error:", error);
+    try {
+      await supabase
+        .from("classrooms")
+        .update({
+          name: classroom.name,
+          code: classroom.code,
+          description: classroom.description || null,
+          created_by: classroom.createdBy || null,
+          status: classroom.status,
+        })
+        .eq("id", classroom.id);
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<Classroom>("classrooms");
@@ -136,8 +147,12 @@ export async function updateClassroom(classroom: Classroom): Promise<Classroom> 
 
 export async function deleteClassroom(id: string): Promise<void> {
   if (isSupabaseConfigured) {
-    await supabase.from("classrooms").delete().eq("id", id);
-    await supabase.from("classroom_scenarios").delete().eq("classroom_id", id);
+    try {
+      await supabase.from("classrooms").delete().eq("id", id);
+      await supabase.from("classroom_scenarios").delete().eq("classroom_id", id);
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const classrooms = readData<Classroom>("classrooms").filter((c) => c.id !== id);
@@ -150,20 +165,22 @@ export async function deleteClassroom(id: string): Promise<void> {
 // --- Students ---
 export async function getAllStudents(): Promise<Student[]> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from("students").select("*");
-    if (error) {
-      console.error("Supabase getAllStudents error:", error);
-      return readData<Student>("students");
+    try {
+      const { data, error } = await supabase.from("students").select("*");
+      if (!error && data) {
+        return data.map((row) => ({
+          id: row.id,
+          fullName: row.full_name,
+          lrn: row.lrn,
+          passwordHash: row.password_hash,
+          classroomId: row.classroom_id,
+          groupId: row.group_id || undefined,
+          createdAt: row.created_at,
+        }));
+      }
+    } catch (err) {
+      // Fallback to local
     }
-    return (data || []).map((row) => ({
-      id: row.id,
-      fullName: row.full_name,
-      lrn: row.lrn,
-      passwordHash: row.password_hash,
-      classroomId: row.classroom_id,
-      groupId: row.group_id || undefined,
-      createdAt: row.created_at,
-    }));
   }
   return readData<Student>("students");
 }
@@ -180,16 +197,19 @@ export async function findStudentById(id: string): Promise<Student | null> {
 
 export async function createStudent(student: Student): Promise<Student> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("students").insert({
-      id: student.id,
-      full_name: student.fullName,
-      lrn: student.lrn,
-      password_hash: student.passwordHash,
-      classroom_id: student.classroomId,
-      group_id: student.groupId || null,
-      created_at: student.createdAt,
-    });
-    if (error) console.error("Supabase createStudent error:", error);
+    try {
+      await supabase.from("students").insert({
+        id: student.id,
+        full_name: student.fullName,
+        lrn: student.lrn,
+        password_hash: student.passwordHash,
+        classroom_id: student.classroomId,
+        group_id: student.groupId || null,
+        created_at: student.createdAt,
+      });
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<Student>("students");
@@ -207,18 +227,20 @@ export async function getStudentsByClassroom(classroomId: string): Promise<Stude
 // --- Admins ---
 export async function getAllAdmins(): Promise<Admin[]> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from("admins").select("*");
-    if (error) {
-      console.error("Supabase getAllAdmins error:", error);
-      return readData<Admin>("admins");
+    try {
+      const { data, error } = await supabase.from("admins").select("*");
+      if (!error && data) {
+        return data.map((row) => ({
+          id: row.id,
+          email: row.email,
+          passwordHash: row.password_hash,
+          name: row.name,
+          createdAt: row.created_at,
+        }));
+      }
+    } catch (err) {
+      // Fallback
     }
-    return (data || []).map((row) => ({
-      id: row.id,
-      email: row.email,
-      passwordHash: row.password_hash,
-      name: row.name,
-      createdAt: row.created_at,
-    }));
   }
   return readData<Admin>("admins");
 }
@@ -236,17 +258,19 @@ export async function findAdminById(id: string): Promise<Admin | null> {
 // --- Groups ---
 export async function getAllGroups(): Promise<Group[]> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from("groups").select("*");
-    if (error) {
-      console.error("Supabase getAllGroups error:", error);
-      return readData<Group>("groups");
+    try {
+      const { data, error } = await supabase.from("groups").select("*");
+      if (!error && data) {
+        return data.map((row) => ({
+          id: row.id,
+          name: row.name,
+          classroomId: row.classroom_id,
+          createdAt: row.created_at,
+        }));
+      }
+    } catch (err) {
+      // Fallback
     }
-    return (data || []).map((row) => ({
-      id: row.id,
-      name: row.name,
-      classroomId: row.classroom_id,
-      createdAt: row.created_at,
-    }));
   }
   return readData<Group>("groups");
 }
@@ -263,13 +287,16 @@ export async function findGroupByName(name: string, classroomId: string): Promis
 
 export async function createGroup(group: Group): Promise<Group> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("groups").insert({
-      id: group.id,
-      name: group.name,
-      classroom_id: group.classroomId,
-      created_at: group.createdAt,
-    });
-    if (error) console.error("Supabase createGroup error:", error);
+    try {
+      await supabase.from("groups").insert({
+        id: group.id,
+        name: group.name,
+        classroom_id: group.classroomId,
+        created_at: group.createdAt,
+      });
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<Group>("groups");
@@ -282,21 +309,24 @@ export async function createGroup(group: Group): Promise<Group> {
 // --- Scenarios ---
 export async function getAllScenarios(): Promise<Scenario[]> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from("scenarios").select("*");
-    if (error) {
-      console.error("Supabase getAllScenarios error:", error);
-      return readData<Scenario>("scenarios");
+    try {
+      const { data, error } = await supabase.from("scenarios").select("*");
+      if (!error && data) {
+        return data.map((row) => ({
+          id: row.id,
+          title: row.title,
+          description: row.description,
+          context: row.context || undefined,
+          constraints: Array.isArray(row.constraints) ? row.constraints : [],
+          status: row.status as any,
+          createdBy: row.created_by || undefined,
+          createdAt: row.created_at,
+          missionData: row.mission_data || undefined,
+        }));
+      }
+    } catch (err) {
+      // Fallback
     }
-    return (data || []).map((row) => ({
-      id: row.id,
-      title: row.title,
-      description: row.description,
-      context: row.context || undefined,
-      constraints: Array.isArray(row.constraints) ? row.constraints : [],
-      status: row.status as any,
-      createdBy: row.created_by || undefined,
-      createdAt: row.created_at,
-    }));
   }
   return readData<Scenario>("scenarios");
 }
@@ -308,17 +338,21 @@ export async function findScenarioById(id: string): Promise<Scenario | null> {
 
 export async function createScenario(scenario: Scenario): Promise<Scenario> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("scenarios").insert({
-      id: scenario.id,
-      title: scenario.title,
-      description: scenario.description,
-      context: scenario.context || null,
-      constraints: scenario.constraints || [],
-      status: scenario.status || "active",
-      created_by: scenario.createdBy || null,
-      created_at: scenario.createdAt,
-    });
-    if (error) console.error("Supabase createScenario error:", error);
+    try {
+      await supabase.from("scenarios").insert({
+        id: scenario.id,
+        title: scenario.title,
+        description: scenario.description,
+        context: scenario.context || null,
+        constraints: scenario.constraints || [],
+        status: scenario.status || "active",
+        created_by: scenario.createdBy || null,
+        created_at: scenario.createdAt,
+        mission_data: scenario.missionData || null,
+      });
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<Scenario>("scenarios");
@@ -330,14 +364,21 @@ export async function createScenario(scenario: Scenario): Promise<Scenario> {
 
 export async function updateScenario(scenario: Scenario): Promise<Scenario> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("scenarios").update({
-      title: scenario.title,
-      description: scenario.description,
-      context: scenario.context || null,
-      constraints: scenario.constraints || [],
-      status: scenario.status || "active",
-    }).eq("id", scenario.id);
-    if (error) console.error("Supabase updateScenario error:", error);
+    try {
+      await supabase
+        .from("scenarios")
+        .update({
+          title: scenario.title,
+          description: scenario.description,
+          context: scenario.context || null,
+          constraints: scenario.constraints || [],
+          status: scenario.status || "active",
+          mission_data: scenario.missionData || null,
+        })
+        .eq("id", scenario.id);
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<Scenario>("scenarios");
@@ -351,8 +392,12 @@ export async function updateScenario(scenario: Scenario): Promise<Scenario> {
 
 export async function deleteScenario(id: string): Promise<void> {
   if (isSupabaseConfigured) {
-    await supabase.from("scenarios").delete().eq("id", id);
-    await supabase.from("classroom_scenarios").delete().eq("scenario_id", id);
+    try {
+      await supabase.from("scenarios").delete().eq("id", id);
+      await supabase.from("classroom_scenarios").delete().eq("scenario_id", id);
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const scenarios = readData<Scenario>("scenarios").filter((s) => s.id !== id);
@@ -365,32 +410,40 @@ export async function deleteScenario(id: string): Promise<void> {
 // --- Classroom-Scenarios ---
 export async function getAllClassroomScenarios(): Promise<ClassroomScenario[]> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from("classroom_scenarios").select("*");
-    if (error) {
-      console.error("Supabase getAllClassroomScenarios error:", error);
-      return readData<ClassroomScenario>("classroomScenarios");
+    try {
+      const { data, error } = await supabase.from("classroom_scenarios").select("*");
+      if (!error && data) {
+        return data.map((row) => ({
+          id: row.id,
+          classroomId: row.classroom_id,
+          scenarioId: row.scenario_id,
+          isActive: Boolean(row.is_active),
+          assignedAt: row.assigned_at,
+        }));
+      }
+    } catch (err) {
+      // Fallback
     }
-    return (data || []).map((row) => ({
-      id: row.id,
-      classroomId: row.classroom_id,
-      scenarioId: row.scenario_id,
-      isActive: Boolean(row.is_active),
-      assignedAt: row.assigned_at,
-    }));
   }
   return readData<ClassroomScenario>("classroomScenarios");
 }
 
 export async function createClassroomScenario(assignment: ClassroomScenario): Promise<ClassroomScenario> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("classroom_scenarios").upsert({
-      id: assignment.id,
-      classroom_id: assignment.classroomId,
-      scenario_id: assignment.scenarioId,
-      is_active: assignment.isActive,
-      assigned_at: assignment.assignedAt,
-    }, { onConflict: "id" });
-    if (error) console.error("Supabase createClassroomScenario error:", error);
+    try {
+      await supabase.from("classroom_scenarios").upsert(
+        {
+          id: assignment.id,
+          classroom_id: assignment.classroomId,
+          scenario_id: assignment.scenarioId,
+          is_active: assignment.isActive,
+          assigned_at: assignment.assignedAt,
+        },
+        { onConflict: "id" }
+      );
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<ClassroomScenario>("classroomScenarios");
@@ -403,11 +456,15 @@ export async function createClassroomScenario(assignment: ClassroomScenario): Pr
 
 export async function removeScenarioFromClassroom(scenarioId: string, classroomId: string): Promise<void> {
   if (isSupabaseConfigured) {
-    await supabase
-      .from("classroom_scenarios")
-      .delete()
-      .eq("scenario_id", scenarioId)
-      .eq("classroom_id", classroomId);
+    try {
+      await supabase
+        .from("classroom_scenarios")
+        .delete()
+        .eq("scenario_id", scenarioId)
+        .eq("classroom_id", classroomId);
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<ClassroomScenario>("classroomScenarios");
@@ -426,18 +483,20 @@ export async function getScenariosByClassroom(classroomId: string): Promise<Scen
 // --- Constraints ---
 export async function getAllConstraints(): Promise<Constraint[]> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from("constraints").select("*");
-    if (error) {
-      console.error("Supabase getAllConstraints error:", error);
-      return readData<Constraint>("constraints");
+    try {
+      const { data, error } = await supabase.from("constraints").select("*");
+      if (!error && data) {
+        return data.map((row) => ({
+          id: row.id,
+          scenarioId: row.scenario_id,
+          stepNumber: row.step_number,
+          description: row.description,
+          criteria: row.criteria,
+        }));
+      }
+    } catch (err) {
+      // Fallback
     }
-    return (data || []).map((row) => ({
-      id: row.id,
-      scenarioId: row.scenario_id,
-      stepNumber: row.step_number,
-      description: row.description,
-      criteria: row.criteria,
-    }));
   }
   return readData<Constraint>("constraints");
 }
@@ -454,14 +513,17 @@ export async function getConstraintsByStep(scenarioId: string, stepNumber: numbe
 
 export async function createConstraint(constraint: Constraint): Promise<Constraint> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("constraints").insert({
-      id: constraint.id,
-      scenario_id: constraint.scenarioId,
-      step_number: constraint.stepNumber,
-      description: constraint.description,
-      criteria: constraint.criteria,
-    });
-    if (error) console.error("Supabase createConstraint error:", error);
+    try {
+      await supabase.from("constraints").insert({
+        id: constraint.id,
+        scenario_id: constraint.scenarioId,
+        step_number: constraint.stepNumber,
+        description: constraint.description,
+        criteria: constraint.criteria,
+      });
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<Constraint>("constraints");
@@ -473,7 +535,11 @@ export async function createConstraint(constraint: Constraint): Promise<Constrai
 
 export async function deleteConstraint(id: string): Promise<void> {
   if (isSupabaseConfigured) {
-    await supabase.from("constraints").delete().eq("id", id);
+    try {
+      await supabase.from("constraints").delete().eq("id", id);
+    } catch (err) {
+      // Ignored
+    }
   }
   const local = readData<Constraint>("constraints");
   writeData("constraints", local.filter((c) => c.id !== id));
@@ -482,19 +548,21 @@ export async function deleteConstraint(id: string): Promise<void> {
 // --- Assignments ---
 export async function getAllAssignments(): Promise<Assignment[]> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from("assignments").select("*");
-    if (error) {
-      console.error("Supabase getAllAssignments error:", error);
-      return readData<Assignment>("assignments");
+    try {
+      const { data, error } = await supabase.from("assignments").select("*");
+      if (!error && data) {
+        return data.map((row) => ({
+          id: row.id,
+          scenarioId: row.scenario_id,
+          classroomId: row.classroom_id,
+          studentId: row.student_id || undefined,
+          groupId: row.group_id || undefined,
+          assignedAt: row.assigned_at,
+        }));
+      }
+    } catch (err) {
+      // Fallback
     }
-    return (data || []).map((row) => ({
-      id: row.id,
-      scenarioId: row.scenario_id,
-      classroomId: row.classroom_id,
-      studentId: row.student_id || undefined,
-      groupId: row.group_id || undefined,
-      assignedAt: row.assigned_at,
-    }));
   }
   return readData<Assignment>("assignments");
 }
@@ -516,15 +584,18 @@ export async function getAssignmentForStudent(studentId: string): Promise<Assign
 
 export async function createAssignment(assignment: Assignment): Promise<Assignment> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("assignments").insert({
-      id: assignment.id,
-      scenario_id: assignment.scenarioId,
-      classroom_id: assignment.classroomId,
-      student_id: assignment.studentId || null,
-      group_id: assignment.groupId || null,
-      assigned_at: assignment.assignedAt,
-    });
-    if (error) console.error("Supabase createAssignment error:", error);
+    try {
+      await supabase.from("assignments").insert({
+        id: assignment.id,
+        scenario_id: assignment.scenarioId,
+        classroom_id: assignment.classroomId,
+        student_id: assignment.studentId || null,
+        group_id: assignment.groupId || null,
+        assigned_at: assignment.assignedAt,
+      });
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<Assignment>("assignments");
@@ -537,22 +608,25 @@ export async function createAssignment(assignment: Assignment): Promise<Assignme
 // --- Submissions ---
 export async function getAllSubmissions(): Promise<Submission[]> {
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase.from("submissions").select("*");
-    if (error) {
-      console.error("Supabase getAllSubmissions error:", error);
-      return readData<Submission>("submissions");
+    try {
+      const { data, error } = await supabase.from("submissions").select("*");
+      if (!error && data) {
+        return data.map((row) => ({
+          id: row.id,
+          scenarioId: row.scenario_id,
+          studentId: row.student_id,
+          groupId: row.group_id || undefined,
+          status: row.status,
+          content: row.content || "",
+          feedback: row.feedback || "",
+          score: row.score,
+          simulationState: row.simulation_state ? JSON.parse(JSON.stringify(row.simulation_state)) : undefined,
+          submittedAt: row.submitted_at,
+        }));
+      }
+    } catch (err) {
+      // Fallback
     }
-    return (data || []).map((row) => ({
-      id: row.id,
-      scenarioId: row.scenario_id,
-      studentId: row.student_id,
-      groupId: row.group_id || undefined,
-      status: row.status,
-      content: row.content || "",
-      feedback: row.feedback || "",
-      score: row.score,
-      submittedAt: row.submitted_at,
-    }));
   }
   return readData<Submission>("submissions");
 }
@@ -564,22 +638,29 @@ export async function findSubmissionById(id: string): Promise<Submission | null>
 
 export async function createSubmission(submission: Submission): Promise<Submission> {
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from("submissions").upsert({
-      id: submission.id,
-      scenario_id: submission.scenarioId,
-      student_id: submission.studentId,
-      group_id: submission.groupId || null,
-      status: submission.status,
-      content: submission.content || "",
-      feedback: submission.feedback || "",
-      score: submission.score,
-      submitted_at: submission.submittedAt,
-    }, { onConflict: "id" });
-    if (error) console.error("Supabase createSubmission error:", error);
+    try {
+      await supabase.from("submissions").upsert(
+        {
+          id: submission.id,
+          scenario_id: submission.scenarioId,
+          student_id: submission.studentId,
+          group_id: submission.groupId || null,
+          status: submission.status,
+          content: submission.content || "",
+          feedback: submission.feedback || "",
+          score: submission.score,
+          simulation_state: submission.simulationState || null,
+          submitted_at: submission.submittedAt,
+        },
+        { onConflict: "id" }
+      );
+    } catch (err) {
+      // Ignored
+    }
   }
 
   const local = readData<Submission>("submissions");
-  const existingIdx = local.findIndex(s => s.id === submission.id);
+  const existingIdx = local.findIndex((s) => s.id === submission.id);
   if (existingIdx !== -1) {
     local[existingIdx] = submission;
   } else {

@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS scenarios (
   description TEXT NOT NULL,
   context TEXT,
   constraints JSONB DEFAULT '[]'::jsonb,
+  mission_data JSONB DEFAULT '{}'::jsonb,
   status TEXT DEFAULT 'active',
   created_by TEXT REFERENCES admins(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()

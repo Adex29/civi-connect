@@ -42,7 +42,14 @@ export default async function ScenariosPage() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                   <div>
-                    <CardTitle className="text-xl">{scenario.title}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-xl">{scenario.title}</CardTitle>
+                      {scenario.missionData && (
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+                          Custom 7-Step Mission
+                        </span>
+                      )}
+                    </div>
                     <CardDescription className="mt-2 text-base">
                       {scenario.description}
                     </CardDescription>

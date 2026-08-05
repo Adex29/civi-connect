@@ -21,8 +21,8 @@ const fontMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CiviConnect | Civic Action Planner",
-  description: "A web-based system for students to solve community issues.",
+  title: "Civi-Tech | Civic Engagement Simulation Platform",
+  description: "A Web-Based Civic Engagement Simulation Platform for Community Problem-Solving in Senior High School Citizenship and Civic Engagement.",
 };
 
 export default function RootLayout({

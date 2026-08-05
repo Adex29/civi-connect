@@ -10,11 +10,16 @@ import {
   getAllClassroomScenarios,
   createClassroomScenario,
 } from "@/lib/db";
-import { Scenario, ScenarioId, ClassroomScenarioId, ClassroomId } from "@/lib/definitions";
+import { Scenario, ScenarioId, ClassroomScenarioId, ClassroomId, MissionDataConfig } from "@/lib/definitions";
 import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
 
-export async function createScenarioAction(title: string, description: string, constraintsText: string) {
+export async function createScenarioAction(
+  title: string,
+  description: string,
+  constraintsText: string,
+  missionData?: MissionDataConfig
+) {
   await requireRole("admin");
 
   if (!title.trim() || !description.trim() || !constraintsText.trim()) {
@@ -31,6 +36,7 @@ export async function createScenarioAction(title: string, description: string, c
     title,
     description,
     constraints,
+    missionData,
     createdAt: new Date().toISOString(),
   });
 
@@ -43,7 +49,8 @@ export async function updateScenarioAction(
   scenarioId: string,
   title: string,
   description: string,
-  constraintsText: string
+  constraintsText: string,
+  missionData?: MissionDataConfig
 ) {
   await requireRole("admin");
 
@@ -70,6 +77,7 @@ export async function updateScenarioAction(
     title,
     description,
     constraints,
+    missionData: missionData ?? existing.missionData,
   };
 
   await updateScenario(updatedScenario);

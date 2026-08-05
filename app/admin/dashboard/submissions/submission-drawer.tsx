@@ -13,8 +13,19 @@ import {
   DrawerFooter,
   DrawerClose,
 } from "@/components/ui/drawer";
-import { CheckCircle, Clock, Eye, FileText, User, GraduationCap, Award } from "lucide-react";
+import { CheckCircle, Clock, Eye, FileText, User, GraduationCap, Award, Sparkles } from "lucide-react";
 import { Classroom, Scenario, Student, Submission } from "@/lib/definitions";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import {
+  Timeline,
+  TimelineItem,
+  TimelineDot,
+  TimelineConnector,
+  TimelineHeader,
+  TimelineTitle,
+  TimelineDescription,
+  TimelineContent,
+} from "@/components/ui/timeline";
 
 export function SubmissionDrawer({
   submission,
@@ -105,30 +116,70 @@ export function SubmissionDrawer({
             </p>
           </div>
 
-          {/* Constraints */}
+          {/* Submission Workflow Timeline Audit */}
           <div>
-            <h4 className="text-sm font-semibold mb-1.5">Required Constraints</h4>
-            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1 bg-muted/30 p-2.5 rounded-md border">
-              {scenario.constraints.map((c, i) => (
-                <li key={i}>{c}</li>
-              ))}
-            </ul>
-          </div>
+            <h4 className="text-sm font-semibold mb-3">Simulation Execution Audit Timeline</h4>
+            <Timeline>
+              <TimelineItem>
+                <TimelineDot status="completed">
+                  <CheckCircle className="h-3.5 w-3.5" />
+                </TimelineDot>
+                <TimelineConnector />
+                <TimelineContent>
+                  <TimelineHeader>
+                    <TimelineTitle>7-Step Simulation Start</TimelineTitle>
+                    <span className="text-[10px] text-muted-foreground">
+                      {new Date(submission.submittedAt).toLocaleDateString()}
+                    </span>
+                  </TimelineHeader>
+                  <TimelineDescription>Initiated civic engagement simulation scenario</TimelineDescription>
+                </TimelineContent>
+              </TimelineItem>
 
-          {/* Submitted Plan */}
-          <div>
-            <h4 className="text-sm font-semibold mb-2">Student Action Plan</h4>
-            <div className="p-4 rounded-md border bg-card text-foreground whitespace-pre-wrap font-mono text-xs leading-relaxed max-h-60 overflow-y-auto">
-              {submission.content || "No content submitted."}
-            </div>
+              <TimelineItem>
+                <TimelineDot status="completed">
+                  <CheckCircle className="h-3.5 w-3.5" />
+                </TimelineDot>
+                <TimelineConnector />
+                <TimelineContent>
+                  <TimelineHeader>
+                    <TimelineTitle>Intervention Plan Submitted</TimelineTitle>
+                  </TimelineHeader>
+                  <p className="text-xs leading-relaxed text-foreground whitespace-pre-wrap mt-1 p-3 bg-muted/20 border rounded-md">
+                    {submission.content || "Plan details submitted by student"}
+                  </p>
+                </TimelineContent>
+              </TimelineItem>
+
+              <TimelineItem>
+                <TimelineDot status={submission.feedback ? "completed" : "current"}>
+                  <CheckCircle className="h-3.5 w-3.5" />
+                </TimelineDot>
+                <TimelineConnector />
+                <TimelineContent>
+                  <TimelineHeader>
+                    <TimelineTitle>AI Automated Feedback & Scoring</TimelineTitle>
+                  </TimelineHeader>
+                  <Alert className="bg-primary/5 border-primary/30 text-foreground mt-2">
+                    <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                    <AlertTitle className="text-primary font-bold text-xs">
+                      AI Insights & Evaluation Score
+                    </AlertTitle>
+                    <AlertDescription className="text-xs italic leading-relaxed mt-1">
+                      "{submission.feedback || "Evaluation in progress..."}"
+                    </AlertDescription>
+                  </Alert>
+                </TimelineContent>
+              </TimelineItem>
+            </Timeline>
           </div>
         </div>
 
-        <DrawerFooter className="border-t pt-4">
+        <DrawerFooter className="border-t">
           <DrawerClose
             render={
               <Button variant="outline" className="w-full">
-                Close
+                Close Inspector
               </Button>
             }
           />
