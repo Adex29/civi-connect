@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,7 +15,15 @@ import { Trash2, Loader2 } from "lucide-react";
 import { deleteScenarioAction } from "./actions";
 import { toast } from "sonner";
 
-export function DeleteScenarioDialog({ scenarioId, scenarioTitle }: { scenarioId: string; scenarioTitle: string }) {
+export function DeleteScenarioDialog({
+  scenarioId,
+  scenarioTitle,
+  trigger,
+}: {
+  scenarioId: string;
+  scenarioTitle: string;
+  trigger?: React.ReactNode;
+}) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -34,12 +42,19 @@ export function DeleteScenarioDialog({ scenarioId, scenarioTitle }: { scenarioId
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={
-        <Button variant="destructive" size="sm">
-          <Trash2 className="mr-1 h-3.5 w-3.5" />
-          Delete
-        </Button>
-      } />
+      <DialogTrigger
+        nativeButton={!trigger}
+        render={
+          trigger ? (
+            (trigger as any)
+          ) : (
+            <Button variant="destructive" size="sm" className="gap-1 text-xs">
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Delete</span>
+            </Button>
+          )
+        }
+      />
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Delete Scenario</DialogTitle>

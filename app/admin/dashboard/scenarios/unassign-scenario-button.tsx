@@ -49,7 +49,7 @@ export function UnassignScenarioButton({
           <button
             type="button"
             disabled={loading}
-            className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+            className="ml-1 inline-flex items-center justify-center rounded-full p-0.5 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
             title={`Unassign from ${classroomName}`}
           >
             {loading ? (

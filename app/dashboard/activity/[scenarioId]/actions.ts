@@ -1,7 +1,7 @@
 "use server";
 
 import { getCurrentStudent } from "@/lib/dal";
-import { findScenarioById, getAllSubmissions, createSubmission, updateSubmission } from "@/lib/db";
+import { findScenarioById, getAllSubmissions, createSubmission, updateSubmission, getAllClassrooms, getAllClassroomScenarios } from "@/lib/db";
 import { Submission, SubmissionId, SimulationStateData } from "@/lib/definitions";
 import {
   evaluateStep1,
@@ -27,6 +27,20 @@ export async function processSimulationStepAction(
 
   const scenario = await findScenarioById(scenarioId);
   if (!scenario) return { error: "Scenario not found" };
+
+  // Validate classroom status and classroom-scenario mapping
+  const classrooms = await getAllClassrooms();
+  const classroom = classrooms.find((c) => c.id === student.classroomId);
+  if (!classroom) return { error: "Classroom not found" };
+  if (classroom.status === "archived") return { error: "This classroom is archived. Submissions are disabled." };
+
+  const classroomScenarios = await getAllClassroomScenarios();
+  const assignment = classroomScenarios.find(
+    (cs) => cs.classroomId === student.classroomId && cs.scenarioId === scenarioId
+  );
+  if (!assignment || !assignment.isActive) {
+    return { error: "This scenario is not active in your classroom." };
+  }
 
   const allSubmissions = await getAllSubmissions();
   let submission = allSubmissions.find(
@@ -156,6 +170,20 @@ export async function submitReflectionAction(scenarioId: string, answer: string)
 
   const scenario = await findScenarioById(scenarioId);
   if (!scenario) return { error: "Scenario not found" };
+
+  // Validate classroom status and classroom-scenario mapping
+  const classrooms = await getAllClassrooms();
+  const classroom = classrooms.find((c) => c.id === student.classroomId);
+  if (!classroom) return { error: "Classroom not found" };
+  if (classroom.status === "archived") return { error: "This classroom is archived. Submissions are disabled." };
+
+  const classroomScenarios = await getAllClassroomScenarios();
+  const assignment = classroomScenarios.find(
+    (cs) => cs.classroomId === student.classroomId && cs.scenarioId === scenarioId
+  );
+  if (!assignment || !assignment.isActive) {
+    return { error: "This scenario is not active in your classroom." };
+  }
 
   const allSubmissions = await getAllSubmissions();
   let submission = allSubmissions.find(

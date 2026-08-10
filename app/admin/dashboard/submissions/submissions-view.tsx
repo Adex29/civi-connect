@@ -139,9 +139,9 @@ export function SubmissionsView({
             <div className="min-w-0 flex-1 space-y-1.5">
               <CardTitle className="text-lg sm:text-xl flex items-start gap-2 leading-snug break-words">
                 {sub.status === 'completed' ? (
-                  <CheckCircle className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+                  <CheckCircle className="h-5 w-5 text-foreground shrink-0 mt-0.5" />
                 ) : (
-                  <Clock className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                  <Clock className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                 )}
                 <span className="font-semibold text-foreground">{scenario.title}</span>
               </CardTitle>
@@ -196,19 +196,6 @@ export function SubmissionsView({
           <p className="text-muted-foreground mt-1">
             Review student civic action plans and inspect detailed AI evaluation results.
           </p>
-        </div>
-
-        {/* Minimal inline stats */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium shrink-0">
-          <span className="bg-muted px-3 py-1.5 rounded-full">
-            Total: <strong className="text-foreground">{stats.total}</strong>
-          </span>
-          <span className="bg-accent text-accent-foreground px-3 py-1.5 rounded-full">
-            Completed: <strong>{stats.completed}</strong>
-          </span>
-          <span className="bg-muted px-3 py-1.5 rounded-full">
-            Drafts: <strong>{stats.inProgress}</strong>
-          </span>
         </div>
       </div>
 

@@ -90,3 +90,80 @@ export async function archiveClassroomAction(classroomId: string) {
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+export async function toggleClassroomStatusAction(classroomId: string, newStatus: "active" | "archived") {
+  await requireRole("admin");
+
+  const existing = await findClassroomById(classroomId);
+  if (!existing) {
+    return { error: "Classroom not found" };
+  }
+
+  await updateClassroom({
+    ...existing,
+    status: newStatus,
+  });
+
+  revalidatePath("/admin/dashboard/classrooms");
+  revalidatePath("/dashboard");
+  return { success: true, status: newStatus };
+}
+
+export async function regenerateClassroomCodeAction(classroomId: string) {
+  await requireRole("admin");
+
+  const existing = await findClassroomById(classroomId);
+  if (!existing) {
+    return { error: "Classroom not found" };
+  }
+
+  const newCode = nanoid(6).toUpperCase();
+
+  await updateClassroom({
+    ...existing,
+    code: newCode,
+  });
+
+  revalidatePath("/admin/dashboard/classrooms");
+  revalidatePath("/dashboard");
+  return { success: true, code: newCode };
+}
+
+export async function assignScenarioToClassroomAction(
+  scenarioId: string,
+  classroomId: string
+): Promise<{ success: boolean; error?: string }> {
+  await requireRole("admin");
+
+  const { createClassroomScenario } = await import("@/lib/db");
+  const { nanoid } = await import("nanoid");
+
+  await createClassroomScenario({
+    id: nanoid() as any,
+    classroomId: classroomId as any,
+    scenarioId: scenarioId as any,
+    isActive: true,
+    assignedAt: new Date().toISOString(),
+  });
+
+  revalidatePath("/admin/dashboard/classrooms");
+  revalidatePath("/admin/dashboard/scenarios");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function unassignScenarioFromClassroomAction(
+  scenarioId: string,
+  classroomId: string
+): Promise<{ success: boolean; error?: string }> {
+  await requireRole("admin");
+
+  const { removeScenarioFromClassroom } = await import("@/lib/db");
+
+  await removeScenarioFromClassroom(scenarioId, classroomId);
+
+  revalidatePath("/admin/dashboard/classrooms");
+  revalidatePath("/admin/dashboard/scenarios");
+  revalidatePath("/dashboard");
+  return { success: true };
+}

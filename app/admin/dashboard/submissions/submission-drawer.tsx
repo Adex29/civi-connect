@@ -55,7 +55,7 @@ export function SubmissionDrawer({
         <DrawerHeader className="border-b pb-4">
           <div className="flex items-center gap-2 flex-wrap">
             {submission.status === "completed" ? (
-              <Badge className="bg-emerald-600 gap-1">
+              <Badge variant="default" className="gap-1">
                 <CheckCircle className="h-3.5 w-3.5" /> Completed
               </Badge>
             ) : (
@@ -65,7 +65,7 @@ export function SubmissionDrawer({
             )}
             {submission.score && (
               <Badge variant="outline" className="gap-1 font-bold">
-                <Award className="h-3.5 w-3.5 text-amber-500" /> Score: {submission.score}
+                <Award className="h-3.5 w-3.5" /> Score: {submission.score}
               </Badge>
             )}
           </div>
@@ -127,7 +127,7 @@ export function SubmissionDrawer({
                 <TimelineConnector />
                 <TimelineContent>
                   <TimelineHeader>
-                    <TimelineTitle>7-Step Simulation Start</TimelineTitle>
+                    <TimelineTitle>Simulation Start</TimelineTitle>
                     <span className="text-[10px] text-muted-foreground">
                       {new Date(submission.submittedAt).toLocaleDateString()}
                     </span>

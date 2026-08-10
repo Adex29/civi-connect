@@ -77,7 +77,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
           <p className="text-sm text-muted-foreground">
             {isEditing
               ? "Update scenario parameters, constraints, and dynamic simulation content."
-              : "Define general scenario details and configure the dynamic 7-step mission engine."}
+              : "Define general scenario details and configure the simulation engine."}
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -104,7 +104,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
         <CardContent className="grid gap-5">
           <div className="grid gap-2">
             <Label htmlFor="title" className="text-xs font-semibold">
-              Scenario Title <span className="text-rose-500">*</span>
+              Scenario Title <span className="text-destructive">*</span>
             </Label>
             <Input
               id="title"
@@ -118,7 +118,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
           <div className="grid md:grid-cols-2 gap-5">
             <div className="grid gap-2">
               <Label htmlFor="description" className="text-xs font-semibold">
-                Detailed Description <span className="text-rose-500">*</span>
+                Detailed Description <span className="text-destructive">*</span>
               </Label>
               <Textarea
                 id="description"
@@ -132,7 +132,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
             <div className="grid gap-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="constraints" className="text-xs font-semibold">
-                  Constraints & Criteria <span className="text-rose-500">*</span>
+                  Constraints & Criteria <span className="text-destructive">*</span>
                 </Label>
                 <span className="text-[10px] text-muted-foreground">One requirement per line</span>
               </div>

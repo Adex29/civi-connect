@@ -26,7 +26,7 @@ export default async function StudentsPage() {
 
           return (
             <Card key={classroom.id}>
-              <CardHeader className="bg-slate-50 dark:bg-slate-900/50 pb-4">
+              <CardHeader className="bg-muted/40 pb-4">
                 <CardTitle className="text-xl flex items-center justify-between">
                   <span>{classroom.name} ({classroom.code})</span>
                   <Badge variant="secondary">{classStudents.length} Students</Badge>
@@ -35,7 +35,7 @@ export default async function StudentsPage() {
               <CardContent className="pt-6">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="text-xs uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                    <thead className="text-xs uppercase bg-muted text-muted-foreground">
                       <tr>
                         <th className="px-4 py-3 rounded-tl-md">LRN</th>
                         <th className="px-4 py-3">Full Name</th>
@@ -47,7 +47,7 @@ export default async function StudentsPage() {
                       {classStudents.map((student: Student) => {
                         const group = groups.find((g: Group) => g.id === student.groupId);
                         return (
-                          <tr key={student.id} className="border-b last:border-0 dark:border-slate-800">
+                          <tr key={student.id} className="border-b last:border-0">
                             <td className="px-4 py-3 font-mono">{student.lrn}</td>
                             <td className="px-4 py-3 font-medium">{student.fullName}</td>
                             <td className="px-4 py-3">

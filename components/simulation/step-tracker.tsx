@@ -32,11 +32,11 @@ export const STEPS_CONFIG = [
   { step: 7, name: "Impact Assessment", desc: "Evaluate sustainability & ethics" },
 ];
 
-export function StepTracker({ currentStep, scenario, completedSteps = [] }: StepTrackerProps) {
+export function StepTracker({ currentStep, scenario, completedSteps = [], onSelectStep }: StepTrackerProps) {
   return (
     <div className="space-y-4 lg:space-y-6">
       {/* Mobile-Only Horizontal Scrollable Progress Bar */}
-      <div className="block lg:hidden bg-card border rounded-xl p-3 shadow-xs">
+      <div className="block lg:hidden bg-card border border-border rounded-xl p-3 shadow-xs">
         <div className="flex items-center justify-between text-xs font-bold mb-2">
           <span className="text-primary uppercase tracking-wider">Mission Progress</span>
           <span className="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
@@ -47,15 +47,19 @@ export function StepTracker({ currentStep, scenario, completedSteps = [] }: Step
           {STEPS_CONFIG.map((s) => {
             const isCurrent = currentStep === s.step;
             const isDone = completedSteps.includes(s.step) || currentStep > s.step;
+            const isClickable = onSelectStep !== undefined && (isDone || isCurrent);
 
             return (
               <div
                 key={s.step}
+                onClick={() => isClickable && onSelectStep!(s.step)}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 transition-colors ${
+                  isClickable ? "cursor-pointer hover:opacity-90" : ""
+                } ${
                   isCurrent
                     ? "bg-primary text-primary-foreground"
                     : isDone
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    ? "bg-primary/15 text-primary"
                     : "bg-muted text-muted-foreground opacity-60"
                 }`}
               >
@@ -70,7 +74,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [] }: Step
 
       {/* Desktop Vertical Progress Timeline */}
       <Card className="hidden lg:block border-primary/20 bg-card shadow-sm">
-        <CardHeader className="pb-3 border-b bg-muted/30">
+        <CardHeader className="pb-3 border-b border-border bg-muted/30">
           <CardTitle className="text-base font-semibold flex items-center justify-between">
             <span>Mission Timeline</span>
             <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
@@ -83,10 +87,17 @@ export function StepTracker({ currentStep, scenario, completedSteps = [] }: Step
             {STEPS_CONFIG.map((s) => {
               const isCurrent = currentStep === s.step;
               const isDone = completedSteps.includes(s.step) || currentStep > s.step;
+              const isClickable = onSelectStep !== undefined && (isDone || isCurrent);
               const status = isDone ? "completed" : isCurrent ? "current" : "upcoming";
 
               return (
-                <TimelineItem key={s.step}>
+                <TimelineItem
+                  key={s.step}
+                  onClick={() => isClickable && onSelectStep!(s.step)}
+                  className={`transition-all duration-200 ${
+                    isClickable ? "cursor-pointer hover:bg-muted/40 rounded-lg p-1.5 -mx-1.5" : ""
+                  }`}
+                >
                   <TimelineDot status={status}>
                     {isDone ? (
                       <CheckCircle2 className="h-3.5 w-3.5" />
@@ -114,7 +125,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [] }: Step
 
       {/* Scenario Guidance Box */}
       <Card className="border-border bg-card shadow-sm">
-        <CardHeader className="pb-2 border-b bg-muted/20">
+        <CardHeader className="pb-2 border-b border-border bg-muted/20">
           <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Scenario Context & Legal Guidance
           </CardTitle>
@@ -123,7 +134,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [] }: Step
           <h4 className="font-bold text-sm text-foreground">{scenario.title}</h4>
           <p className="text-muted-foreground">{scenario.description}</p>
           {scenario.context && (
-            <div className="pt-2 border-t text-muted-foreground italic">
+            <div className="pt-2 border-t border-border text-muted-foreground italic">
               <span className="font-semibold not-italic block mb-1 text-foreground">Legal & Statutory Framework:</span>
               {scenario.context}
             </div>

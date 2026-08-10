@@ -188,15 +188,19 @@ export default async function StudentDashboard() {
                     </div>
                   </CardContent>
 
-                  <CardFooter className="pt-3 border-t">
+                   <CardFooter className="pt-3 border-t">
                     <Link
                       href={`/dashboard/activity/${scenario.id}`}
                       className={buttonVariants({
-                        variant: isCompleted ? "outline" : "default",
+                        variant: (isCompleted || isArchived) ? "outline" : "default",
                         className: "w-full gap-2 font-bold",
                       })}
                     >
-                      {isCompleted
+                      {isArchived
+                        ? isCompleted
+                          ? "View Performance (Read-Only)"
+                          : "View Progress (Read-Only)"
+                        : isCompleted
                         ? "View Performance"
                         : submission
                         ? "Continue Mission"

@@ -1,5 +1,5 @@
 import { getCurrentStudent } from "@/lib/dal";
-import { findScenarioById, getAllSubmissions } from "@/lib/db";
+import { findScenarioById, getAllSubmissions, getAllClassrooms, getAllClassroomScenarios } from "@/lib/db";
 import { ActivityForm } from "./activity-form";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -35,6 +35,22 @@ export default async function ActivityPage({
     );
   }
 
+  // Load classroom and classroom-scenario mapping
+  const classrooms = await getAllClassrooms();
+  const classroom = classrooms.find((c) => c.id === student.classroomId);
+
+  const classroomScenarios = await getAllClassroomScenarios();
+  const assignment = classroomScenarios.find(
+    (cs) => cs.classroomId === student.classroomId && cs.scenarioId === scenarioId
+  );
+
+  // If no classroom, or scenario is not assigned/inactive, block page access
+  if (!classroom || !assignment || !assignment.isActive) {
+    redirect("/dashboard");
+  }
+
+  const isArchived = classroom.status === "archived";
+
   const submissions = await getAllSubmissions();
   const submission = submissions.find(
     (s) => s.scenarioId === scenarioId && (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
@@ -51,6 +67,7 @@ export default async function ActivityPage({
         scenario={scenario}
         studentName={student.fullName}
         existingSubmission={submission}
+        isArchived={isArchived}
       />
     </div>
   );

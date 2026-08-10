@@ -20,9 +20,10 @@ export interface PerformanceReportProps {
   scores: StepScoreBreakdown;
   studentName: string;
   onContinueToReflection: () => void;
+  onBack?: () => void;
 }
 
-export function PerformanceReport({ scores, studentName, onContinueToReflection }: PerformanceReportProps) {
+export function PerformanceReport({ scores, studentName, onContinueToReflection, onBack }: PerformanceReportProps) {
   const categories = [
     { step: 1, label: "Community Investigation", score: scores.communityInvestigation, desc: "Issue identification & statutory alignment" },
     { step: 2, label: "Cause Analysis", score: scores.causeAnalysis, desc: "Root cause ordering & factor prioritization" },
@@ -90,7 +91,14 @@ export function PerformanceReport({ scores, studentName, onContinueToReflection 
         </div>
       </CardContent>
 
-      <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
+      <CardFooter className="bg-muted/30 border-t p-4 flex justify-between gap-4">
+        {onBack ? (
+          <Button variant="outline" onClick={onBack}>
+            Back to Step 7
+          </Button>
+        ) : (
+          <div />
+        )}
         <Button onClick={onContinueToReflection} className="gap-2 font-bold px-6">
           Proceed to Final Reflection <ArrowRight className="h-4 w-4" />
         </Button>

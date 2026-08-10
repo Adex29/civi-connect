@@ -25,6 +25,7 @@ import {
   Sparkles,
   Trophy,
   Award,
+  Archive,
 } from "lucide-react";
 import { Scenario, Submission, SimulationStateData, EvidenceItem } from "@/lib/definitions";
 import { getMissionDataForScenario } from "@/lib/mission-data";
@@ -39,20 +40,27 @@ export function ActivityForm({
   scenario,
   studentName = "Student",
   existingSubmission,
+  isArchived = false,
 }: {
   scenario: Scenario;
   studentName?: string;
   existingSubmission?: Submission | null;
+  isArchived?: boolean;
 }) {
   const router = useRouter();
   const missionData = getMissionDataForScenario(scenario);
+
+  const isReadOnly = isArchived || existingSubmission?.status === "completed";
 
   // Initialize state from existing submission or start at step 1
   const initialState: SimulationStateData = existingSubmission?.simulationState || {
     currentStep: 1,
   };
 
-  const [step, setStep] = useState<number>(initialState.currentStep || 1);
+  const [step, setStep] = useState<number>(() => {
+    if (existingSubmission?.status === "completed") return 9;
+    return initialState.currentStep || 1;
+  });
   const [simState, setSimState] = useState<SimulationStateData>(initialState);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
@@ -139,6 +147,13 @@ export function ActivityForm({
 
   // Generic Step Handler
   const handleNextStep = async () => {
+    if (isReadOnly) {
+      if (step < 8) {
+        setStep(step + 1);
+      }
+      return;
+    }
+
     setLoading(true);
     setFeedback(null);
 
@@ -194,6 +209,11 @@ export function ActivityForm({
   };
 
   const handleFinalReflectionSubmit = async () => {
+    if (isReadOnly) {
+      setStep(9);
+      return;
+    }
+
     setLoading(true);
     setFeedback(null);
 
@@ -207,7 +227,8 @@ export function ActivityForm({
     }
   };
 
-  const completedSteps = Array.from({ length: Math.min(step - 1, 7) }, (_, i) => i + 1);
+  const maxStepReached = Math.max(step, simState.currentStep || 1);
+  const completedSteps = Array.from({ length: Math.min(maxStepReached - 1, 7) }, (_, i) => i + 1);
 
   // --- Step 8: Performance Report View ---
   if (step === 8 && simState.scores) {
@@ -219,6 +240,7 @@ export function ActivityForm({
           onContinueToReflection={() => {
             setStep(8.5); // 8.5 = Final Reflection Form
           }}
+          onBack={() => setStep(7)}
         />
       </div>
     );
@@ -247,6 +269,7 @@ export function ActivityForm({
                 onChange={(e) => setReflectionAnswer(e.target.value)}
                 placeholder="Write your final reflection here (explain your ethical reasoning and community insights)..."
                 className="min-h-[140px]"
+                disabled={isReadOnly}
               />
             </div>
 
@@ -272,10 +295,13 @@ export function ActivityForm({
               </Alert>
             )}
           </CardContent>
-          <CardFooter className="bg-muted/20 border-t p-4 flex justify-end">
-            <Button onClick={handleFinalReflectionSubmit} disabled={loading || !reflectionAnswer.trim()}>
+          <CardFooter className="bg-muted/20 border-t p-4 flex justify-between gap-4">
+            <Button variant="outline" onClick={() => setStep(8)} disabled={loading}>
+              Back to Scorecard
+            </Button>
+            <Button onClick={handleFinalReflectionSubmit} disabled={loading || (!isReadOnly && !reflectionAnswer.trim())}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Submit Reflection & Complete Mission
+              {isReadOnly ? "View Certificate" : "Submit Reflection & Complete Mission"}
             </Button>
           </CardFooter>
         </Card>
@@ -283,7 +309,7 @@ export function ActivityForm({
     );
   }
 
-  if (step === 9 || existingSubmission?.status === "completed") {
+  if (step === 9) {
     return (
       <div className="max-w-3xl mx-auto space-y-8 text-center animate-fade-in-up">
         <Card className="border-2 border-primary/20 shadow-xl bg-card p-8 space-y-6">
@@ -330,11 +356,26 @@ export function ActivityForm({
           currentStep={step}
           scenario={scenario}
           completedSteps={completedSteps}
+          onSelectStep={(s) => setStep(s)}
         />
       </div>
 
       {/* Main Panel & Right Panel Container */}
       <div className="lg:col-span-9 space-y-6">
+        {isReadOnly && (
+          <Alert className="bg-slate-500/10 border-slate-500/20 animate-fade-in-up">
+            <Archive className="h-4 w-4 text-slate-600 dark:text-slate-400 shrink-0" />
+            <AlertTitle className="font-bold text-xs text-slate-900 dark:text-slate-200">
+              Read-Only Mode
+            </AlertTitle>
+            <AlertDescription className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+              {isArchived
+                ? "This classroom is archived. You are viewing this mission in read-only mode and cannot submit or modify answers."
+                : "You have completed this mission. You can browse your submitted answers and AI feedback in read-only mode."}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Step Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-primary/5 p-3 sm:p-4 rounded-xl border border-primary/20">
           <div>
@@ -382,11 +423,13 @@ export function ActivityForm({
                         {missionData.issues.map((issue, idx) => (
                           <div
                             key={idx}
-                            onClick={() => setSelectedIssue(issue)}
-                            className={`p-3 rounded-lg border cursor-pointer text-sm font-medium transition-all ${
+                            onClick={() => !isReadOnly && setSelectedIssue(issue)}
+                            className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                              isReadOnly ? "cursor-default opacity-85" : "cursor-pointer hover:bg-muted/50"
+                            } ${
                               selectedIssue === issue
                                 ? "bg-primary/10 border-primary text-primary font-semibold"
-                                : "hover:bg-muted/50"
+                                : ""
                             }`}
                           >
                             <div className="flex items-center gap-2">
@@ -413,6 +456,7 @@ export function ActivityForm({
                         onChange={(e) => setStep1Justification(e.target.value)}
                         placeholder="Explain why this issue is the most urgent concern for the barangay..."
                         className="min-h-[100px]"
+                        disabled={isReadOnly || loading}
                       />
                     </div>
 
@@ -455,6 +499,7 @@ export function ActivityForm({
                     <CauseRanker
                       initialCauses={missionData.causes}
                       onOrderChange={(ids) => setOrderedCauseIds(ids)}
+                      disabled={isReadOnly}
                     />
                   </div>
                 )}
@@ -465,6 +510,7 @@ export function ActivityForm({
                     items={missionData.evidenceLibrary}
                     evaluated={evaluatedEvidences}
                     onUpdateEvaluated={(evs) => setEvaluatedEvidences(evs)}
+                    disabled={isReadOnly}
                   />
                 )}
 
@@ -476,6 +522,7 @@ export function ActivityForm({
                     onNotesChange={(n) => setInterviewNotes(n)}
                     askedFollowUps={askedFollowUps}
                     onAskFollowUp={handleAskFollowUp}
+                    disabled={isReadOnly}
                   />
                 )}
 
@@ -488,6 +535,7 @@ export function ActivityForm({
                         <Input
                           value={planData.projectTitle}
                           onChange={(e) => setPlanData({ ...planData, projectTitle: e.target.value })}
+                          disabled={isReadOnly || loading}
                         />
                       </div>
                       <div className="space-y-1">
@@ -496,6 +544,7 @@ export function ActivityForm({
                           value={planData.goal}
                           onChange={(e) => setPlanData({ ...planData, goal: e.target.value })}
                           placeholder="e.g. Reduce estero dumping by 80%"
+                          disabled={isReadOnly || loading}
                         />
                       </div>
                     </div>
@@ -507,6 +556,7 @@ export function ActivityForm({
                         onChange={(e) => setPlanData({ ...planData, objectives: e.target.value })}
                         className="min-h-[60px]"
                         placeholder="Specific, measurable goals..."
+                        disabled={isReadOnly || loading}
                       />
                     </div>
 
@@ -517,6 +567,7 @@ export function ActivityForm({
                         onChange={(e) => setPlanData({ ...planData, activities: e.target.value })}
                         className="min-h-[60px]"
                         placeholder="Key actions and events..."
+                        disabled={isReadOnly || loading}
                       />
                     </div>
 
@@ -527,6 +578,7 @@ export function ActivityForm({
                           value={planData.stakeholders}
                           onChange={(e) => setPlanData({ ...planData, stakeholders: e.target.value })}
                           placeholder="SK, Barangay Tanods, Residents"
+                          disabled={isReadOnly || loading}
                         />
                       </div>
                       <div className="space-y-1">
@@ -535,6 +587,7 @@ export function ActivityForm({
                           value={planData.resources}
                           onChange={(e) => setPlanData({ ...planData, resources: e.target.value })}
                           placeholder="Color-coded bins, pedicabs, flyers"
+                          disabled={isReadOnly || loading}
                         />
                       </div>
                     </div>
@@ -546,6 +599,7 @@ export function ActivityForm({
                           value={planData.budget}
                           onChange={(e) => setPlanData({ ...planData, budget: e.target.value })}
                           placeholder="₱15,000 SK / Eco-brick revenue"
+                          disabled={isReadOnly || loading}
                         />
                       </div>
                       <div className="space-y-1">
@@ -554,6 +608,7 @@ export function ActivityForm({
                           value={planData.timeline}
                           onChange={(e) => setPlanData({ ...planData, timeline: e.target.value })}
                           placeholder="3-month rollout"
+                          disabled={isReadOnly || loading}
                         />
                       </div>
                     </div>
@@ -565,6 +620,7 @@ export function ActivityForm({
                         onChange={(e) => setPlanData({ ...planData, expectedOutcomes: e.target.value })}
                         className="min-h-[60px]"
                         placeholder="Cleaner waterways, reduced flood risks..."
+                        disabled={isReadOnly || loading}
                       />
                     </div>
                   </div>
@@ -588,11 +644,13 @@ export function ActivityForm({
                         {missionData.unexpectedEvent.options.map((opt) => (
                           <div
                             key={opt.id}
-                            onClick={() => setSelectedChallengeOptId(opt.id)}
-                            className={`p-3 rounded-lg border cursor-pointer text-sm font-medium transition-all ${
+                            onClick={() => !isReadOnly && setSelectedChallengeOptId(opt.id)}
+                            className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                              isReadOnly ? "cursor-default opacity-85" : "cursor-pointer hover:bg-muted/50"
+                            } ${
                               selectedChallengeOptId === opt.id
                                 ? "bg-primary/10 border-primary text-primary font-semibold"
-                                : "hover:bg-muted/50"
+                                : ""
                             }`}
                           >
                             <div className="flex items-center gap-2">
@@ -617,6 +675,7 @@ export function ActivityForm({
                         onChange={(e) => setStep6Justification(e.target.value)}
                         placeholder="Explain how this decision balances immediate limitations with long-term goals..."
                         className="min-h-[90px]"
+                        disabled={isReadOnly || loading}
                       />
                     </div>
                   </div>
@@ -632,6 +691,7 @@ export function ActivityForm({
                         onChange={(e) => setImpactData({ ...impactData, shortTermImpact: e.target.value })}
                         placeholder="Immediate positive outcomes within 1-4 weeks..."
                         className="min-h-[65px]"
+                        disabled={isReadOnly || loading}
                       />
                     </div>
                     <div className="space-y-1">
@@ -641,6 +701,7 @@ export function ActivityForm({
                         onChange={(e) => setImpactData({ ...impactData, longTermImpact: e.target.value })}
                         placeholder="Sustainable environmental and civic behavior shifts over months/years..."
                         className="min-h-[65px]"
+                        disabled={isReadOnly || loading}
                       />
                     </div>
                     <div className="space-y-1">
@@ -650,6 +711,7 @@ export function ActivityForm({
                         onChange={(e) => setImpactData({ ...impactData, possibleRisks: e.target.value })}
                         placeholder="Potential obstacles and preventative steps..."
                         className="min-h-[65px]"
+                        disabled={isReadOnly || loading}
                       />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -659,6 +721,7 @@ export function ActivityForm({
                           value={impactData.whoBenefits}
                           onChange={(e) => setImpactData({ ...impactData, whoBenefits: e.target.value })}
                           placeholder="Riverside residents, youth, Tanods"
+                          disabled={isReadOnly || loading}
                         />
                       </div>
                       <div className="space-y-1">
@@ -667,6 +730,7 @@ export function ActivityForm({
                           value={impactData.whoMightBeAffected}
                           onChange={(e) => setImpactData({ ...impactData, whoMightBeAffected: e.target.value })}
                           placeholder="Illegal dumpers, vendor schedules"
+                          disabled={isReadOnly || loading}
                         />
                       </div>
                     </div>
