@@ -155,7 +155,7 @@
       "currentStep": 5,
       "step1": {
         "selectedIssue": "Low Community Participation in Search & Destroy",
-        "justification": "The priority concern should be Improper Waste Disposal in Waterways. This issue directly impacts public health and safety, as clogged waterways worsen flooding and spread diseases. Addressing it first also creates visible improvements that encourage households to adopt segregation practices and strengthens enforcement efforts.",
+        "justification": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
         "feedback": "You identified \"Low Community Participation in Search & Destroy\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom.",
         "passed": true,
         "evaluation": {
@@ -172,6 +172,8 @@
           },
           "overall_civic_score": 88,
           "flags": [],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
           "evaluation_summary": "Prioritized \"Low Community Participation in Search & Destroy\" with coherent community justification.",
           "strengths": [
             "Clear civic priority identification",
@@ -186,12 +188,38 @@
       "step2": {
         "orderedCauseIds": [
           "c2",
-          "c1",
           "c3",
+          "c1",
           "c4"
         ],
         "feedback": "Your cause ranking recognizes multiple systemic factors. Consider how these causes influence one another in the barangay.",
-        "passed": true
+        "passed": true,
+        "evaluation": {
+          "step_number": 2,
+          "passed": true,
+          "step_score": 88,
+          "competency_scores": {
+            "community_investigation": 82,
+            "evidence_evaluation": 80,
+            "stakeholder_analysis": 85,
+            "intervention_planning": 80,
+            "adaptive_decision_making": 84,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 88,
+          "flags": [],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
+          "evaluation_summary": "Successfully analyzed and ranked contributing causes.",
+          "strengths": [
+            "Structured causal hierarchy",
+            "Prioritized root systemic factors over superficial symptoms."
+          ],
+          "areas_for_improvement": [
+            "Review interaction between policy enforcement and public awareness."
+          ],
+          "actionable_feedback": "Your cause ranking recognizes multiple systemic factors. Consider how these causes influence one another in the barangay."
+        }
       },
       "step3": {
         "evaluatedEvidences": [
@@ -284,6 +312,8 @@
           },
           "overall_civic_score": 92,
           "flags": [],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
           "evaluation_summary": "Balanced consultation capturing diverse community perspectives.",
           "strengths": [
             "Diverse multi-stakeholder perspective gathering",
@@ -298,16 +328,16 @@
       "step5": {
         "plan": {
           "projectTitle": "Community Action Plan: Dengue Outbreak Prevention",
-          "goal": "",
-          "objectives": "",
-          "activities": "",
+          "goal": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
+          "objectives": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
+          "activities": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
           "stakeholders": "",
           "resources": "",
           "budget": "",
           "timeline": "",
-          "expectedOutcomes": ""
+          "expectedOutcomes": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable."
         },
-        "feedback": "Please complete all 9 fields of your intervention plan (missing: Goal, Objectives, Activities...).",
+        "feedback": "Please complete all 9 fields of your intervention plan (missing: Stakeholders & Roles, Resources Needed, Budget Allocation...).",
         "passed": false,
         "evaluation": {
           "step_number": 5,
@@ -325,14 +355,16 @@
           "flags": [
             "INCOMPLETE_SCHEMA"
           ],
-          "evaluation_summary": "Incomplete action plan. Missing required fields: Goal, Objectives, Activities, Stakeholders & Roles, Resources Needed, Budget Allocation, Timeline, Expected Outcomes.",
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
+          "evaluation_summary": "Incomplete action plan. Missing required fields: Stakeholders & Roles, Resources Needed, Budget Allocation, Timeline.",
           "strengths": [
             "Drafted initial plan components."
           ],
           "areas_for_improvement": [
-            "Fill in all 9 fields: Goal, Objectives, Activities, Stakeholders & Roles, Resources Needed, Budget Allocation, Timeline, Expected Outcomes"
+            "Fill in all 9 fields: Stakeholders & Roles, Resources Needed, Budget Allocation, Timeline"
           ],
-          "actionable_feedback": "Please complete all 9 fields of your intervention plan (missing: Goal, Objectives, Activities...)."
+          "actionable_feedback": "Please complete all 9 fields of your intervention plan (missing: Stakeholders & Roles, Resources Needed, Budget Allocation...)."
         }
       }
     },

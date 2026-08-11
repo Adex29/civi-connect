@@ -42,6 +42,19 @@ export function SubmissionDrawer({
   const simState = submission.simulationState;
   const scores = simState?.scores;
 
+  const hasAiFlag = Boolean(
+    simState?.step1?.evaluation?.is_ai_generated ||
+    simState?.step1?.evaluation?.flags?.includes("AI_GENERATED_CONTENT") ||
+    simState?.step2?.evaluation?.is_ai_generated ||
+    simState?.step3?.evaluation?.is_ai_generated ||
+    simState?.step4?.evaluation?.is_ai_generated ||
+    simState?.step5?.evaluation?.is_ai_generated ||
+    simState?.step6?.evaluation?.is_ai_generated ||
+    simState?.step7?.evaluation?.is_ai_generated ||
+    simState?.reflection?.evaluation?.is_ai_generated ||
+    simState?.reflection?.evaluation?.flags?.includes("AI_GENERATED_CONTENT")
+  );
+
   const competencyDimensions = [
     { label: "Community Investigation", score: scores?.communityInvestigation ?? 85, desc: "Issue identification & local context accuracy" },
     { label: "Evidence Evaluation", score: scores?.evidenceEvaluation ?? 88, desc: "Source credibility & evidentiary linkage" },
@@ -77,6 +90,15 @@ export function SubmissionDrawer({
             {submission.score && (
               <Badge variant="outline" className="gap-1 font-bold">
                 <Award className="h-3.5 w-3.5 text-primary" /> Overall Civic Score: {submission.score}%
+              </Badge>
+            )}
+            {hasAiFlag ? (
+              <Badge variant="destructive" className="gap-1 font-bold">
+                <ShieldAlert className="h-3.5 w-3.5" /> AI Content Flagged
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="gap-1 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                <CheckCircle2 className="h-3.5 w-3.5" /> Human Authored
               </Badge>
             )}
           </div>
@@ -173,7 +195,11 @@ export function SubmissionDrawer({
                     {simState.step1.evaluation?.flags && simState.step1.evaluation.flags.length > 0 && (
                       <div className="flex gap-1 flex-wrap mt-1">
                         {simState.step1.evaluation.flags.map((f) => (
-                          <Badge key={f} variant="outline" className="text-[9px] text-rose-600 border-rose-500/30">
+                          <Badge
+                            key={f}
+                            variant={f === "AI_GENERATED_CONTENT" ? "destructive" : "outline"}
+                            className={`text-[9px] ${f !== "AI_GENERATED_CONTENT" ? "text-rose-600 border-rose-500/30" : ""}`}
+                          >
                             {f}
                           </Badge>
                         ))}
@@ -207,6 +233,19 @@ export function SubmissionDrawer({
                       <p><strong className="text-foreground">Activities:</strong> {simState.step5.plan.activities}</p>
                       <p><strong className="text-foreground">Budget:</strong> {simState.step5.plan.budget} | <strong className="text-foreground">Timeline:</strong> {simState.step5.plan.timeline}</p>
                     </div>
+                    {simState.step5.evaluation?.flags && simState.step5.evaluation.flags.length > 0 && (
+                      <div className="flex gap-1 flex-wrap mt-1">
+                        {simState.step5.evaluation.flags.map((f) => (
+                          <Badge
+                            key={f}
+                            variant={f === "AI_GENERATED_CONTENT" ? "destructive" : "outline"}
+                            className={`text-[9px] ${f !== "AI_GENERATED_CONTENT" ? "text-rose-600 border-rose-500/30" : ""}`}
+                          >
+                            {f}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </TimelineContent>
                 </TimelineItem>
               )}
@@ -225,6 +264,19 @@ export function SubmissionDrawer({
                     <p className="text-xs text-foreground p-2.5 bg-muted/20 border rounded-md mt-1">
                       "{simState.reflection.answer}"
                     </p>
+                    {simState.reflection.evaluation?.flags && simState.reflection.evaluation.flags.length > 0 && (
+                      <div className="flex gap-1 flex-wrap mt-1">
+                        {simState.reflection.evaluation.flags.map((f) => (
+                          <Badge
+                            key={f}
+                            variant={f === "AI_GENERATED_CONTENT" ? "destructive" : "outline"}
+                            className={`text-[9px] ${f !== "AI_GENERATED_CONTENT" ? "text-rose-600 border-rose-500/30" : ""}`}
+                          >
+                            {f}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                     {simState.reflection.feedback && (
                       <p className="text-[11px] text-muted-foreground italic mt-1">
                         AI: {simState.reflection.feedback}

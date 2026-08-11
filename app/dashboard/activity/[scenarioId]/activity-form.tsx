@@ -325,6 +325,13 @@ export function ActivityForm({
                       "{feedback.message}"
                     </AlertDescription>
 
+                    {feedback.evaluation?.is_ai_generated && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-900 dark:text-rose-200 text-xs font-semibold">
+                        <ShieldAlert className="h-4 w-4 text-rose-600 shrink-0" />
+                        <span>AI-Generated Content Flagged: Please rewrite using your own authentic student voice.</span>
+                      </div>
+                    )}
+
                     {feedback.evaluation?.strengths && feedback.evaluation.strengths.length > 0 && (
                       <div className="pt-1.5 border-t border-border/40 text-[11px] space-y-1">
                         <span className="font-bold text-emerald-700 dark:text-emerald-400 block">Strengths:</span>
@@ -830,6 +837,13 @@ export function ActivityForm({
                         <AlertDescription className="text-xs leading-relaxed">
                           "{feedback.message}"
                         </AlertDescription>
+
+                        {feedback.evaluation?.is_ai_generated && (
+                          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-900 dark:text-rose-200 text-xs font-semibold">
+                            <ShieldAlert className="h-4 w-4 text-rose-600 shrink-0" />
+                            <span>AI-Generated Content Flagged: Please rewrite using your own authentic student voice.</span>
+                          </div>
+                        )}
 
                         {feedback.evaluation?.strengths && feedback.evaluation.strengths.length > 0 && (
                           <div className="pt-1.5 border-t border-border/40 text-[11px] space-y-1">

@@ -278,6 +278,8 @@ export interface AIEvaluationResult {
   competency_scores: CompetencyScores;
   overall_civic_score: number;
   flags: string[];
+  is_ai_generated: boolean;
+  ai_confidence_score?: number; // 0-100
   evaluation_summary: string;
   strengths: string[];
   areas_for_improvement: string[];

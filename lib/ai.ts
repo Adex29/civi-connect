@@ -13,7 +13,7 @@ import { getMissionDataForScenario } from "./mission-data";
 
 /**
  * MASTER SYSTEM PROMPT FOR CIVI-TECH AI EVALUATION ENGINE
- * Follows Triton-Style 4-Pillar Verification Architecture.
+ * Follows Triton-Style 4-Pillar Verification Architecture with AI Content & Copy-Paste Detection.
  */
 export const MASTER_SYSTEM_PROMPT = `
 You are the Civi-Tech Automated Evaluation Engine, a strict, objective civic engagement assessor for Grade 12 Senior High School students. Your job is to evaluate student submissions in a 7-step civic problem-solving simulation.
@@ -26,6 +26,11 @@ You must grade with high rigor. Reject generic fluff, vague generalities, unreal
 2. CAUSAL LOGIC RULE: Solutions must directly address the identified root causes. If a root cause is "clogged drainage" but the intervention is "holding a poster contest," flag a \`MISALIGNED_INTERVENTION\`.
 3. FEASIBILITY RULE: Budgets, timelines, and resources in Step 5 must be realistic for a barangay/community level.
 4. EVIDENCE CORROBORATION RULE: Arguments in Steps 1, 5, 6, and 7 must explicitly cite the evidence cards or stakeholder insights gathered in Steps 3 and 4.
+5. AI CONTENT / COPY-PASTE DETECTION RULE: Strictly check if the student's submission displays typical hallmarks of copy-pasted LLM or unedited chatbot text (e.g. robotic preambles like "As an AI...", formulaic transitional phrases like "In conclusion, it is important to remember", overused buzzwords like "delve into", "fostering a culture of", "testament to", "crucial aspect", or absence of personal/localized student voice). If detected:
+   - Set \`is_ai_generated: true\`
+   - Add \`AI_GENERATED_CONTENT\` to \`flags\`
+   - Fail the step (\`passed: false\`)
+   - Instruct the student to rewrite in their own authentic student voice with personal local community observations.
 
 ---
 
@@ -102,6 +107,8 @@ You MUST return a single valid JSON object. Do NOT wrap in markdown code blocks 
   },
   "overall_civic_score": 88,
   "flags": [],
+  "is_ai_generated": false,
+  "ai_confidence_score": 0,
   "evaluation_summary": "Brief 2-sentence summary of performance.",
   "strengths": ["Specific strength point 1", "Specific strength point 2"],
   "areas_for_improvement": ["Specific missing element 1"],
@@ -116,11 +123,10 @@ function clampScore(val: number): number {
 }
 
 // Pillar 2: Heuristic Anti-Fluff Gate Detector
-function detectGenericFluff(text: string): { isFluff: boolean; reason?: string } {
+export function detectGenericFluff(text: string): { isFluff: boolean; reason?: string } {
   if (!text) return { isFluff: false };
   const trimmed = text.trim().toLowerCase();
   
-  // Generic fluff patterns that lack local specificity
   const genericPatterns = [
     /^(this|the) problem is (very )?(bad|important|urgent)\.?$/i,
     /we (must|should|need to) raise awareness/i,
@@ -143,6 +149,44 @@ function detectGenericFluff(text: string): { isFluff: boolean; reason?: string }
   return { isFluff: false };
 }
 
+// AI-Generated Content / Copy-Paste Heuristic Detector
+export function detectAIGeneratedText(text: string): { isAi: boolean; confidence: number; reason?: string } {
+  if (!text) return { isAi: false, confidence: 0 };
+  const trimmed = text.trim();
+  const lower = trimmed.toLowerCase();
+
+  const aiChatbotSignatures = [
+    /as an ai( language model)?/i,
+    /i cannot fulfill this request/i,
+    /certainly!? here (is|are)/i,
+    /here is a comprehensive (plan|intervention|strategy)/i,
+    /in conclusion, it is (crucial|imperative|essential|vital) to/i,
+    /to foster a culture of/i,
+    /stands as a testament to/i,
+    /delve(s|d)? into the intricacies/i,
+    /plays? a pivotal role in/i,
+    /by leveraging the power of/i,
+    /it is important to remember that/i,
+  ];
+
+  let matches = 0;
+  for (const pattern of aiChatbotSignatures) {
+    if (pattern.test(lower)) {
+      matches++;
+    }
+  }
+
+  if (matches > 0) {
+    return {
+      isAi: true,
+      confidence: Math.min(98, 70 + matches * 15),
+      reason: "Detected formulaic phrases typical of unedited AI chatbot output. Please write in your own authentic student voice.",
+    };
+  }
+
+  return { isAi: false, confidence: 0 };
+}
+
 // Default fallback evaluation builder
 function buildDeterministicEvaluation(
   stepNumber: number,
@@ -152,7 +196,9 @@ function buildDeterministicEvaluation(
   feedback: string,
   strengths: string[] = [],
   improvements: string[] = [],
-  flags: string[] = []
+  flags: string[] = [],
+  isAiGenerated: boolean = false,
+  aiConfidenceScore: number = 0
 ): AIEvaluationResult {
   const normScore = clampScore(score);
   return {
@@ -169,6 +215,8 @@ function buildDeterministicEvaluation(
     },
     overall_civic_score: normScore,
     flags,
+    is_ai_generated: isAiGenerated,
+    ai_confidence_score: aiConfidenceScore,
     evaluation_summary: summary,
     strengths: strengths.length > 0 ? strengths : [passed ? "Demonstrates relevant civic reasoning." : "Attempted initial response."],
     areas_for_improvement: improvements.length > 0 ? improvements : (passed ? [] : ["Provide more concrete evidence and details."]),
@@ -202,10 +250,16 @@ async function callGeminiVerification(prompt: string, fallback: AIEvaluationResu
 
     const parsed = JSON.parse(match[0]);
 
+    const isAi = Boolean(parsed.is_ai_generated) || fallback.is_ai_generated;
+    const flags: string[] = Array.isArray(parsed.flags) ? parsed.flags : fallback.flags;
+    if (isAi && !flags.includes("AI_GENERATED_CONTENT")) {
+      flags.push("AI_GENERATED_CONTENT");
+    }
+
     return {
       step_number: Number(parsed.step_number) || fallback.step_number,
-      passed: typeof parsed.passed === "boolean" ? parsed.passed : fallback.passed,
-      step_score: clampScore(Number(parsed.step_score) || fallback.step_score),
+      passed: isAi ? false : (typeof parsed.passed === "boolean" ? parsed.passed : fallback.passed),
+      step_score: isAi ? 35 : clampScore(Number(parsed.step_score) || fallback.step_score),
       competency_scores: {
         community_investigation: clampScore(Number(parsed.competency_scores?.community_investigation) || fallback.competency_scores.community_investigation),
         evidence_evaluation: clampScore(Number(parsed.competency_scores?.evidence_evaluation) || fallback.competency_scores.evidence_evaluation),
@@ -214,12 +268,16 @@ async function callGeminiVerification(prompt: string, fallback: AIEvaluationResu
         adaptive_decision_making: clampScore(Number(parsed.competency_scores?.adaptive_decision_making) || fallback.competency_scores.adaptive_decision_making),
         impact_assessment: clampScore(Number(parsed.competency_scores?.impact_assessment) || fallback.competency_scores.impact_assessment),
       },
-      overall_civic_score: clampScore(Number(parsed.overall_civic_score) || fallback.overall_civic_score),
-      flags: Array.isArray(parsed.flags) ? parsed.flags : fallback.flags,
+      overall_civic_score: isAi ? 35 : clampScore(Number(parsed.overall_civic_score) || fallback.overall_civic_score),
+      flags,
+      is_ai_generated: isAi,
+      ai_confidence_score: Number(parsed.ai_confidence_score) || (isAi ? 85 : 0),
       evaluation_summary: parsed.evaluation_summary || fallback.evaluation_summary,
       strengths: Array.isArray(parsed.strengths) ? parsed.strengths : fallback.strengths,
       areas_for_improvement: Array.isArray(parsed.areas_for_improvement) ? parsed.areas_for_improvement : fallback.areas_for_improvement,
-      actionable_feedback: parsed.actionable_feedback || fallback.actionable_feedback,
+      actionable_feedback: isAi
+        ? "⚠️ Potential AI-generated content detected. Please rewrite your submission in your own authentic student voice with local community observations."
+        : (parsed.actionable_feedback || fallback.actionable_feedback),
     };
   } catch (err) {
     console.error("[Civi-Tech AI Evaluator] Error:", err);
@@ -266,6 +324,24 @@ export async function evaluateStep1(
     return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
   }
 
+  // AI Content Detection Gate
+  const aiCheck = detectAIGeneratedText(justification);
+  if (aiCheck.isAi) {
+    const evalRes = buildDeterministicEvaluation(
+      1,
+      false,
+      35,
+      "Potential AI-generated content detected.",
+      "Your response appears to be generated by an AI chatbot. Please rewrite your justification in your own authentic student voice with specific local observations.",
+      ["Selected a priority issue."],
+      ["Write in your own personal voice instead of copied AI text."],
+      ["AI_GENERATED_CONTENT"],
+      true,
+      aiCheck.confidence
+    );
+    return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
+  }
+
   // Pillar 2: Anti-Fluff Gate
   const fluffCheck = detectGenericFluff(justification);
   if (fluffCheck.isFluff) {
@@ -299,7 +375,7 @@ Scenario: "${scenario.title}" - ${scenario.description}
 Selected Priority Issue: "${selectedIssue}"
 Student Justification: "${justification}"
 
-Evaluate whether the justification cites concrete community impact or scenario data. Reject generic fluff.
+Evaluate whether the justification cites concrete community impact or scenario data. Reject generic fluff and check if content appears AI-generated.
 `;
 
   const evaluation = await callGeminiVerification(prompt, fallback);
@@ -432,6 +508,24 @@ export async function evaluateStep4(
     return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
   }
 
+  // AI Content Detection Gate
+  const aiCheck = detectAIGeneratedText(notes);
+  if (aiCheck.isAi) {
+    const evalRes = buildDeterministicEvaluation(
+      4,
+      false,
+      35,
+      "Potential AI-generated content detected in interview notes.",
+      "Your consultation notes look AI-generated. Please write down authentic observations and specific insights shared by the stakeholders.",
+      ["Interviewed stakeholders."],
+      ["Summarize notes using your own words."],
+      ["AI_GENERATED_CONTENT"],
+      true,
+      aiCheck.confidence
+    );
+    return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
+  }
+
   // Pillar 2: Anti-Fluff Gate
   const fluffCheck = detectGenericFluff(notes);
   if (fluffCheck.isFluff) {
@@ -464,7 +558,7 @@ Scenario: "${scenario.title}"
 Consulted Stakeholder Count: ${consultedIds.length}
 Student Interview Notes: "${notes}"
 
-Evaluate whether the student captured diverse community perspectives. Reject generic summaries that do not reference stakeholder insights.
+Evaluate whether the student captured diverse community perspectives. Reject generic summaries and check for AI-generated text.
 `;
 
   const evaluation = await callGeminiVerification(prompt, fallback);
@@ -517,6 +611,25 @@ export async function evaluateStep5(
     return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
   }
 
+  // AI Content Detection Gate on Activities/Objectives
+  const combinedText = `${plan.goal} ${plan.objectives} ${plan.activities}`;
+  const aiCheck = detectAIGeneratedText(combinedText);
+  if (aiCheck.isAi) {
+    const evalRes = buildDeterministicEvaluation(
+      5,
+      false,
+      35,
+      "Potential AI-generated text detected in intervention plan.",
+      "Your action plan contains patterns typical of unedited AI text. Please write practical, localized steps suitable for a barangay in your own words.",
+      ["Completed all plan fields."],
+      ["Use student voice and local community details."],
+      ["AI_GENERATED_CONTENT"],
+      true,
+      aiCheck.confidence
+    );
+    return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
+  }
+
   const fallback = buildDeterministicEvaluation(
     5,
     true,
@@ -540,7 +653,7 @@ Budget: "${plan.budget}"
 Timeline: "${plan.timeline}"
 Expected Outcomes: "${plan.expectedOutcomes}"
 
-Evaluate for feasibility at the barangay/community level, budget realism, and direct alignment with the community issue.
+Evaluate for feasibility at the barangay/community level, budget realism, and direct alignment with the community issue. Check if the text is AI-generated.
 `;
 
   const evaluation = await callGeminiVerification(prompt, fallback);
@@ -564,6 +677,24 @@ export async function evaluateStep6(
       ["Selected an adaptive course of action."],
       ["Explain how the decision maintains core goals under reduced resources."],
       ["INSUFFICIENT_JUSTIFICATION"]
+    );
+    return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
+  }
+
+  // AI Content Detection Gate
+  const aiCheck = detectAIGeneratedText(justification);
+  if (aiCheck.isAi) {
+    const evalRes = buildDeterministicEvaluation(
+      6,
+      false,
+      35,
+      "Potential AI-generated content detected in adaptive response.",
+      "Your justification appears to be AI-generated. Please state how you personally would adapt this project under real resource limitations.",
+      ["Selected an adaptive action."],
+      ["Provide authentic problem-solving rationale."],
+      ["AI_GENERATED_CONTENT"],
+      true,
+      aiCheck.confidence
     );
     return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
   }
@@ -600,7 +731,7 @@ Scenario: "${scenario.title}"
 Selected Action: "${selectedOptionText}"
 Student Justification: "${justification}"
 
-Evaluate whether the adaptive decision is feasible and maintains core intervention objectives without abandoning the project.
+Evaluate whether the adaptive decision is feasible and maintains core intervention objectives without abandoning the project. Check if text is AI-generated.
 `;
 
   const evaluation = await callGeminiVerification(prompt, fallback);
@@ -649,6 +780,25 @@ export async function evaluateStep7(
     return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
   }
 
+  // AI Content Detection Gate
+  const combinedImpact = `${impact.shortTermImpact} ${impact.longTermImpact} ${impact.possibleRisks}`;
+  const aiCheck = detectAIGeneratedText(combinedImpact);
+  if (aiCheck.isAi) {
+    const evalRes = buildDeterministicEvaluation(
+      7,
+      false,
+      35,
+      "Potential AI-generated text detected in impact assessment.",
+      "Your impact assessment uses robotic or template text. Please detail authentic short- and long-term impacts for residents in your own words.",
+      ["Addressed all impact categories."],
+      ["Write authentic community outcomes."],
+      ["AI_GENERATED_CONTENT"],
+      true,
+      aiCheck.confidence
+    );
+    return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
+  }
+
   const fallback = buildDeterministicEvaluation(
     7,
     true,
@@ -668,7 +818,7 @@ Possible Risks & Mitigations: "${impact.possibleRisks}"
 Who Benefits: "${impact.whoBenefits}"
 Who Might Be Affected: "${impact.whoMightBeAffected}"
 
-Evaluate whether the student establishes lasting sustainability, identifies affected groups, and proposes ethical risk mitigations.
+Evaluate whether the student establishes lasting sustainability, identifies affected groups, and proposes ethical risk mitigations. Check if text is AI-generated.
 `;
 
   const evaluation = await callGeminiVerification(prompt, fallback);
@@ -691,6 +841,24 @@ export async function evaluateReflection(
       ["Initiated reflection."],
       ["Write a thoughtful 2-3 sentence reflection."],
       ["INSUFFICIENT_REFLECTION_LENGTH"]
+    );
+    return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
+  }
+
+  // AI Content Detection Gate
+  const aiCheck = detectAIGeneratedText(reflectionText);
+  if (aiCheck.isAi) {
+    const evalRes = buildDeterministicEvaluation(
+      8,
+      false,
+      35,
+      "Potential AI-generated content detected in final reflection.",
+      "Your reflection appears to be AI-generated. Please reflect personally on what you would do if this problem occurred in your own neighborhood.",
+      ["Addressed the prompt."],
+      ["Provide authentic personal reflection rather than AI-generated text."],
+      ["AI_GENERATED_CONTENT"],
+      true,
+      aiCheck.confidence
     );
     return { passed: false, feedback: evalRes.actionable_feedback, evaluation: evalRes };
   }
@@ -727,7 +895,7 @@ Scenario: "${scenario.title}"
 Question: If this issue occurred in your own community, would you implement the same solution? Why or why not?
 Student Reflection: "${reflectionText}"
 
-Evaluate for ethical depth, personal civic duty, and awareness of real-world community trade-offs.
+Evaluate for ethical depth, personal civic duty, and awareness of real-world community trade-offs. Check for AI-generated text.
 `;
 
   const evaluation = await callGeminiVerification(prompt, fallback);
@@ -776,10 +944,11 @@ export async function evaluateStudentSubmission(
   constraints: string[],
   studentDraft: string
 ) {
+  const aiCheck = detectAIGeneratedText(studentDraft);
   return {
-    passed: true,
-    feedback: "Simulation step evaluation completed.",
+    passed: !aiCheck.isAi,
+    feedback: aiCheck.isAi ? "Submission appears AI-generated." : "Simulation step evaluation completed.",
     failedConstraints: [],
-    isAiGenerated: false,
+    isAiGenerated: aiCheck.isAi,
   };
 }
