@@ -262,15 +262,37 @@ export interface ImpactAssessmentData {
   whoMightBeAffected: string;
 }
 
+export interface CompetencyScores {
+  community_investigation: number; // 0-100
+  evidence_evaluation: number;     // 0-100
+  stakeholder_analysis: number;    // 0-100
+  intervention_planning: number;   // 0-100
+  adaptive_decision_making: number;// 0-100
+  impact_assessment: number;       // 0-100
+}
+
+export interface AIEvaluationResult {
+  step_number: number;
+  passed: boolean;
+  step_score: number;
+  competency_scores: CompetencyScores;
+  overall_civic_score: number;
+  flags: string[];
+  evaluation_summary: string;
+  strengths: string[];
+  areas_for_improvement: string[];
+  actionable_feedback: string;
+}
+
 export interface StepScoreBreakdown {
   communityInvestigation: number; // Step 1 Score (0-100)
-  causeAnalysis: number;           // Step 2 Score (0-100)
   evidenceEvaluation: number;      // Step 3 Score (0-100)
   stakeholderAnalysis: number;     // Step 4 Score (0-100)
   interventionPlanning: number;    // Step 5 Score (0-100)
   adaptiveDecisionMaking: number;  // Step 6 Score (0-100)
   impactAssessment: number;        // Step 7 Score (0-100)
-  overallScore: number;            // Average score (0-100)
+  overallScore: number;            // Cumulative Civic Decision Score (0-100)
+  causeAnalysis?: number;          // Step 2 Score (0-100) for backward compatibility
 }
 
 export interface SimulationStateData {
@@ -280,11 +302,13 @@ export interface SimulationStateData {
     justification: string;
     feedback?: string;
     passed?: boolean;
+    evaluation?: AIEvaluationResult;
   };
   step2?: {
     orderedCauseIds: string[];
     feedback?: string;
     passed?: boolean;
+    evaluation?: AIEvaluationResult;
   };
   step3?: {
     evaluatedEvidences: {
@@ -295,6 +319,7 @@ export interface SimulationStateData {
     }[];
     feedback?: string;
     passed?: boolean;
+    evaluation?: AIEvaluationResult;
   };
   step4?: {
     consultedStakeholderIds: string[];
@@ -302,27 +327,32 @@ export interface SimulationStateData {
     askedFollowUps: Record<string, number[]>; // stakeholderId -> array of followUp indices asked
     feedback?: string;
     passed?: boolean;
+    evaluation?: AIEvaluationResult;
   };
   step5?: {
     plan: InterventionPlanData;
     feedback?: string;
     passed?: boolean;
+    evaluation?: AIEvaluationResult;
   };
   step6?: {
     selectedOptionId: string;
     justification: string;
     feedback?: string;
     passed?: boolean;
+    evaluation?: AIEvaluationResult;
   };
   step7?: {
     impact: ImpactAssessmentData;
     feedback?: string;
     passed?: boolean;
+    evaluation?: AIEvaluationResult;
   };
   scores?: StepScoreBreakdown;
   reflection?: {
     answer: string;
     feedback?: string;
+    evaluation?: AIEvaluationResult;
   };
 }
 

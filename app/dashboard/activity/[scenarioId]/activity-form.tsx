@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,8 +27,9 @@ import {
   Trophy,
   Award,
   Archive,
+  ShieldAlert,
 } from "lucide-react";
-import { Scenario, Submission, SimulationStateData, EvidenceItem } from "@/lib/definitions";
+import { Scenario, Submission, SimulationStateData, EvidenceItem, AIEvaluationResult } from "@/lib/definitions";
 import { getMissionDataForScenario } from "@/lib/mission-data";
 import { StepTracker } from "@/components/simulation/step-tracker";
 import { CauseRanker } from "@/components/simulation/cause-ranker";
@@ -66,6 +68,7 @@ export function ActivityForm({
   const [feedback, setFeedback] = useState<{
     success: boolean;
     message: string;
+    evaluation?: AIEvaluationResult;
   } | null>(null);
 
   // --- Step 1 State ---
@@ -193,7 +196,11 @@ export function ActivityForm({
     setLoading(false);
 
     if (res.success) {
-      setFeedback({ success: true, message: res.feedback });
+      setFeedback({ success: true, message: res.feedback, evaluation: res.evaluation });
+
+      if (res.scores) {
+        setSimState((prev) => ({ ...prev, scores: res.scores }));
+      }
 
       if (step === 1 && !showStep1RevisionPrompt) {
         setShowStep1RevisionPrompt(true);
@@ -204,7 +211,11 @@ export function ActivityForm({
         setStep(res.nextStep);
       }
     } else {
-      setFeedback({ success: false, message: res.feedback || "Please revise your response." });
+      setFeedback({
+        success: false,
+        message: res.feedback || "Please revise your response.",
+        evaluation: res.evaluation,
+      });
     }
   };
 
@@ -223,7 +234,11 @@ export function ActivityForm({
     if (res.success) {
       setStep(9); // 9 = Completion screen
     } else {
-      setFeedback({ success: false, message: res.feedback || "Please revise your reflection answer." });
+      setFeedback({
+        success: false,
+        message: res.feedback || "Please revise your reflection answer.",
+        evaluation: res.evaluation,
+      });
     }
   };
 
@@ -281,17 +296,58 @@ export function ActivityForm({
                     : "bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200"
                 }`}
               >
-                <Sparkles
-                  className={`h-4 w-4 shrink-0 ${
-                    feedback.success ? "text-primary" : "text-rose-600"
-                  }`}
-                />
-                <AlertTitle className="font-bold text-xs flex items-center gap-1.5">
-                  {feedback.success ? "AI Insights: Reflection Validated!" : "AI Insights: Revision Suggested"}
-                </AlertTitle>
-                <AlertDescription className="text-xs leading-relaxed mt-1 italic">
-                  "{feedback.message}"
-                </AlertDescription>
+                <div className="flex items-start gap-3 w-full">
+                  <Sparkles
+                    className={`h-5 w-5 shrink-0 mt-0.5 ${
+                      feedback.success ? "text-primary" : "text-rose-600"
+                    }`}
+                  />
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <AlertTitle className="font-bold text-xs flex items-center gap-1.5 mb-0">
+                        {feedback.success ? "AI Verification: Reflection Validated!" : "AI Verification: Revision Required"}
+                      </AlertTitle>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {feedback.evaluation?.step_score !== undefined && (
+                          <Badge variant={feedback.success ? "default" : "destructive"} className="text-[10px] font-mono font-bold">
+                            Score: {feedback.evaluation.step_score}%
+                          </Badge>
+                        )}
+                        {feedback.evaluation?.flags?.map((flag) => (
+                          <Badge key={flag} variant="outline" className="text-[10px] font-mono border-rose-500/40 text-rose-700 dark:text-rose-300">
+                            {flag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <AlertDescription className="text-xs leading-relaxed">
+                      "{feedback.message}"
+                    </AlertDescription>
+
+                    {feedback.evaluation?.strengths && feedback.evaluation.strengths.length > 0 && (
+                      <div className="pt-1.5 border-t border-border/40 text-[11px] space-y-1">
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400 block">Strengths:</span>
+                        <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                          {feedback.evaluation.strengths.map((s, idx) => (
+                            <li key={idx}>{s}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {feedback.evaluation?.areas_for_improvement && feedback.evaluation.areas_for_improvement.length > 0 && (
+                      <div className="pt-1 text-[11px] space-y-1">
+                        <span className="font-bold text-amber-700 dark:text-amber-400 block">Areas for Improvement:</span>
+                        <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                          {feedback.evaluation.areas_for_improvement.map((imp, idx) => (
+                            <li key={idx}>{imp}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </Alert>
             )}
           </CardContent>
@@ -746,17 +802,58 @@ export function ActivityForm({
                         : "bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200"
                     }`}
                   >
-                    <Sparkles
-                      className={`h-4 w-4 shrink-0 ${
-                        feedback.success ? "text-primary" : "text-rose-600"
-                      }`}
-                    />
-                    <AlertTitle className="font-bold text-xs flex items-center gap-1.5">
-                      {feedback.success ? "AI Insights: Step Validated!" : "AI Insights: Revision Suggested"}
-                    </AlertTitle>
-                    <AlertDescription className="text-xs leading-relaxed mt-1 italic">
-                      "{feedback.message}"
-                    </AlertDescription>
+                    <div className="flex items-start gap-3 w-full">
+                      <Sparkles
+                        className={`h-5 w-5 shrink-0 mt-0.5 ${
+                          feedback.success ? "text-primary" : "text-rose-600"
+                        }`}
+                      />
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <AlertTitle className="font-bold text-xs flex items-center gap-1.5 mb-0">
+                            {feedback.success ? "AI Verification: Step Validated!" : "AI Verification: Revision Required"}
+                          </AlertTitle>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {feedback.evaluation?.step_score !== undefined && (
+                              <Badge variant={feedback.success ? "default" : "destructive"} className="text-[10px] font-mono font-bold">
+                                Score: {feedback.evaluation.step_score}%
+                              </Badge>
+                            )}
+                            {feedback.evaluation?.flags?.map((flag) => (
+                              <Badge key={flag} variant="outline" className="text-[10px] font-mono border-rose-500/40 text-rose-700 dark:text-rose-300">
+                                {flag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        <AlertDescription className="text-xs leading-relaxed">
+                          "{feedback.message}"
+                        </AlertDescription>
+
+                        {feedback.evaluation?.strengths && feedback.evaluation.strengths.length > 0 && (
+                          <div className="pt-1.5 border-t border-border/40 text-[11px] space-y-1">
+                            <span className="font-bold text-emerald-700 dark:text-emerald-400 block">Strengths:</span>
+                            <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                              {feedback.evaluation.strengths.map((s, idx) => (
+                                <li key={idx}>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {feedback.evaluation?.areas_for_improvement && feedback.evaluation.areas_for_improvement.length > 0 && (
+                          <div className="pt-1 text-[11px] space-y-1">
+                            <span className="font-bold text-amber-700 dark:text-amber-400 block">Areas for Improvement:</span>
+                            <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                              {feedback.evaluation.areas_for_improvement.map((imp, idx) => (
+                                <li key={idx}>{imp}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </Alert>
                 )}
               </CardContent>

@@ -68,81 +68,88 @@ export async function processSimulationStepAction(
 
   const state: SimulationStateData = submission.simulationState || { currentStep: 1 };
 
-  let evalResult = { passed: true, feedback: "" };
+  let evalResult = { passed: true, feedback: "", evaluation: undefined as any };
 
   if (stepNumber === 1) {
     evalResult = await evaluateStep1(scenario, payload.selectedIssue, payload.justification);
+    state.step1 = {
+      selectedIssue: payload.selectedIssue,
+      justification: payload.justification,
+      feedback: evalResult.feedback,
+      passed: evalResult.passed,
+      evaluation: evalResult.evaluation,
+    };
     if (evalResult.passed) {
-      state.step1 = {
-        selectedIssue: payload.selectedIssue,
-        justification: payload.justification,
-        feedback: evalResult.feedback,
-        passed: true,
-      };
-      state.currentStep = 2;
+      state.currentStep = Math.max(state.currentStep, 2);
     }
   } else if (stepNumber === 2) {
     evalResult = await evaluateStep2(scenario, payload.orderedCauseIds);
+    state.step2 = {
+      orderedCauseIds: payload.orderedCauseIds,
+      feedback: evalResult.feedback,
+      passed: evalResult.passed,
+      evaluation: evalResult.evaluation,
+    };
     if (evalResult.passed) {
-      state.step2 = {
-        orderedCauseIds: payload.orderedCauseIds,
-        feedback: evalResult.feedback,
-        passed: true,
-      };
-      state.currentStep = 3;
+      state.currentStep = Math.max(state.currentStep, 3);
     }
   } else if (stepNumber === 3) {
     evalResult = await evaluateStep3(scenario, payload.evaluatedEvidences);
+    state.step3 = {
+      evaluatedEvidences: payload.evaluatedEvidences,
+      feedback: evalResult.feedback,
+      passed: evalResult.passed,
+      evaluation: evalResult.evaluation,
+    };
     if (evalResult.passed) {
-      state.step3 = {
-        evaluatedEvidences: payload.evaluatedEvidences,
-        feedback: evalResult.feedback,
-        passed: true,
-      };
-      state.currentStep = 4;
+      state.currentStep = Math.max(state.currentStep, 4);
     }
   } else if (stepNumber === 4) {
-    evalResult = await evaluateStep4(scenario, payload.consultedIds, payload.notes);
+    evalResult = await evaluateStep4(scenario, payload.consultedIds, payload.notes, payload.askedFollowUps);
+    state.step4 = {
+      consultedStakeholderIds: payload.consultedIds,
+      interviewNotes: payload.notes,
+      askedFollowUps: payload.askedFollowUps || {},
+      feedback: evalResult.feedback,
+      passed: evalResult.passed,
+      evaluation: evalResult.evaluation,
+    };
     if (evalResult.passed) {
-      state.step4 = {
-        consultedStakeholderIds: payload.consultedIds,
-        interviewNotes: payload.notes,
-        askedFollowUps: payload.askedFollowUps || {},
-        feedback: evalResult.feedback,
-        passed: true,
-      };
-      state.currentStep = 5;
+      state.currentStep = Math.max(state.currentStep, 5);
     }
   } else if (stepNumber === 5) {
     evalResult = await evaluateStep5(scenario, payload.plan);
+    state.step5 = {
+      plan: payload.plan,
+      feedback: evalResult.feedback,
+      passed: evalResult.passed,
+      evaluation: evalResult.evaluation,
+    };
     if (evalResult.passed) {
-      state.step5 = {
-        plan: payload.plan,
-        feedback: evalResult.feedback,
-        passed: true,
-      };
-      state.currentStep = 6;
+      state.currentStep = Math.max(state.currentStep, 6);
     }
   } else if (stepNumber === 6) {
     evalResult = await evaluateStep6(scenario, payload.selectedOptionText, payload.justification);
+    state.step6 = {
+      selectedOptionId: payload.selectedOptionId,
+      justification: payload.justification,
+      feedback: evalResult.feedback,
+      passed: evalResult.passed,
+      evaluation: evalResult.evaluation,
+    };
     if (evalResult.passed) {
-      state.step6 = {
-        selectedOptionId: payload.selectedOptionId,
-        justification: payload.justification,
-        feedback: evalResult.feedback,
-        passed: true,
-      };
-      state.currentStep = 7;
+      state.currentStep = Math.max(state.currentStep, 7);
     }
   } else if (stepNumber === 7) {
     evalResult = await evaluateStep7(scenario, payload.impact);
+    state.step7 = {
+      impact: payload.impact,
+      feedback: evalResult.feedback,
+      passed: evalResult.passed,
+      evaluation: evalResult.evaluation,
+    };
     if (evalResult.passed) {
-      state.step7 = {
-        impact: payload.impact,
-        feedback: evalResult.feedback,
-        passed: true,
-      };
-      // Calculate final score performance breakdown
+      // Calculate final score performance breakdown across 6 dimensions
       const scores = calculateMissionScores(state);
       state.scores = scores;
       state.currentStep = 8; // Step 8 = Performance Scorecard & Reflection
@@ -159,6 +166,7 @@ export async function processSimulationStepAction(
   return {
     success: evalResult.passed,
     feedback: evalResult.feedback,
+    evaluation: evalResult.evaluation,
     nextStep: state.currentStep,
     scores: state.scores,
   };
@@ -196,12 +204,14 @@ export async function submitReflectionAction(scenarioId: string, answer: string)
 
   const evalResult = await evaluateReflection(scenario, answer);
 
+  const state: SimulationStateData = submission.simulationState || { currentStep: 8 };
+  state.reflection = {
+    answer,
+    feedback: evalResult.feedback,
+    evaluation: evalResult.evaluation,
+  };
+
   if (evalResult.passed) {
-    const state: SimulationStateData = submission.simulationState || { currentStep: 8 };
-    state.reflection = {
-      answer,
-      feedback: evalResult.feedback,
-    };
     state.currentStep = 9; // Step 9 = Certificate & Complete Screen
 
     submission.simulationState = state;
@@ -217,13 +227,18 @@ export async function submitReflectionAction(scenarioId: string, answer: string)
     return {
       success: true,
       feedback: evalResult.feedback,
+      evaluation: evalResult.evaluation,
       completed: true,
     };
   }
 
+  submission.simulationState = state;
+  await updateSubmission(submission);
+
   return {
     success: false,
     feedback: evalResult.feedback,
+    evaluation: evalResult.evaluation,
   };
 }
 

@@ -25,13 +25,12 @@ export interface PerformanceReportProps {
 
 export function PerformanceReport({ scores, studentName, onContinueToReflection, onBack }: PerformanceReportProps) {
   const categories = [
-    { step: 1, label: "Community Investigation", score: scores.communityInvestigation, desc: "Issue identification & statutory alignment" },
-    { step: 2, label: "Cause Analysis", score: scores.causeAnalysis, desc: "Root cause ordering & factor prioritization" },
-    { step: 3, label: "Evidence Evaluation", score: scores.evidenceEvaluation, desc: "Digital source audit & credibility scoring" },
-    { step: 4, label: "Stakeholder Analysis", score: scores.stakeholderAnalysis, desc: "Simulated interview insights & perspective gathering" },
-    { step: 5, label: "Intervention Planning", desc: "Evidence-based action plan builder", score: scores.interventionPlanning },
-    { step: 6, label: "Adaptive Decision-Making", score: scores.adaptiveDecisionMaking, desc: "Crisis simulation & unexpected challenge response" },
-    { step: 7, label: "Impact Assessment", score: scores.impactAssessment, desc: "Long-term sustainability & ethical evaluation" },
+    { step: 1, label: "Community Investigation", score: scores.communityInvestigation, desc: "Accuracy in identifying community issues and local context" },
+    { step: 2, label: "Evidence Evaluation", score: scores.evidenceEvaluation, desc: "Critical assessment, credibility rating, and linking of sources" },
+    { step: 3, label: "Stakeholder Analysis", score: scores.stakeholderAnalysis, desc: "Inclusivity and synthesis of diverse community viewpoints" },
+    { step: 4, label: "Intervention Planning", score: scores.interventionPlanning, desc: "Feasibility, completeness, and budget/timeline realism" },
+    { step: 5, label: "Adaptive Decision-Making", score: scores.adaptiveDecisionMaking, desc: "Flexibility and problem-solving under sudden obstacles" },
+    { step: 6, label: "Impact Assessment", score: scores.impactAssessment, desc: "Long-term sustainability, reach, and ethical mitigations" },
   ];
 
   return (

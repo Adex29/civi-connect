@@ -152,12 +152,36 @@
     "score": null,
     "submittedAt": "2026-07-21T08:59:19.137Z",
     "simulationState": {
-      "currentStep": 4,
+      "currentStep": 5,
       "step1": {
         "selectedIssue": "Low Community Participation in Search & Destroy",
         "justification": "The priority concern should be Improper Waste Disposal in Waterways. This issue directly impacts public health and safety, as clogged waterways worsen flooding and spread diseases. Addressing it first also creates visible improvements that encourage households to adopt segregation practices and strengthens enforcement efforts.",
-        "feedback": "Your justification shows excellent critical thinking and a strong understanding of community dynamics! By prioritizing 'Improper Waste Disposal in Waterways,' you are addressing a systemic issue that contributes to multiple public health and safety concerns, including flooding and vector-borne diseases. Your argument that visible environmental improvements can boost community morale and encourage household waste segregation shows a great grasp of behavioral psychology in civic engagement. To make your proposal even stronger, be sure to explicitly connect how clearing waterways directly eliminates stagnant water breeding sites for the Dengue-carrying Aedes mosquito, thereby directly supporting the 'Search & Destroy' objective.",
-        "passed": true
+        "feedback": "You identified \"Low Community Participation in Search & Destroy\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom.",
+        "passed": true,
+        "evaluation": {
+          "step_number": 1,
+          "passed": true,
+          "step_score": 88,
+          "competency_scores": {
+            "community_investigation": 88,
+            "evidence_evaluation": 80,
+            "stakeholder_analysis": 85,
+            "intervention_planning": 80,
+            "adaptive_decision_making": 84,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 88,
+          "flags": [],
+          "evaluation_summary": "Prioritized \"Low Community Participation in Search & Destroy\" with coherent community justification.",
+          "strengths": [
+            "Clear civic priority identification",
+            "Contextualized rationale"
+          ],
+          "areas_for_improvement": [
+            "Consider distinguishing immediate symptoms from root causes."
+          ],
+          "actionable_feedback": "You identified \"Low Community Participation in Search & Destroy\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom."
+        }
       },
       "step2": {
         "orderedCauseIds": [
@@ -172,6 +196,22 @@
       "step3": {
         "evaluatedEvidences": [
           {
+            "evidenceId": "ev4",
+            "userCredibility": 4,
+            "selectedSupports": [
+              "cause"
+            ],
+            "justification": "khjv"
+          },
+          {
+            "evidenceId": "ev3",
+            "userCredibility": 4,
+            "selectedSupports": [
+              "solution"
+            ],
+            "justification": "jhgjk"
+          },
+          {
             "evidenceId": "ev1",
             "userCredibility": 5,
             "selectedSupports": [],
@@ -184,26 +224,35 @@
               "solution"
             ],
             "justification": "i;huyu"
-          },
-          {
-            "evidenceId": "ev3",
-            "userCredibility": 4,
-            "selectedSupports": [
-              "solution"
-            ],
-            "justification": "jhgjk"
-          },
-          {
-            "evidenceId": "ev4",
-            "userCredibility": 4,
-            "selectedSupports": [
-              "cause"
-            ],
-            "justification": "khjv"
           }
         ],
-        "feedback": "Excellent evaluation! Inspecting all evidence sources provides a comprehensive foundation for your civic intervention plan.",
-        "passed": true
+        "feedback": "Please provide a complete 2-3 sentence justification for each evaluated evidence source explaining its credibility and relevance.",
+        "passed": false,
+        "evaluation": {
+          "step_number": 3,
+          "passed": false,
+          "step_score": 60,
+          "competency_scores": {
+            "community_investigation": 82,
+            "evidence_evaluation": 60,
+            "stakeholder_analysis": 85,
+            "intervention_planning": 80,
+            "adaptive_decision_making": 84,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 60,
+          "flags": [
+            "INSUFFICIENT_EVIDENCE_JUSTIFICATION"
+          ],
+          "evaluation_summary": "Evidence justifications are incomplete.",
+          "strengths": [
+            "All evidence sources examined."
+          ],
+          "areas_for_improvement": [
+            "Provide detailed reasoning for evidence credibility."
+          ],
+          "actionable_feedback": "Please provide a complete 2-3 sentence justification for each evaluated evidence source explaining its credibility and relevance."
+        }
       },
       "step4": {
         "consultedStakeholderIds": [
@@ -219,11 +268,75 @@
             0
           ]
         },
-        "feedback": "You interviewed key stakeholders and gathered diverse perspectives across local officials and residents.",
-        "passed": true
+        "feedback": "You gathered insights from key stakeholders across local officials and residents, creating a well-rounded foundation for action.",
+        "passed": true,
+        "evaluation": {
+          "step_number": 4,
+          "passed": true,
+          "step_score": 92,
+          "competency_scores": {
+            "community_investigation": 82,
+            "evidence_evaluation": 80,
+            "stakeholder_analysis": 92,
+            "intervention_planning": 80,
+            "adaptive_decision_making": 84,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 92,
+          "flags": [],
+          "evaluation_summary": "Balanced consultation capturing diverse community perspectives.",
+          "strengths": [
+            "Diverse multi-stakeholder perspective gathering",
+            "Clear synthesis of community viewpoints."
+          ],
+          "areas_for_improvement": [
+            "Consider how conflicting stakeholder interests can be reconciled in the intervention."
+          ],
+          "actionable_feedback": "You gathered insights from key stakeholders across local officials and residents, creating a well-rounded foundation for action."
+        }
+      },
+      "step5": {
+        "plan": {
+          "projectTitle": "Community Action Plan: Dengue Outbreak Prevention",
+          "goal": "",
+          "objectives": "",
+          "activities": "",
+          "stakeholders": "",
+          "resources": "",
+          "budget": "",
+          "timeline": "",
+          "expectedOutcomes": ""
+        },
+        "feedback": "Please complete all 9 fields of your intervention plan (missing: Goal, Objectives, Activities...).",
+        "passed": false,
+        "evaluation": {
+          "step_number": 5,
+          "passed": false,
+          "step_score": 40,
+          "competency_scores": {
+            "community_investigation": 82,
+            "evidence_evaluation": 80,
+            "stakeholder_analysis": 85,
+            "intervention_planning": 40,
+            "adaptive_decision_making": 84,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 40,
+          "flags": [
+            "INCOMPLETE_SCHEMA"
+          ],
+          "evaluation_summary": "Incomplete action plan. Missing required fields: Goal, Objectives, Activities, Stakeholders & Roles, Resources Needed, Budget Allocation, Timeline, Expected Outcomes.",
+          "strengths": [
+            "Drafted initial plan components."
+          ],
+          "areas_for_improvement": [
+            "Fill in all 9 fields: Goal, Objectives, Activities, Stakeholders & Roles, Resources Needed, Budget Allocation, Timeline, Expected Outcomes"
+          ],
+          "actionable_feedback": "Please complete all 9 fields of your intervention plan (missing: Goal, Objectives, Activities...)."
+        }
       }
     },
-    "stepProgress": 4
+    "stepProgress": 5
   },
   {
     "id": "wxGNaYPbe3vUdSRB-_vCf",
