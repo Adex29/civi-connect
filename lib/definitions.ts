@@ -19,34 +19,34 @@ export type UserRole = "student" | "admin";
 
 // --- Zod Schemas ---
 export const SignupFormSchema = z.object({
-  classCode: z.string().length(6, { message: "Class code must be exactly 6 characters" }),
-  fullName: z.string().min(2, { message: "Name must be at least 2 characters" }).max(50),
-  lrn: z.string().regex(/^\d{12}$/, { message: "LRN must be exactly 12 digits" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" })
-    .regex(/[a-zA-Z]/, { message: "Contain at least one letter" })
-    .regex(/[0-9]/, { message: "Contain at least one number" }),
-  confirmPassword: z.string(),
+  classCode: z.string().min(1, { message: "Class code is required." }).length(6, { message: "Class code must be exactly 6 characters." }),
+  fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }).max(50, { message: "Full name cannot exceed 50 characters." }),
+  lrn: z.string().min(1, { message: "LRN is required." }).regex(/^\d{12}$/, { message: "LRN must be exactly 12 numeric digits." }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters long." })
+    .regex(/[a-zA-Z]/, { message: "Password must contain at least one letter." })
+    .regex(/[0-9]/, { message: "Password must contain at least one number." }),
+  confirmPassword: z.string().min(1, { message: "Please confirm your password." }),
   isGroup: z.boolean(),
   groupName: z.string().optional()
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
+  message: "Passwords do not match.",
   path: ["confirmPassword"],
 }).refine((data) => {
-  if (data.isGroup && (!data.groupName || data.groupName.length < 2)) return false;
+  if (data.isGroup && (!data.groupName || data.groupName.trim().length < 2)) return false;
   return true;
 }, {
-  message: "Group name is required when joining as a group",
+  message: "Group name is required (minimum 2 characters).",
   path: ["groupName"],
 });
 
 export const LoginFormSchema = z.object({
-  lrn: z.string().regex(/^\d{12}$/, { message: "LRN must be exactly 12 digits" }),
-  password: z.string().min(1, { message: "Password is required" }),
+  lrn: z.string().min(1, { message: "LRN is required." }).regex(/^\d{12}$/, { message: "LRN must be exactly 12 numeric digits." }),
+  password: z.string().min(1, { message: "Password is required." }),
 });
 
 export const AdminLoginFormSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(1, { message: "Password is required" }),
+  email: z.string().min(1, { message: "Email address is required." }).email({ message: "Please enter a valid email address." }),
+  password: z.string().min(1, { message: "Password is required." }),
 });
 
 export const CreateClassroomSchema = z.object({
@@ -70,7 +70,6 @@ export const EvaluateStepSchema = z.object({
   response: z.string().min(10, { message: "Response must be at least 10 characters" }),
 });
 
-// --- Inferred Types from Zod ---
 export type SignupFormInput = z.infer<typeof SignupFormSchema>;
 export type LoginFormInput = z.infer<typeof LoginFormSchema>;
 export type AdminLoginFormInput = z.infer<typeof AdminLoginFormSchema>;
@@ -79,7 +78,6 @@ export type CreateScenarioInput = z.infer<typeof CreateScenarioSchema>;
 export type CreateConstraintInput = z.infer<typeof CreateConstraintSchema>;
 export type EvaluateStepInput = z.infer<typeof EvaluateStepSchema>;
 
-// --- Entity Interfaces ---
 export interface Classroom {
   id: ClassroomId;
   name: string;

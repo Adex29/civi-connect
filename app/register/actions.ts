@@ -24,12 +24,18 @@ export async function registerAction(data: SignupFormInput): Promise<FormState> 
   if (!classroom) {
     return {
       status: "error",
+      errors: {
+        classCode: ["Invalid class code. Classroom not found."],
+      },
       message: "Invalid class code. Classroom not found.",
     };
   }
   if (classroom.status === "archived") {
     return {
       status: "error",
+      errors: {
+        classCode: ["This classroom is archived and is no longer accepting new registrations."],
+      },
       message: "This classroom is archived and no longer accepting students.",
     };
   }
@@ -39,6 +45,9 @@ export async function registerAction(data: SignupFormInput): Promise<FormState> 
   if (existingStudent) {
     return {
       status: "error",
+      errors: {
+        lrn: ["A student with this LRN is already registered. Please log in instead."],
+      },
       message: "A student with this LRN is already registered.",
     };
   }

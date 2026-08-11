@@ -23,7 +23,10 @@ export async function adminLoginAction(data: AdminLoginFormInput): Promise<FormS
   if (!admin) {
     return {
       status: "error",
-      message: "Invalid email or password.",
+      errors: {
+        email: ["No administrator account found with this email."],
+      },
+      message: "Invalid email or account not found.",
     };
   }
 
@@ -32,7 +35,10 @@ export async function adminLoginAction(data: AdminLoginFormInput): Promise<FormS
   if (!passwordMatch) {
     return {
       status: "error",
-      message: "Invalid email or password.",
+      errors: {
+        password: ["Incorrect administrator password."],
+      },
+      message: "Invalid administrator password.",
     };
   }
 

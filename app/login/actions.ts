@@ -23,7 +23,10 @@ export async function loginAction(data: LoginFormInput): Promise<FormState> {
   if (!student) {
     return {
       status: "error",
-      message: "Invalid LRN or password.",
+      errors: {
+        lrn: ["No student account found with this LRN."],
+      },
+      message: "Invalid LRN or account not found.",
     };
   }
 
@@ -32,7 +35,10 @@ export async function loginAction(data: LoginFormInput): Promise<FormState> {
   if (!passwordMatch) {
     return {
       status: "error",
-      message: "Invalid LRN or password.",
+      errors: {
+        password: ["Incorrect password. Please try again."],
+      },
+      message: "Invalid password.",
     };
   }
 
