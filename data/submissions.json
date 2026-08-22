@@ -224,22 +224,6 @@
       "step3": {
         "evaluatedEvidences": [
           {
-            "evidenceId": "ev4",
-            "userCredibility": 4,
-            "selectedSupports": [
-              "cause"
-            ],
-            "justification": "khjv"
-          },
-          {
-            "evidenceId": "ev3",
-            "userCredibility": 4,
-            "selectedSupports": [
-              "solution"
-            ],
-            "justification": "jhgjk"
-          },
-          {
             "evidenceId": "ev1",
             "userCredibility": 5,
             "selectedSupports": [],
@@ -252,6 +236,22 @@
               "solution"
             ],
             "justification": "i;huyu"
+          },
+          {
+            "evidenceId": "ev3",
+            "userCredibility": 4,
+            "selectedSupports": [
+              "solution"
+            ],
+            "justification": "jhgjk"
+          },
+          {
+            "evidenceId": "ev4",
+            "userCredibility": 4,
+            "selectedSupports": [
+              "cause"
+            ],
+            "justification": "khjv"
           }
         ],
         "feedback": "Please provide a complete 2-3 sentence justification for each evaluated evidence source explaining its credibility and relevance.",
@@ -272,6 +272,8 @@
           "flags": [
             "INSUFFICIENT_EVIDENCE_JUSTIFICATION"
           ],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
           "evaluation_summary": "Evidence justifications are incomplete.",
           "strengths": [
             "All evidence sources examined."
