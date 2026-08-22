@@ -28,9 +28,10 @@ export function PerformanceReport({ scores, studentName, onContinueToReflection,
     { step: 1, label: "Community Investigation", score: scores.communityInvestigation, desc: "Accuracy in identifying community issues and local context" },
     { step: 2, label: "Evidence Evaluation", score: scores.evidenceEvaluation, desc: "Critical assessment, credibility rating, and linking of sources" },
     { step: 3, label: "Stakeholder Analysis", score: scores.stakeholderAnalysis, desc: "Inclusivity and synthesis of diverse community viewpoints" },
-    { step: 4, label: "Intervention Planning", score: scores.interventionPlanning, desc: "Feasibility, completeness, and budget/timeline realism" },
+    { step: 4, label: "Intervention Planning", score: scores.interventionPlanning, desc: "Feasibility, completeness, and initial budget/timeline realism" },
     { step: 5, label: "Adaptive Decision-Making", score: scores.adaptiveDecisionMaking, desc: "Flexibility and problem-solving under sudden obstacles" },
-    { step: 6, label: "Impact Assessment", score: scores.impactAssessment, desc: "Long-term sustainability, reach, and ethical mitigations" },
+    { step: 6, label: "Adaptive Plan Revision", score: scores.planRevision || scores.interventionPlanning, desc: "Resilient refinement and optimization of the action plan" },
+    { step: 7, label: "Impact Assessment", score: scores.impactAssessment, desc: "Long-term sustainability, reach, and ethical mitigations" },
   ];
 
   return (
@@ -57,10 +58,10 @@ export function PerformanceReport({ scores, studentName, onContinueToReflection,
           </span>
         </div>
 
-        {/* 7-Step Performance Timeline Audit */}
+        {/* 8-Step Performance Timeline Audit */}
         <div className="space-y-3">
           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            7-Step Competency Evaluation Timeline
+            8-Step Competency Evaluation Timeline
           </h4>
           <Timeline className="pt-2">
             {categories.map((cat) => (
@@ -93,7 +94,7 @@ export function PerformanceReport({ scores, studentName, onContinueToReflection,
       <CardFooter className="bg-muted/30 border-t p-4 flex justify-between gap-4">
         {onBack ? (
           <Button variant="outline" onClick={onBack}>
-            Back to Step 7
+            Back to Step 8
           </Button>
         ) : (
           <div />

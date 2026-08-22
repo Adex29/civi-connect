@@ -93,7 +93,7 @@ export function CreateClassroomDialog({
               <div>
                 <DialogTitle className="text-xl font-bold">Create New Classroom</DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  Set up a class section to generate student join codes and assign civic scenarios.
+                  Set up a class section to generate student join codes and assign civic missions.
                 </DialogDescription>
               </div>
             </div>

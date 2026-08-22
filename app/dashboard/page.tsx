@@ -20,6 +20,7 @@ import {
   Users,
   Lightbulb,
   Zap,
+  RefreshCw,
   Target,
 } from "lucide-react";
 
@@ -50,13 +51,14 @@ export default async function StudentDashboard() {
   );
 
   const roadmapSteps = [
-    { num: 1, name: "Identify Issues", desc: "Define priority community problems", icon: Search },
-    { num: 2, name: "Analyze Causes", desc: "Examine root causes & contributing factors", icon: ListOrdered },
-    { num: 3, name: "Evaluate Evidence", desc: "Assess source credibility & reliability", icon: FileCheck },
-    { num: 4, name: "Consult Stakeholders", desc: "Interview community leaders & residents", icon: Users },
-    { num: 5, name: "Develop Plan", desc: "Create actionable, evidence-based solutions", icon: Lightbulb },
-    { num: 6, name: "Anticipate Challenges", desc: "Respond to unexpected budget/resource shifts", icon: Zap },
-    { num: 7, name: "Assess Impact", desc: "Evaluate feasibility, ethics & long-term impact", icon: Target },
+    { num: 1, name: "Identify Community Issues", desc: "Recognize and define the most pressing community problem.", icon: Search },
+    { num: 2, name: "Analyze Causes", desc: "Examine the root causes and contributing factors.", icon: ListOrdered },
+    { num: 3, name: "Evaluate Digital Evidence", desc: "Assess the credibility, relevance, and reliability of different digital sources before making decisions.", icon: FileCheck },
+    { num: 4, name: "Consult Simulated Stakeholders", desc: "Gather insights from community members, local leaders, and organizations through realistic simulations.", icon: Users },
+    { num: 5, name: "Develop an Intervention Plan", desc: "Create practical, evidence-based solutions for the identified community issue.", icon: Lightbulb },
+    { num: 6, name: "Anticipate Challenges", desc: "Respond to unexpected obstacles and revise your plan accordingly.", icon: Zap },
+    { num: 7, name: "Revise Plan", desc: "Refine and adapt your intervention plan based on the simulation obstacle.", icon: RefreshCw },
+    { num: 8, name: "Assess Community Impact", desc: "Evaluate the feasibility, sustainability, effectiveness, and ethical implications of your proposed solution.", icon: Target },
   ];
 
   return (
@@ -95,7 +97,7 @@ export default async function StudentDashboard() {
           <div>
             <h3 className="font-semibold text-slate-900 dark:text-slate-200">Classroom Archived</h3>
             <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-              This classroom has been archived by your instructor. Scenarios are in read-only mode.
+              This classroom has been archived by your instructor. Missions are in read-only mode.
             </p>
           </div>
         </div>
@@ -108,11 +110,11 @@ export default async function StudentDashboard() {
             <ShieldCheck className="h-5 w-5 text-primary" /> What You Will Do in Civi-Tech
           </CardTitle>
           <CardDescription className="text-xs">
-            Complete the 7 simulation phases to develop evidence-based civic action plans.
+            Complete the 8 simulation phases to develop evidence-based civic action plans.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
             {roadmapSteps.map((step) => {
               const IconComp = step.icon;
               return (
@@ -132,7 +134,7 @@ export default async function StudentDashboard() {
         </CardContent>
       </Card>
 
-      {/* Active Missions / Scenarios Grid */}
+      {/* Active Missions Grid */}
       <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
         <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-primary" /> Available Civic Missions
@@ -146,7 +148,11 @@ export default async function StudentDashboard() {
               const submission = submissions.find((s) => s.scenarioId === scenario.id);
               const isCompleted = submission?.status === "completed";
               const currentStep = submission?.simulationState?.currentStep || 1;
-              const progressPct = isCompleted ? 100 : Math.round((Math.min(currentStep, 7) / 7) * 100);
+              const progressPct = isCompleted
+                ? 100
+                : !submission || currentStep <= 1
+                ? 0
+                : Math.min(Math.round(((currentStep - 1) / 8) * 100), 95);
 
               return (
                 <Card
@@ -160,7 +166,7 @@ export default async function StudentDashboard() {
                         <Badge className="bg-emerald-600 hover:bg-emerald-700">Completed</Badge>
                       ) : submission ? (
                         <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 font-bold">
-                          Step {Math.min(currentStep, 7)}/7
+                          Step {Math.min(currentStep, 8)}/8
                         </Badge>
                       ) : (
                         <Badge variant="outline">New Mission</Badge>
@@ -216,7 +222,7 @@ export default async function StudentDashboard() {
               <BookOpen className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
               <h3 className="text-lg font-medium text-foreground">No Missions Assigned Yet</h3>
               <p className="text-sm text-muted-foreground text-center max-w-md mt-2">
-                Your teacher hasn't assigned any civic scenarios to your classroom yet. Check back later!
+                Your teacher hasn't assigned any civic missions to your classroom yet. Check back later!
               </p>
             </div>
           )}

@@ -152,10 +152,10 @@
     "score": null,
     "submittedAt": "2026-07-21T08:59:19.137Z",
     "simulationState": {
-      "currentStep": 5,
+      "currentStep": 8,
       "step1": {
         "selectedIssue": "Low Community Participation in Search & Destroy",
-        "justification": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
+        "justification": "Worked for 26s\n\nYes. This is a complete standalone pytest test, so you can append it at the bottom of tests/test_outputs.py.\n\nMake sure:\n\ndef test_unknown... starts at column 1.\nEverything inside the function is indented four spaces.",
         "feedback": "You identified \"Low Community Participation in Search & Destroy\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom.",
         "passed": true,
         "evaluation": {
@@ -238,20 +238,20 @@
             "justification": "i;huyu"
           },
           {
-            "evidenceId": "ev3",
-            "userCredibility": 4,
-            "selectedSupports": [
-              "solution"
-            ],
-            "justification": "jhgjk"
-          },
-          {
             "evidenceId": "ev4",
             "userCredibility": 4,
             "selectedSupports": [
               "cause"
             ],
             "justification": "khjv"
+          },
+          {
+            "evidenceId": "ev3",
+            "userCredibility": 4,
+            "selectedSupports": [
+              "solution"
+            ],
+            "justification": "jhgjk"
           }
         ],
         "feedback": "Please provide a complete 2-3 sentence justification for each evaluated evidence source explaining its credibility and relevance.",
@@ -289,7 +289,7 @@
           "st1785828020240",
           "st1785828074951"
         ],
-        "interviewNotes": "These insights highlight that the plan must prioritize accessible collection systems (e.g., smaller vehicles for alleys, fixed schedules) and segregation support (color-coded bins). By combining infrastructure adjustments with clear communication, the barangay can reduce creek dumping, improve sanitation, and encourage residents to actively participate in waste management.",
+        "interviewNotes": "🦠 Direct public health risk: Stray dogs that are unvaccinated are the most immediate source of rabies transmission. This directly endangers both people and other animals.\n\n⏳ Urgency: Rabies is almost always fatal once symptoms appear, so prevention through vaccination and controlling stray populations is critical.\n\n🔗 Root cause linkage: The other issues (irresponsible ownership, lack of pound facilities, high vaccine costs) are important, but they are secondary drivers. Stray dogs without vaccination are the frontline hazard that ties all the other concerns together.\n\n📊 Impact scope: Addressing this first reduces bite incidents, lowers demand for costly post-exposure vaccines, and strengthens the case for barangay-lev",
         "askedFollowUps": {
           "st1785828020240": [
             0
@@ -298,33 +298,35 @@
             0
           ]
         },
-        "feedback": "You gathered insights from key stakeholders across local officials and residents, creating a well-rounded foundation for action.",
-        "passed": true,
+        "feedback": "Please re-evaluate your stakeholder interview notes. Your current submission focuses on rabies and stray dog control, which is off-topic for a Dengue Outbreak Prevention scenario. Conduct and document interviews with local stakeholders (such as Barangay Health Workers, residents, or municipal health officers) specifically regarding mosquito breeding sites, dengue vector control, and local community responses.",
+        "passed": false,
         "evaluation": {
           "step_number": 4,
-          "passed": true,
-          "step_score": 92,
+          "passed": false,
+          "step_score": 25,
           "competency_scores": {
-            "community_investigation": 82,
-            "evidence_evaluation": 80,
-            "stakeholder_analysis": 92,
-            "intervention_planning": 80,
-            "adaptive_decision_making": 84,
-            "impact_assessment": 82
+            "community_investigation": 20,
+            "evidence_evaluation": 30,
+            "stakeholder_analysis": 15,
+            "intervention_planning": 25,
+            "adaptive_decision_making": 30,
+            "impact_assessment": 30
           },
-          "overall_civic_score": 92,
-          "flags": [],
+          "overall_civic_score": 25,
+          "flags": [
+            "NOTES_STAKEHOLDER_MISMATCH"
+          ],
           "is_ai_generated": false,
           "ai_confidence_score": 0,
-          "evaluation_summary": "Balanced consultation capturing diverse community perspectives.",
+          "evaluation_summary": "The submission fails the coherence check because the notes discuss rabies, stray dog management, and bite incidents instead of addressing the assigned scenario on Dengue Outbreak Prevention. Additionally, the text does not reflect insights or perspectives gathered from stakeholder consultations.",
           "strengths": [
-            "Diverse multi-stakeholder perspective gathering",
-            "Clear synthesis of community viewpoints."
+            "Identifies public health impact structures and urgency in general terms."
           ],
           "areas_for_improvement": [
-            "Consider how conflicting stakeholder interests can be reconciled in the intervention."
+            "Align student notes directly with the scenario topic of Dengue Outbreak Prevention.",
+            "Include explicit perspectives and feedback gathered from the consulted barangay stakeholders."
           ],
-          "actionable_feedback": "You gathered insights from key stakeholders across local officials and residents, creating a well-rounded foundation for action."
+          "actionable_feedback": "Please re-evaluate your stakeholder interview notes. Your current submission focuses on rabies and stray dog control, which is off-topic for a Dengue Outbreak Prevention scenario. Conduct and document interviews with local stakeholders (such as Barangay Health Workers, residents, or municipal health officers) specifically regarding mosquito breeding sites, dengue vector control, and local community responses."
         }
       },
       "step5": {
@@ -333,44 +335,120 @@
           "goal": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
           "objectives": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
           "activities": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
-          "stakeholders": "",
-          "resources": "",
-          "budget": "",
-          "timeline": "",
-          "expectedOutcomes": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable."
+          "stakeholders": "SK ",
+          "resources": "Woods",
+          "budget": "15k",
+          "timeline": "3 months",
+          "expectedOutcomes": "Worked for 26s\n\nYes. This is a complete standalone pytest test, so you can append it at the bottom of tests/test_outputs.py.\n\nMake sure:\n\ndef test_unknown... starts at column 1.\nEverything inside the function is indented four spaces."
         },
-        "feedback": "Please complete all 9 fields of your intervention plan (missing: Stakeholders & Roles, Resources Needed, Budget Allocation...).",
-        "passed": false,
+        "feedback": "Your intervention plan \"Community Action Plan: Dengue Outbreak Prevention\" is feasible, itemized, and directly targets root community causes!",
+        "passed": true,
         "evaluation": {
           "step_number": 5,
-          "passed": false,
-          "step_score": 40,
+          "passed": true,
+          "step_score": 88,
           "competency_scores": {
             "community_investigation": 82,
             "evidence_evaluation": 80,
             "stakeholder_analysis": 85,
-            "intervention_planning": 40,
+            "intervention_planning": 88,
             "adaptive_decision_making": 84,
             "impact_assessment": 82
           },
-          "overall_civic_score": 40,
+          "overall_civic_score": 88,
+          "flags": [],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
+          "evaluation_summary": "Formulated realistic intervention plan: \"Community Action Plan: Dengue Outbreak Prevention\".",
+          "strengths": [
+            "Comprehensive 9-field action plan",
+            "Realistic community-level budget and timeline allocation."
+          ],
+          "areas_for_improvement": [
+            "Ensure contingency resources are budgeted for unforeseen delays."
+          ],
+          "actionable_feedback": "Your intervention plan \"Community Action Plan: Dengue Outbreak Prevention\" is feasible, itemized, and directly targets root community causes!"
+        }
+      },
+      "step6": {
+        "selectedOptionId": "opt1",
+        "justification": "hemical fogging is only a temporary measure that targets adult mosquitoes, but without eliminating breeding sites, the mosquito population quickly rebounds. By mobilizing the community for intensified clean-up drives, we directly remove stagnant water where mosquitoes lay eggs, cutting transmission at its root. Supplementing this with neem-oil repellents provides households with a safe, natural layer of protection while chemical supplies are delayed.",
+        "feedback": "Your adaptive response (\"Cancel all anti-dengue activities until chemical supplies arrive.\") addresses the immediate constraint while preserving project goals. Consider whether the revised strategy remains long-term sustainable.",
+        "passed": true,
+        "evaluation": {
+          "step_number": 6,
+          "passed": true,
+          "step_score": 86,
+          "competency_scores": {
+            "community_investigation": 82,
+            "evidence_evaluation": 80,
+            "stakeholder_analysis": 85,
+            "intervention_planning": 80,
+            "adaptive_decision_making": 86,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 86,
+          "flags": [],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
+          "evaluation_summary": "Responded effectively to simulation obstacle (\"Cancel all anti-dengue activities until chemical supplies arrive.\").",
+          "strengths": [
+            "Flexible crisis problem-solving",
+            "Pragmatic reallocation of community resources."
+          ],
+          "areas_for_improvement": [
+            "Monitor long-term sustainability under revised parameters."
+          ],
+          "actionable_feedback": "Your adaptive response (\"Cancel all anti-dengue activities until chemical supplies arrive.\") addresses the immediate constraint while preserving project goals. Consider whether the revised strategy remains long-term sustainable."
+        }
+      },
+      "step7": {
+        "revisedPlan": {
+          "projectTitle": "Community Action Plan: Dengue Outbreak Prevention",
+          "goal": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
+          "objectives": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
+          "activities": "The priority concern is Unattended Stagnant Water in Abandoned Lots. Stagnant water serves as the primary breeding ground for mosquitoes, directly increasing the risk of dengue and other vector-borne diseases. Addressing this root cause prevents the spread at its source, making other interventions like repellents or medical consultation more effective and sustainable.",
+          "stakeholders": "SK ",
+          "resources": "Woods",
+          "budget": "15k",
+          "timeline": "3 months",
+          "expectedOutcomes": "Worked for 26s\n\nYes. This is a complete standalone pytest test, so you can append it at the bottom of tests/test_outputs.py.\n\nMake sure:\n\ndef test_unknown... starts at column 1.\nEverything inside the function is indented four spaces."
+        },
+        "feedback": "Your submission does not meet the requirements for an adaptive intervention plan. Make sure each section contains specific details: outline distinct measurable objectives (e.g., clearing X number of abandoned lots within 3 months), list concrete activities, itemize how the 15k budget will be spent, and clearly define expected health impacts for the barangay.",
+        "passed": false,
+        "evaluation": {
+          "step_number": 7,
+          "passed": false,
+          "step_score": 15,
+          "competency_scores": {
+            "community_investigation": 25,
+            "evidence_evaluation": 15,
+            "stakeholder_analysis": 15,
+            "intervention_planning": 10,
+            "adaptive_decision_making": 10,
+            "impact_assessment": 10
+          },
+          "overall_civic_score": 15,
           "flags": [
-            "INCOMPLETE_SCHEMA"
+            "GENERIC_FLUFF",
+            "PLAN_SCENARIO_MISMATCH"
           ],
           "is_ai_generated": false,
           "ai_confidence_score": 0,
-          "evaluation_summary": "Incomplete action plan. Missing required fields: Stakeholders & Roles, Resources Needed, Budget Allocation, Timeline.",
+          "evaluation_summary": "The revised intervention plan fails to provide distinct goals, objectives, and activities, repeating the same paragraph across multiple fields. Furthermore, the expected outcomes section contains extraneous programming text completely unrelated to the dengue prevention scenario.",
           "strengths": [
-            "Drafted initial plan components."
+            "Identifies unattended stagnant water in abandoned lots as a critical risk factor for mosquito breeding."
           ],
           "areas_for_improvement": [
-            "Fill in all 9 fields: Stakeholders & Roles, Resources Needed, Budget Allocation, Timeline"
+            "Differentiate the Goal, Objectives, and Activities into distinct, actionable components rather than repeating the same justification text.",
+            "Itemize the budget and specify clear, realistic resources and stakeholder responsibilities beyond minimal one-word inputs.",
+            "Provide relevant short-term and long-term community health outcomes that measure the reduction of dengue cases instead of unrelated text."
           ],
-          "actionable_feedback": "Please complete all 9 fields of your intervention plan (missing: Stakeholders & Roles, Resources Needed, Budget Allocation...)."
+          "actionable_feedback": "Your submission does not meet the requirements for an adaptive intervention plan. Make sure each section contains specific details: outline distinct measurable objectives (e.g., clearing X number of abandoned lots within 3 months), list concrete activities, itemize how the 15k budget will be spent, and clearly define expected health impacts for the barangay."
         }
       }
     },
-    "stepProgress": 5
+    "stepProgress": 8
   },
   {
     "id": "wxGNaYPbe3vUdSRB-_vCf",
@@ -395,5 +473,177 @@
     "feedback": "",
     "score": null,
     "submittedAt": "2026-07-22T06:35:23.255Z"
+  },
+  {
+    "id": "N_7BlyrI7uKoZWLcPbSlw",
+    "scenarioId": "7VE3D8n8BLQDx0ML4SBA9",
+    "studentId": "d5BcSvdW2ShKcjKeAda2l",
+    "status": "in_progress",
+    "content": "",
+    "feedback": "",
+    "score": null,
+    "stepProgress": 4,
+    "simulationState": {
+      "currentStep": 4,
+      "step1": {
+        "selectedIssue": "Irresponsible Pet Ownership & Unconfined Animals",
+        "justification": "🦠 Direct public health risk: Stray dogs that are unvaccinated are the most immediate source of rabies transmission. This directly endangers both people and other animals.\n\n⏳ Urgency: Rabies is almost always fatal once symptoms appear, so prevention through vaccination and controlling stray populations is critical.\n\n🔗 Root cause linkage: The other issues (irresponsible ownership, lack of pound facilities, high vaccine costs) are important, but they are secondary drivers. Stray dogs without vaccination are the frontline hazard that ties all the other concerns together.\n\n📊 Impact scope: Addressing this first reduces bite incidents, lowers demand for costly post-exposure vaccines, and strengthens the case for barangay-lev",
+        "feedback": "You identified \"Irresponsible Pet Ownership & Unconfined Animals\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom.",
+        "passed": true,
+        "evaluation": {
+          "step_number": 1,
+          "passed": true,
+          "step_score": 88,
+          "competency_scores": {
+            "community_investigation": 88,
+            "evidence_evaluation": 80,
+            "stakeholder_analysis": 85,
+            "intervention_planning": 80,
+            "adaptive_decision_making": 84,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 88,
+          "flags": [],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
+          "evaluation_summary": "Prioritized \"Irresponsible Pet Ownership & Unconfined Animals\" with coherent community justification.",
+          "strengths": [
+            "Clear civic priority identification",
+            "Contextualized rationale"
+          ],
+          "areas_for_improvement": [
+            "Consider distinguishing immediate symptoms from root causes."
+          ],
+          "actionable_feedback": "You identified \"Irresponsible Pet Ownership & Unconfined Animals\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom."
+        }
+      },
+      "step2": {
+        "orderedCauseIds": [
+          "c2",
+          "c1",
+          "c3"
+        ],
+        "feedback": "Your cause ranking recognizes multiple systemic factors. Consider how these causes influence one another in the barangay.",
+        "passed": true,
+        "evaluation": {
+          "step_number": 2,
+          "passed": true,
+          "step_score": 88,
+          "competency_scores": {
+            "community_investigation": 82,
+            "evidence_evaluation": 80,
+            "stakeholder_analysis": 85,
+            "intervention_planning": 80,
+            "adaptive_decision_making": 84,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 88,
+          "flags": [],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
+          "evaluation_summary": "Successfully analyzed and ranked contributing causes.",
+          "strengths": [
+            "Structured causal hierarchy",
+            "Prioritized root systemic factors over superficial symptoms."
+          ],
+          "areas_for_improvement": [
+            "Review interaction between policy enforcement and public awareness."
+          ],
+          "actionable_feedback": "Your cause ranking recognizes multiple systemic factors. Consider how these causes influence one another in the barangay."
+        }
+      },
+      "step3": {
+        "evaluatedEvidences": [
+          {
+            "evidenceId": "ev1",
+            "userCredibility": 5,
+            "selectedSupports": [
+              "solution",
+              "need",
+              "cause"
+            ],
+            "justification": "🦠 Direct public health risk: Stray dogs that are unvaccinated are the most immediate source of rabies transmission. This directly endangers both people and other animals.\n\n⏳ Urgency: Rabies is almost always fatal once symptoms appear, so prevention through vaccination and controlling stray populations is critical.\n\n🔗 Root cause linkage: The other issues (irresponsible ownership, lack of pound facilities, high vaccine costs) are important, but they are secondary drivers. Stray dogs without vaccination are the frontline hazard that ties all the other concerns together.\n\n📊 Impact scope: Addressing this first reduces bite incidents, lowers demand for costly post-exposure vaccines, and strengthens the case for barangay-lev"
+          },
+          {
+            "evidenceId": "ev2",
+            "userCredibility": 5,
+            "selectedSupports": [
+              "need",
+              "solution"
+            ],
+            "justification": "🦠 Direct public health risk: Stray dogs that are unvaccinated are the most immediate source of rabies transmission. This directly endangers both people and other animals.\n\n⏳ Urgency: Rabies is almost always fatal once symptoms appear, so prevention through vaccination and controlling stray populations is critical.\n\n🔗 Root cause linkage: The other issues (irresponsible ownership, lack of pound facilities, high vaccine costs) are important, but they are secondary drivers. Stray dogs without vaccination are the frontline hazard that ties all the other concerns together.\n\n📊 Impact scope: Addressing this first reduces bite incidents, lowers demand for costly post-exposure vaccines, and strengthens the case for barangay-lev"
+          }
+        ],
+        "feedback": "Excellent evidence evaluation! Inspecting all evidence sources provides a rigorous, corroborated foundation for your civic intervention plan.",
+        "passed": true,
+        "evaluation": {
+          "step_number": 3,
+          "passed": true,
+          "step_score": 90,
+          "competency_scores": {
+            "community_investigation": 82,
+            "evidence_evaluation": 90,
+            "stakeholder_analysis": 85,
+            "intervention_planning": 80,
+            "adaptive_decision_making": 84,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 90,
+          "flags": [],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
+          "evaluation_summary": "Comprehensive evaluation of all digital evidence sources.",
+          "strengths": [
+            "Thorough source credibility auditing",
+            "Accurate tagging of causes, solutions, and community needs."
+          ],
+          "areas_for_improvement": [
+            "Ensure official government data is cross-referenced with resident surveys."
+          ],
+          "actionable_feedback": "Excellent evidence evaluation! Inspecting all evidence sources provides a rigorous, corroborated foundation for your civic intervention plan."
+        }
+      },
+      "step4": {
+        "consultedStakeholderIds": [
+          "st1"
+        ],
+        "interviewNotes": "🦠 Direct public health risk: Stray dogs that are unvaccinated are the most immediate source of rabies transmission. This directly endangers both people and other animals.\n\n⏳ Urgency: Rabies is almost always fatal once symptoms appear, so prevention through vaccination and controlling stray populations is critical.\n\n🔗 Root cause linkage: The other issues (irresponsible ownership, lack of pound facilities, high vaccine costs) are important, but they are secondary drivers. Stray dogs without vaccination are the frontline hazard that ties all the other concerns together.\n\n📊 Impact scope: Addressing this first reduces bite incidents, lowers demand for costly post-exposure vaccines, and strengthens the case for barangay-lev",
+        "askedFollowUps": {
+          "st1": [
+            0
+          ]
+        },
+        "feedback": "Please interview at least 2 contrasting stakeholder groups (e.g. Barangay Officials vs. Local Youth/Residents) to gather balanced perspectives.",
+        "passed": false,
+        "evaluation": {
+          "step_number": 4,
+          "passed": false,
+          "step_score": 35,
+          "competency_scores": {
+            "community_investigation": 82,
+            "evidence_evaluation": 80,
+            "stakeholder_analysis": 35,
+            "intervention_planning": 80,
+            "adaptive_decision_making": 84,
+            "impact_assessment": 82
+          },
+          "overall_civic_score": 35,
+          "flags": [
+            "INSUFFICIENT_STAKEHOLDER_BREADTH"
+          ],
+          "is_ai_generated": false,
+          "ai_confidence_score": 0,
+          "evaluation_summary": "Insufficient stakeholder consultation breadth.",
+          "strengths": [
+            "Attempted initial response."
+          ],
+          "areas_for_improvement": [
+            "Complete all required fields."
+          ],
+          "actionable_feedback": "Please interview at least 2 contrasting stakeholder groups (e.g. Barangay Officials vs. Local Youth/Residents) to gather balanced perspectives."
+        }
+      }
+    },
+    "submittedAt": "2026-08-11T05:23:27.784Z"
   }
 ]

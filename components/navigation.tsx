@@ -26,7 +26,7 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
   const adminNavItems = [
     { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/admin/dashboard/classrooms", label: "Classrooms", icon: Users },
-    { href: "/admin/dashboard/scenarios", label: "Scenario Library", icon: BookOpen },
+    { href: "/admin/dashboard/scenarios", label: "Mission Library", icon: BookOpen },
     { href: "/admin/dashboard/submissions", label: "Submissions", icon: FileText },
   ];
 

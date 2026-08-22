@@ -39,7 +39,7 @@ export default async function AdminDashboardLayout({
               className="flex items-center space-x-2.5 px-3 py-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
             >
               <BookOpen className="h-4 w-4 shrink-0" />
-              <span>Scenario Library</span>
+              <span>Mission Library</span>
             </Link>
             <Link
               href="/admin/dashboard/submissions"

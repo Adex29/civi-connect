@@ -61,7 +61,7 @@ export default function RegisterPage() {
       <Card className="w-full max-w-lg shadow-lg">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold tracking-tight">Student Registration</CardTitle>
-          <CardDescription>Join your class to access civic scenarios.</CardDescription>
+          <CardDescription>Join your class to access civic missions.</CardDescription>
         </CardHeader>
         <CardContent>
           {serverError && (

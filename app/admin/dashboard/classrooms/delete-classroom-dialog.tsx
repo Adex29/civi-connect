@@ -93,7 +93,7 @@ export function DeleteClassroomDialog({
                 Delete Classroom
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                This action is permanent and will remove associated scenario assignments.
+                This action is permanent and will remove associated mission assignments.
               </DialogDescription>
             </div>
           </div>

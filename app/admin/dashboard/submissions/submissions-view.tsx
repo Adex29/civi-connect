@@ -118,7 +118,7 @@ export function SubmissionsView({
       const groups: Record<string, GroupSection> = {};
       filteredSubmissions.forEach(item => {
         const key = item.scenario?.id || "unknown";
-        const label = item.scenario?.title || "Unknown Scenario";
+        const label = item.scenario?.title || "Unknown Mission";
         if (!groups[key]) groups[key] = { label, items: [] };
         groups[key].items.push(item);
       });
@@ -207,7 +207,7 @@ export function SubmissionsView({
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search student, LRN, or scenario..."
+            placeholder="Search student, LRN, or mission..."
             className="pl-9 text-xs h-10"
           />
         </div>
@@ -230,9 +230,9 @@ export function SubmissionsView({
               options={scenarioOptions}
               selectedValues={selectedScenarios}
               onSelectChange={setSelectedScenarios}
-              placeholder="Filter Scenarios..."
-              searchPlaceholder="Search scenarios..."
-              emptyText="No scenarios found."
+              placeholder="Filter Missions..."
+              searchPlaceholder="Search missions..."
+              emptyText="No missions found."
             />
           </div>
 
@@ -255,7 +255,7 @@ export function SubmissionsView({
             <button
               onClick={() => setGroupBy("scenario")}
               className={`p-2 rounded-md transition-colors ${groupBy === "scenario" ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
-              title="Group by Scenario"
+              title="Group by Mission"
             >
               <LayoutGrid className="h-4 w-4" />
             </button>

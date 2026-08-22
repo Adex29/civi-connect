@@ -292,13 +292,14 @@ export interface StepScoreBreakdown {
   stakeholderAnalysis: number;     // Step 4 Score (0-100)
   interventionPlanning: number;    // Step 5 Score (0-100)
   adaptiveDecisionMaking: number;  // Step 6 Score (0-100)
-  impactAssessment: number;        // Step 7 Score (0-100)
+  planRevision: number;            // Step 7 Score (0-100)
+  impactAssessment: number;        // Step 8 Score (0-100)
   overallScore: number;            // Cumulative Civic Decision Score (0-100)
   causeAnalysis?: number;          // Step 2 Score (0-100) for backward compatibility
 }
 
 export interface SimulationStateData {
-  currentStep: number; // 1 to 7 (or 8 for score/reflection, 9 for complete)
+  currentStep: number; // 1 to 8 (or 9 for score/reflection, 10 for complete)
   step1?: {
     selectedIssue: string;
     justification: string;
@@ -345,6 +346,12 @@ export interface SimulationStateData {
     evaluation?: AIEvaluationResult;
   };
   step7?: {
+    revisedPlan: InterventionPlanData;
+    feedback?: string;
+    passed?: boolean;
+    evaluation?: AIEvaluationResult;
+  };
+  step8?: {
     impact: ImpactAssessmentData;
     feedback?: string;
     passed?: boolean;

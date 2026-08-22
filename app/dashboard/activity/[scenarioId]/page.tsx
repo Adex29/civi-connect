@@ -26,9 +26,9 @@ export default async function ActivityPage({
           Back to Dashboard
         </Link>
         <div className="p-12 text-center border border-dashed rounded-lg bg-muted/40">
-          <h2 className="text-xl font-bold">Scenario No Longer Available</h2>
+          <h2 className="text-xl font-bold">Mission No Longer Available</h2>
           <p className="text-sm text-muted-foreground mt-2">
-            This scenario has been removed or is no longer assigned to your classroom.
+            This mission has been removed or is no longer assigned to your classroom.
           </p>
         </div>
       </div>

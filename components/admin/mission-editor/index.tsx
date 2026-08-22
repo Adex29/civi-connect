@@ -96,7 +96,8 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
       4: "Interview both grassroots residents and officials.",
       5: "Ensure the intervention plan is actionable and budgeted.",
       6: "Adapt to unexpected challenges while preserving core goals.",
-      7: "Assess ethical impacts and who benefits.",
+      7: "Refine and adapt your intervention plan based on the simulation obstacle.",
+      8: "Assess ethical impacts and who benefits.",
     }
   );
 

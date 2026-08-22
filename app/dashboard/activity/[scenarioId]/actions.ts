@@ -11,6 +11,7 @@ import {
   evaluateStep5,
   evaluateStep6,
   evaluateStep7,
+  evaluateStep8,
   evaluateReflection,
   calculateMissionScores,
 } from "@/lib/ai";
@@ -141,18 +142,29 @@ export async function processSimulationStepAction(
       state.currentStep = Math.max(state.currentStep, 7);
     }
   } else if (stepNumber === 7) {
-    evalResult = await evaluateStep7(scenario, payload.impact);
+    evalResult = await evaluateStep7(scenario, payload.revisedPlan, state.step5?.plan);
     state.step7 = {
+      revisedPlan: payload.revisedPlan,
+      feedback: evalResult.feedback,
+      passed: evalResult.passed,
+      evaluation: evalResult.evaluation,
+    };
+    if (evalResult.passed) {
+      state.currentStep = Math.max(state.currentStep, 8);
+    }
+  } else if (stepNumber === 8) {
+    evalResult = await evaluateStep8(scenario, payload.impact);
+    state.step8 = {
       impact: payload.impact,
       feedback: evalResult.feedback,
       passed: evalResult.passed,
       evaluation: evalResult.evaluation,
     };
     if (evalResult.passed) {
-      // Calculate final score performance breakdown across 6 dimensions
+      // Calculate final score performance breakdown across 7 dimensions
       const scores = calculateMissionScores(state);
       state.scores = scores;
-      state.currentStep = 8; // Step 8 = Performance Scorecard & Reflection
+      state.currentStep = 9; // Step 9 = Performance Scorecard & Reflection
       submission.score = scores.overallScore;
     }
   }

@@ -32,7 +32,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
     e.preventDefault();
 
     if (!title.trim() || !description.trim() || !constraints.trim()) {
-      toast.error("All scenario fields (Title, Description, Constraints) are required");
+      toast.error("All mission fields (Title, Description, Constraints) are required");
       return;
     }
 
@@ -52,8 +52,8 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
     } else {
       toast.success(
         isEditing
-          ? "Scenario and mission data updated successfully"
-          : "Scenario and mission data created successfully"
+          ? "Mission updated successfully"
+          : "Mission created successfully"
       );
       router.push("/admin/dashboard/scenarios");
       router.refresh();
@@ -69,15 +69,15 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
             href="/admin/dashboard/scenarios"
             className="inline-flex items-center text-xs font-medium text-muted-foreground hover:text-foreground mb-2 transition-colors"
           >
-            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back to Scenario Library
+            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back to Mission Library
           </Link>
           <h2 className="text-2xl font-bold tracking-tight">
-            {isEditing ? `Edit: ${scenario?.title}` : "Create New Civic Mission Scenario"}
+            {isEditing ? `Edit: ${scenario?.title}` : "Create New Civic Mission"}
           </h2>
           <p className="text-sm text-muted-foreground">
             {isEditing
-              ? "Update scenario parameters, constraints, and dynamic simulation content."
-              : "Define general scenario details and configure the simulation engine."}
+              ? "Update mission parameters, constraints, and dynamic simulation content."
+              : "Define general mission details and configure the simulation engine."}
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
@@ -88,23 +88,23 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
           </Link>
           <Button type="submit" disabled={loading} className="gap-2">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isEditing ? "Save Changes" : "Create Scenario"}
+            {isEditing ? "Save Changes" : "Create Mission"}
           </Button>
         </div>
       </div>
 
-      {/* Basic Scenario Information Card */}
+      {/* Basic Mission Information Card */}
       <Card className="border shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold">General Information & Requirements</CardTitle>
           <CardDescription className="text-xs">
-            Basic background details visible to students when this scenario is assigned.
+            Basic background details visible to students when this mission is assigned.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5">
           <div className="grid gap-2">
             <Label htmlFor="title" className="text-xs font-semibold">
-              Scenario Title <span className="text-destructive">*</span>
+              Mission Title <span className="text-destructive">*</span>
             </Label>
             <Input
               id="title"
@@ -149,7 +149,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
         </CardContent>
       </Card>
 
-      {/* Dynamic 7-Step Mission Configuration */}
+      {/* Dynamic 8-Step Mission Configuration */}
       <div className="space-y-4 pt-2">
         <div className="border-b pb-2">
           <h3 className="text-lg font-bold tracking-tight text-primary">Mission Configuration</h3>
@@ -167,7 +167,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
       {/* Sticky Bottom Bar for Action Buttons on Long Scroll */}
       <div className="sticky bottom-4 bg-background/95 backdrop-blur border p-4 rounded-xl shadow-lg flex items-center justify-between z-30">
         <p className="text-xs text-muted-foreground hidden sm:block">
-          {isEditing ? "Make sure to save changes before navigating away." : "Ready to launch this scenario?"}
+          {isEditing ? "Make sure to save changes before navigating away." : "Ready to launch this mission?"}
         </p>
         <div className="flex items-center gap-3 ml-auto">
           <Link href="/admin/dashboard/scenarios">
@@ -177,7 +177,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
           </Link>
           <Button type="submit" disabled={loading} size="sm" className="gap-2">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isEditing ? "Save Changes" : "Create Scenario"}
+            {isEditing ? "Save Changes" : "Create Mission"}
           </Button>
         </div>
       </div>

@@ -182,8 +182,9 @@ export function getGenericFallbackMissionData(scenario: Scenario): MissionData {
       3: "Balance your evidence library. Combine official reports with community experiences.",
       4: "Gather diverse perspectives. Interview both local leaders and grassroots residents.",
       5: "Ensure your intervention plan is evidence-based, actionable, and sustainable.",
-      6: "Anticipate real-world constraints. Adapt your plan without sacrificing core objectives.",
-      7: "Assess ethical implications. Make sure vulnerable groups are protected and benefit.",
+      6: "Anticipate real-world constraints. Adapt your strategy to overcome unexpected obstacles.",
+      7: "Review the obstacles faced in the challenge simulation. Refine and adapt your intervention plan to make it resilient, budget-aligned, and feasible.",
+      8: "Assess ethical implications and sustainability. Make sure vulnerable groups are protected and benefit.",
     },
   };
 }

@@ -35,7 +35,7 @@ export function DeleteScenarioDialog({
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success("Scenario deleted successfully");
+      toast.success("Mission deleted successfully");
       setOpen(false);
     }
   };
@@ -57,7 +57,7 @@ export function DeleteScenarioDialog({
       />
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Delete Scenario</DialogTitle>
+          <DialogTitle>Delete Mission</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete <span className="font-semibold text-foreground">"{scenarioTitle}"</span> from the global library? This will also remove it from any assigned classrooms.
           </DialogDescription>

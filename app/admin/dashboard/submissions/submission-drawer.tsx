@@ -51,6 +51,7 @@ export function SubmissionDrawer({
     simState?.step5?.evaluation?.is_ai_generated ||
     simState?.step6?.evaluation?.is_ai_generated ||
     simState?.step7?.evaluation?.is_ai_generated ||
+    simState?.step8?.evaluation?.is_ai_generated ||
     simState?.reflection?.evaluation?.is_ai_generated ||
     simState?.reflection?.evaluation?.flags?.includes("AI_GENERATED_CONTENT")
   );
@@ -61,6 +62,7 @@ export function SubmissionDrawer({
     { label: "Stakeholder Analysis", score: scores?.stakeholderAnalysis ?? 90, desc: "Inclusivity & synthesis of diverse viewpoints" },
     { label: "Intervention Planning", score: scores?.interventionPlanning ?? 88, desc: "Feasibility, itemized budget & timeline realism" },
     { label: "Adaptive Decision-Making", score: scores?.adaptiveDecisionMaking ?? 86, desc: "Contingency problem-solving under obstacles" },
+    { label: "Adaptive Plan Revision", score: scores?.planRevision ?? scores?.interventionPlanning ?? 88, desc: "Resilient refinement following challenge simulation" },
     { label: "Impact Assessment", score: scores?.impactAssessment ?? 91, desc: "Long-term sustainability & ethical risk mitigations" },
   ];
 
@@ -84,7 +86,7 @@ export function SubmissionDrawer({
               </Badge>
             ) : (
               <Badge variant="secondary" className="gap-1">
-                <Clock className="h-3.5 w-3.5" /> In Progress (Step {submission.stepProgress || 1}/7)
+                <Clock className="h-3.5 w-3.5" /> In Progress (Step {submission.stepProgress || 1}/8)
               </Badge>
             )}
             {submission.score && (
@@ -139,12 +141,12 @@ export function SubmissionDrawer({
             )}
           </div>
 
-          {/* 6-Dimension Competency Audit Card */}
+          {/* 7-Dimension Competency Audit Card */}
           {scores && (
             <div className="space-y-3 p-4 rounded-xl border bg-card shadow-2xs">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Award className="h-4 w-4 text-primary" /> 6-Dimension Competency Scores
+                  <Award className="h-4 w-4 text-primary" /> 7-Dimension Competency Scores
                 </h4>
                 <Badge variant="default" className="font-mono font-bold">
                   {scores.overallScore}% Overall
@@ -223,7 +225,7 @@ export function SubmissionDrawer({
                   <TimelineConnector />
                   <TimelineContent>
                     <TimelineHeader>
-                      <TimelineTitle className="text-xs font-bold">Step 5: Intervention Action Plan</TimelineTitle>
+                      <TimelineTitle className="text-xs font-bold">Step 5: Initial Intervention Plan</TimelineTitle>
                       <span className="text-[10px] font-bold text-primary">
                         {simState.step5.plan.projectTitle}
                       </span>
@@ -246,6 +248,86 @@ export function SubmissionDrawer({
                         ))}
                       </div>
                     )}
+                  </TimelineContent>
+                </TimelineItem>
+              )}
+
+              {/* Step 6 Challenge Simulation */}
+              {simState?.step6 && (
+                <TimelineItem>
+                  <TimelineDot status={simState.step6.passed ? "completed" : "current"}>
+                    <CheckCircle className="h-3.5 w-3.5" />
+                  </TimelineDot>
+                  <TimelineConnector />
+                  <TimelineContent>
+                    <TimelineHeader>
+                      <TimelineTitle className="text-xs font-bold">Step 6: Challenge Simulation Decision</TimelineTitle>
+                    </TimelineHeader>
+                    <p className="text-xs text-foreground p-2.5 bg-muted/20 border rounded-md mt-1">
+                      "{simState.step6.justification}"
+                    </p>
+                    {simState.step6.feedback && (
+                      <p className="text-[11px] text-muted-foreground italic mt-1">
+                        AI: {simState.step6.feedback}
+                      </p>
+                    )}
+                  </TimelineContent>
+                </TimelineItem>
+              )}
+
+              {/* Step 7 Adaptive Plan Revision */}
+              {simState?.step7?.revisedPlan && (
+                <TimelineItem>
+                  <TimelineDot status={simState.step7.passed ? "completed" : "current"}>
+                    <CheckCircle className="h-3.5 w-3.5" />
+                  </TimelineDot>
+                  <TimelineConnector />
+                  <TimelineContent>
+                    <TimelineHeader>
+                      <TimelineTitle className="text-xs font-bold">Step 7: Revised Intervention Plan</TimelineTitle>
+                      <span className="text-[10px] font-bold text-primary">
+                        {simState.step7.revisedPlan.projectTitle}
+                      </span>
+                    </TimelineHeader>
+                    <div className="text-xs space-y-1.5 p-2.5 bg-muted/20 border rounded-md mt-1 text-muted-foreground">
+                      <p><strong className="text-foreground">Goal:</strong> {simState.step7.revisedPlan.goal}</p>
+                      <p><strong className="text-foreground">Activities:</strong> {simState.step7.revisedPlan.activities}</p>
+                      <p><strong className="text-foreground">Budget:</strong> {simState.step7.revisedPlan.budget} | <strong className="text-foreground">Timeline:</strong> {simState.step7.revisedPlan.timeline}</p>
+                    </div>
+                    {simState.step7.evaluation?.flags && simState.step7.evaluation.flags.length > 0 && (
+                      <div className="flex gap-1 flex-wrap mt-1">
+                        {simState.step7.evaluation.flags.map((f) => (
+                          <Badge
+                            key={f}
+                            variant={f === "AI_GENERATED_CONTENT" ? "destructive" : "outline"}
+                            className={`text-[9px] ${f !== "AI_GENERATED_CONTENT" ? "text-rose-600 border-rose-500/30" : ""}`}
+                          >
+                            {f}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </TimelineContent>
+                </TimelineItem>
+              )}
+
+              {/* Step 8 Community Impact */}
+              {simState?.step8?.impact && (
+                <TimelineItem>
+                  <TimelineDot status={simState.step8.passed ? "completed" : "current"}>
+                    <CheckCircle className="h-3.5 w-3.5" />
+                  </TimelineDot>
+                  <TimelineConnector />
+                  <TimelineContent>
+                    <TimelineHeader>
+                      <TimelineTitle className="text-xs font-bold">Step 8: Community Impact Assessment</TimelineTitle>
+                    </TimelineHeader>
+                    <div className="text-xs space-y-1 p-2.5 bg-muted/20 border rounded-md mt-1 text-muted-foreground">
+                      <p><strong className="text-foreground">Short-Term:</strong> {simState.step8.impact.shortTermImpact}</p>
+                      <p><strong className="text-foreground">Long-Term:</strong> {simState.step8.impact.longTermImpact}</p>
+                      <p><strong className="text-foreground">Risks/Mitigations:</strong> {simState.step8.impact.possibleRisks}</p>
+                      <p><strong className="text-foreground">Beneficiaries:</strong> {simState.step8.impact.whoBenefits}</p>
+                    </div>
                   </TimelineContent>
                 </TimelineItem>
               )}

@@ -62,9 +62,9 @@ export function UnassignScenarioButton({
       />
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Unassign Scenario</AlertDialogTitle>
+          <AlertDialogTitle>Unassign Mission</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to unassign this scenario from{" "}
+            Are you sure you want to unassign this mission from{" "}
             <strong>{classroomName}</strong>? Students in this classroom will no longer access it.
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -79,7 +79,7 @@ export function UnassignScenarioButton({
             }}
           >
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Unassign Scenario
+            Unassign Mission
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

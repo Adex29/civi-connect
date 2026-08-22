@@ -28,6 +28,11 @@ import {
   Award,
   Archive,
   ShieldAlert,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  FileEdit,
+  History,
 } from "lucide-react";
 import { Scenario, Submission, SimulationStateData, EvidenceItem, AIEvaluationResult } from "@/lib/definitions";
 import { getMissionDataForScenario } from "@/lib/mission-data";
@@ -36,6 +41,7 @@ import { CauseRanker } from "@/components/simulation/cause-ranker";
 import { EvidenceLibrary, EvaluatedEvidence } from "@/components/simulation/evidence-library";
 import { StakeholderChat } from "@/components/simulation/stakeholder-chat";
 import { PerformanceReport } from "@/components/simulation/performance-report";
+import { MissionBriefing } from "@/components/simulation/mission-briefing";
 import { processSimulationStepAction, submitReflectionAction } from "./actions";
 
 export function ActivityForm({
@@ -59,8 +65,9 @@ export function ActivityForm({
     currentStep: 1,
   };
 
+  const [showBriefing, setShowBriefing] = useState(true);
   const [step, setStep] = useState<number>(() => {
-    if (existingSubmission?.status === "completed") return 9;
+    if (existingSubmission?.status === "completed") return 10;
     return initialState.currentStep || 1;
   });
   const [simState, setSimState] = useState<SimulationStateData>(initialState);
@@ -101,7 +108,7 @@ export function ActivityForm({
     simState.step4?.askedFollowUps || {}
   );
 
-  // --- Step 5 State ---
+  // --- Step 5 State (Original Intervention Plan) ---
   const [planData, setPlanData] = useState({
     projectTitle: simState.step5?.plan?.projectTitle || `Community Action Plan: ${scenario.title}`,
     goal: simState.step5?.plan?.goal || "",
@@ -114,7 +121,7 @@ export function ActivityForm({
     expectedOutcomes: simState.step5?.plan?.expectedOutcomes || "",
   });
 
-  // --- Step 6 State ---
+  // --- Step 6 State (Challenge Simulation) ---
   const [selectedChallengeOptId, setSelectedChallengeOptId] = useState<string>(
     simState.step6?.selectedOptionId || missionData.unexpectedEvent.options[0]?.id || ""
   );
@@ -122,13 +129,44 @@ export function ActivityForm({
     simState.step6?.justification || ""
   );
 
-  // --- Step 7 State ---
+  // --- Step 7 State (Adaptive Plan Revision - Prefilled from Step 5) ---
+  const [revisedPlanData, setRevisedPlanData] = useState({
+    projectTitle: simState.step7?.revisedPlan?.projectTitle || simState.step5?.plan?.projectTitle || `Community Action Plan: ${scenario.title}`,
+    goal: simState.step7?.revisedPlan?.goal || simState.step5?.plan?.goal || "",
+    objectives: simState.step7?.revisedPlan?.objectives || simState.step5?.plan?.objectives || "",
+    activities: simState.step7?.revisedPlan?.activities || simState.step5?.plan?.activities || "",
+    stakeholders: simState.step7?.revisedPlan?.stakeholders || simState.step5?.plan?.stakeholders || "",
+    resources: simState.step7?.revisedPlan?.resources || simState.step5?.plan?.resources || "",
+    budget: simState.step7?.revisedPlan?.budget || simState.step5?.plan?.budget || "",
+    timeline: simState.step7?.revisedPlan?.timeline || simState.step5?.plan?.timeline || "",
+    expectedOutcomes: simState.step7?.revisedPlan?.expectedOutcomes || simState.step5?.plan?.expectedOutcomes || "",
+  });
+  const [showOriginalPlanRef, setShowOriginalPlanRef] = useState(false);
+
+  // Synchronize revisedPlanData from step 5 when entering step 7 if it was not previously saved
+  React.useEffect(() => {
+    if (step === 7 && !simState.step7?.revisedPlan) {
+      setRevisedPlanData((prev) => ({
+        projectTitle: prev.projectTitle || planData.projectTitle,
+        goal: prev.goal || planData.goal,
+        objectives: prev.objectives || planData.objectives,
+        activities: prev.activities || planData.activities,
+        stakeholders: prev.stakeholders || planData.stakeholders,
+        resources: prev.resources || planData.resources,
+        budget: prev.budget || planData.budget,
+        timeline: prev.timeline || planData.timeline,
+        expectedOutcomes: prev.expectedOutcomes || planData.expectedOutcomes,
+      }));
+    }
+  }, [step, planData, simState.step7?.revisedPlan]);
+
+  // --- Step 8 State (Community Impact Assessment) ---
   const [impactData, setImpactData] = useState({
-    shortTermImpact: simState.step7?.impact?.shortTermImpact || "",
-    longTermImpact: simState.step7?.impact?.longTermImpact || "",
-    possibleRisks: simState.step7?.impact?.possibleRisks || "",
-    whoBenefits: simState.step7?.impact?.whoBenefits || "",
-    whoMightBeAffected: simState.step7?.impact?.whoMightBeAffected || "",
+    shortTermImpact: simState.step8?.impact?.shortTermImpact || "",
+    longTermImpact: simState.step8?.impact?.longTermImpact || "",
+    possibleRisks: simState.step8?.impact?.possibleRisks || "",
+    whoBenefits: simState.step8?.impact?.whoBenefits || "",
+    whoMightBeAffected: simState.step8?.impact?.whoMightBeAffected || "",
   });
 
   // --- Final Reflection State ---
@@ -153,6 +191,8 @@ export function ActivityForm({
     if (isReadOnly) {
       if (step < 8) {
         setStep(step + 1);
+      } else if (step === 8) {
+        setStep(9);
       }
       return;
     }
@@ -167,12 +207,11 @@ export function ActivityForm({
     } else if (step === 2) {
       payload = { orderedCauseIds };
     } else if (step === 3) {
-      const totalEvCount = missionData.evidenceLibrary?.length || 0;
-      if (evaluatedEvidences.length < totalEvCount) {
+      if (evaluatedEvidences.length < 2) {
         setLoading(false);
         setFeedback({
           success: false,
-          message: `You have evaluated ${evaluatedEvidences.length} of ${totalEvCount} evidence sources. Please inspect and evaluate all remaining evidence sources before proceeding.`,
+          message: "Please evaluate and rate at least 2 pieces of evidence before proceeding.",
         });
         return;
       }
@@ -189,6 +228,27 @@ export function ActivityForm({
         justification: step6Justification,
       };
     } else if (step === 7) {
+      const missing: string[] = [];
+      if (!revisedPlanData.projectTitle?.trim()) missing.push("Project Title");
+      if (!revisedPlanData.goal?.trim()) missing.push("Goal");
+      if (!revisedPlanData.objectives?.trim()) missing.push("Objectives");
+      if (!revisedPlanData.activities?.trim()) missing.push("Activities");
+      if (!revisedPlanData.stakeholders?.trim()) missing.push("Stakeholders & Roles");
+      if (!revisedPlanData.resources?.trim()) missing.push("Resources Needed");
+      if (!revisedPlanData.budget?.trim()) missing.push("Budget Allocation");
+      if (!revisedPlanData.timeline?.trim()) missing.push("Timeline");
+      if (!revisedPlanData.expectedOutcomes?.trim()) missing.push("Expected Outcomes");
+
+      if (missing.length > 0) {
+        setLoading(false);
+        setFeedback({
+          success: false,
+          message: `Please complete all 9 fields of your revised intervention plan. Missing: ${missing.join(", ")}.`,
+        });
+        return;
+      }
+      payload = { revisedPlan: revisedPlanData };
+    } else if (step === 8) {
       payload = { impact: impactData };
     }
 
@@ -221,7 +281,7 @@ export function ActivityForm({
 
   const handleFinalReflectionSubmit = async () => {
     if (isReadOnly) {
-      setStep(9);
+      setStep(10);
       return;
     }
 
@@ -232,7 +292,7 @@ export function ActivityForm({
     setLoading(false);
 
     if (res.success) {
-      setStep(9); // 9 = Completion screen
+      setStep(10); // 10 = Completion screen
     } else {
       setFeedback({
         success: false,
@@ -243,26 +303,39 @@ export function ActivityForm({
   };
 
   const maxStepReached = Math.max(step, simState.currentStep || 1);
-  const completedSteps = Array.from({ length: Math.min(maxStepReached - 1, 7) }, (_, i) => i + 1);
+  const completedSteps = Array.from({ length: Math.min(maxStepReached - 1, 8) }, (_, i) => i + 1);
 
-  // --- Step 8: Performance Report View ---
-  if (step === 8 && simState.scores) {
+  // --- Mission Briefing Screen (Shown first upon opening scenario) ---
+  if (showBriefing) {
+    return (
+      <MissionBriefing
+        scenario={scenario}
+        studentName={studentName}
+        currentStep={step}
+        isCompleted={existingSubmission?.status === "completed"}
+        onStart={() => setShowBriefing(false)}
+      />
+    );
+  }
+
+  // --- Step 9: Performance Report View ---
+  if (step === 9 && simState.scores) {
     return (
       <div className="max-w-4xl mx-auto space-y-8">
         <PerformanceReport
           scores={simState.scores}
           studentName={studentName}
           onContinueToReflection={() => {
-            setStep(8.5); // 8.5 = Final Reflection Form
+            setStep(9.5); // 9.5 = Final Reflection Form
           }}
-          onBack={() => setStep(7)}
+          onBack={() => setStep(8)}
         />
       </div>
     );
   }
 
-  // --- Step 8.5 / 9: Final Reflection & Completion Certificate View ---
-  if (step === 8.5) {
+  // --- Step 9.5: Final Reflection View ---
+  if (step === 9.5) {
     return (
       <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
         <Card className="border shadow-md">
@@ -359,7 +432,7 @@ export function ActivityForm({
             )}
           </CardContent>
           <CardFooter className="bg-muted/20 border-t p-4 flex justify-between gap-4">
-            <Button variant="outline" onClick={() => setStep(8)} disabled={loading}>
+            <Button variant="outline" onClick={() => setStep(9)} disabled={loading}>
               Back to Scorecard
             </Button>
             <Button onClick={handleFinalReflectionSubmit} disabled={loading || (!isReadOnly && !reflectionAnswer.trim())}>
@@ -372,7 +445,8 @@ export function ActivityForm({
     );
   }
 
-  if (step === 9) {
+  // --- Step 10: Completion Certificate View ---
+  if (step === 10) {
     return (
       <div className="max-w-3xl mx-auto space-y-8 text-center animate-fade-in-up">
         <Card className="border-2 border-primary/20 shadow-xl bg-card p-8 space-y-6">
@@ -398,7 +472,7 @@ export function ActivityForm({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-            <Button onClick={() => setStep(8)} variant="outline" className="gap-2">
+            <Button onClick={() => setStep(9)} variant="outline" className="gap-2">
               <Trophy className="h-4 w-4" /> View Performance Report
             </Button>
             <Button onClick={() => router.push("/dashboard")} className="gap-2">
@@ -440,10 +514,10 @@ export function ActivityForm({
         )}
 
         {/* Step Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-primary/5 p-3 sm:p-4 rounded-xl border border-primary/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-primary/5 p-3 sm:p-4 rounded-xl border border-primary/20">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
-              Mission Step 0{step} of 07
+              Mission Step 0{step} of 08
             </span>
             <h2 className="text-lg sm:text-xl font-extrabold tracking-tight mt-0.5">
               {step === 1 && "Identify Community Issues"}
@@ -452,12 +526,25 @@ export function ActivityForm({
               {step === 4 && "Consult Simulated Stakeholders"}
               {step === 5 && "Develop an Intervention Plan"}
               {step === 6 && "Anticipate Challenges (Simulation)"}
-              {step === 7 && "Assess Community Impact"}
+              {step === 7 && "Revise Intervention Plan (Adaptive Revision)"}
+              {step === 8 && "Assess Community Impact"}
             </h2>
           </div>
-          <span className="text-xs font-bold font-mono px-3 py-1 bg-primary text-primary-foreground rounded-full shrink-0 w-fit">
-            {Math.round((step / 7) * 100)}% Complete
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBriefing(true)}
+              className="text-xs gap-1.5 h-7 border-primary/30 hover:bg-primary/10"
+            >
+              <BookOpen className="h-3.5 w-3.5 text-primary" />
+              Mission Overview
+            </Button>
+            <span className="text-xs font-bold font-mono px-3 py-1 bg-primary text-primary-foreground rounded-full shrink-0 w-fit">
+              {isReadOnly ? 100 : step <= 1 ? 0 : Math.min(Math.round(((step - 1) / 8) * 100), 95)}% Complete
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
@@ -472,7 +559,8 @@ export function ActivityForm({
                   {step === 4 && "Stakeholder Consultation"}
                   {step === 5 && "Intervention Plan Builder"}
                   {step === 6 && missionData.unexpectedEvent.title}
-                  {step === 7 && "Community Impact Assessment"}
+                  {step === 7 && "Adaptive Plan Revision (Post-Challenge)"}
+                  {step === 8 && "Community Impact Assessment"}
                 </CardTitle>
               </CardHeader>
 
@@ -590,104 +678,170 @@ export function ActivityForm({
                 )}
 
                 {/* STEP 5: Develop an Intervention Plan */}
-                {step === 5 && (
-                  <div className="space-y-4 text-xs">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold">Project Title</Label>
-                        <Input
-                          value={planData.projectTitle}
-                          onChange={(e) => setPlanData({ ...planData, projectTitle: e.target.value })}
-                          disabled={isReadOnly || loading}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold">Goal</Label>
-                        <Input
-                          value={planData.goal}
-                          onChange={(e) => setPlanData({ ...planData, goal: e.target.value })}
-                          placeholder="e.g. Reduce estero dumping by 80%"
-                          disabled={isReadOnly || loading}
-                        />
-                      </div>
-                    </div>
+                {step === 5 && (() => {
+                  const filledCount = [
+                    planData.projectTitle,
+                    planData.goal,
+                    planData.objectives,
+                    planData.activities,
+                    planData.stakeholders,
+                    planData.resources,
+                    planData.budget,
+                    planData.timeline,
+                    planData.expectedOutcomes,
+                  ].filter((f) => f && f.trim().length > 0).length;
+                  const isMissingErr = feedback && !feedback.success;
 
-                    <div className="space-y-1">
-                      <Label className="text-xs font-semibold">Objectives</Label>
-                      <Textarea
-                        value={planData.objectives}
-                        onChange={(e) => setPlanData({ ...planData, objectives: e.target.value })}
-                        className="min-h-[60px]"
-                        placeholder="Specific, measurable goals..."
-                        disabled={isReadOnly || loading}
-                      />
-                    </div>
+                  return (
+                    <div className="space-y-4 text-xs">
+                      {/* Completion Progress Tracker */}
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
+                        <div>
+                          <span className="font-bold text-foreground text-xs block">Intervention Plan Matrix</span>
+                          <span className="text-[11px] text-muted-foreground">All 9 fields must be filled out with actionable community details.</span>
+                        </div>
+                        <Badge
+                          variant={filledCount === 9 ? "default" : "outline"}
+                          className={`font-mono text-xs shrink-0 ${
+                            filledCount === 9
+                              ? "bg-primary text-primary-foreground font-bold"
+                              : "border-amber-500/50 text-amber-700 dark:text-amber-300 font-semibold"
+                          }`}
+                        >
+                          {filledCount} of 9 Completed
+                        </Badge>
+                      </div>
 
-                    <div className="space-y-1">
-                      <Label className="text-xs font-semibold">Activities</Label>
-                      <Textarea
-                        value={planData.activities}
-                        onChange={(e) => setPlanData({ ...planData, activities: e.target.value })}
-                        className="min-h-[60px]"
-                        placeholder="Key actions and events..."
-                        disabled={isReadOnly || loading}
-                      />
-                    </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold flex items-center justify-between">
+                            <span>Project Title</span>
+                            <span className="text-destructive font-bold">*</span>
+                          </Label>
+                          <Input
+                            value={planData.projectTitle}
+                            onChange={(e) => setPlanData({ ...planData, projectTitle: e.target.value })}
+                            className={isMissingErr && !planData.projectTitle?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                            disabled={isReadOnly || loading}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold flex items-center justify-between">
+                            <span>Goal</span>
+                            <span className="text-destructive font-bold">*</span>
+                          </Label>
+                          <Input
+                            value={planData.goal}
+                            onChange={(e) => setPlanData({ ...planData, goal: e.target.value })}
+                            placeholder="e.g. Reduce estero dumping by 80%"
+                            className={isMissingErr && !planData.goal?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                            disabled={isReadOnly || loading}
+                          />
+                        </div>
+                      </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label className="text-xs font-semibold">Stakeholders & Roles</Label>
-                        <Input
-                          value={planData.stakeholders}
-                          onChange={(e) => setPlanData({ ...planData, stakeholders: e.target.value })}
-                          placeholder="SK, Barangay Tanods, Residents"
+                        <Label className="text-xs font-semibold flex items-center justify-between">
+                          <span>Objectives</span>
+                          <span className="text-destructive font-bold">*</span>
+                        </Label>
+                        <Textarea
+                          value={planData.objectives}
+                          onChange={(e) => setPlanData({ ...planData, objectives: e.target.value })}
+                          className={`min-h-[60px] ${isMissingErr && !planData.objectives?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                          placeholder="Specific, measurable goals..."
                           disabled={isReadOnly || loading}
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold">Resources Needed</Label>
-                        <Input
-                          value={planData.resources}
-                          onChange={(e) => setPlanData({ ...planData, resources: e.target.value })}
-                          placeholder="Color-coded bins, pedicabs, flyers"
-                          disabled={isReadOnly || loading}
-                        />
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <Label className="text-xs font-semibold">Budget Allocation</Label>
-                        <Input
-                          value={planData.budget}
-                          onChange={(e) => setPlanData({ ...planData, budget: e.target.value })}
-                          placeholder="₱15,000 SK / Eco-brick revenue"
+                        <Label className="text-xs font-semibold flex items-center justify-between">
+                          <span>Activities</span>
+                          <span className="text-destructive font-bold">*</span>
+                        </Label>
+                        <Textarea
+                          value={planData.activities}
+                          onChange={(e) => setPlanData({ ...planData, activities: e.target.value })}
+                          className={`min-h-[60px] ${isMissingErr && !planData.activities?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                          placeholder="Key actions, clean-up drives, and community events..."
                           disabled={isReadOnly || loading}
                         />
                       </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold">Timeline</Label>
-                        <Input
-                          value={planData.timeline}
-                          onChange={(e) => setPlanData({ ...planData, timeline: e.target.value })}
-                          placeholder="3-month rollout"
-                          disabled={isReadOnly || loading}
-                        />
-                      </div>
-                    </div>
 
-                    <div className="space-y-1">
-                      <Label className="text-xs font-semibold">Expected Outcomes</Label>
-                      <Textarea
-                        value={planData.expectedOutcomes}
-                        onChange={(e) => setPlanData({ ...planData, expectedOutcomes: e.target.value })}
-                        className="min-h-[60px]"
-                        placeholder="Cleaner waterways, reduced flood risks..."
-                        disabled={isReadOnly || loading}
-                      />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold flex items-center justify-between">
+                            <span>Stakeholders</span>
+                            <span className="text-destructive font-bold">*</span>
+                          </Label>
+                          <Input
+                            value={planData.stakeholders}
+                            onChange={(e) => setPlanData({ ...planData, stakeholders: e.target.value })}
+                            placeholder="e.g. SK Youth, Barangay Tanods, Residents"
+                            className={isMissingErr && !planData.stakeholders?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                            disabled={isReadOnly || loading}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold flex items-center justify-between">
+                            <span>Resources</span>
+                            <span className="text-destructive font-bold">*</span>
+                          </Label>
+                          <Input
+                            value={planData.resources}
+                            onChange={(e) => setPlanData({ ...planData, resources: e.target.value })}
+                            placeholder="e.g. Color-coded bins, collection carts, flyers"
+                            className={isMissingErr && !planData.resources?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                            disabled={isReadOnly || loading}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold flex items-center justify-between">
+                            <span>Budget</span>
+                            <span className="text-destructive font-bold">*</span>
+                          </Label>
+                          <Input
+                            value={planData.budget}
+                            onChange={(e) => setPlanData({ ...planData, budget: e.target.value })}
+                            placeholder="e.g. ₱15,000 SK Fund / Barangay allocation"
+                            className={isMissingErr && !planData.budget?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                            disabled={isReadOnly || loading}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold flex items-center justify-between">
+                            <span>Timeline</span>
+                            <span className="text-destructive font-bold">*</span>
+                          </Label>
+                          <Input
+                            value={planData.timeline}
+                            onChange={(e) => setPlanData({ ...planData, timeline: e.target.value })}
+                            placeholder="e.g. 3-month rollout (Weeks 1-12)"
+                            className={isMissingErr && !planData.timeline?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                            disabled={isReadOnly || loading}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs font-semibold flex items-center justify-between">
+                          <span>Expected Outcomes</span>
+                          <span className="text-destructive font-bold">*</span>
+                        </Label>
+                        <Textarea
+                          value={planData.expectedOutcomes}
+                          onChange={(e) => setPlanData({ ...planData, expectedOutcomes: e.target.value })}
+                          className={`min-h-[60px] ${isMissingErr && !planData.expectedOutcomes?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                          placeholder="Cleaner public spaces, reduced health risks, increased community pride..."
+                          disabled={isReadOnly || loading}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* STEP 6: Anticipate Challenges */}
                 {step === 6 && (
@@ -744,8 +898,279 @@ export function ActivityForm({
                   </div>
                 )}
 
-                {/* STEP 7: Assess Community Impact */}
-                {step === 7 && (
+                {/* STEP 7: Revise Intervention Plan (Adaptive Revision after Step 6) */}
+                {step === 7 && (() => {
+                  const filledCount = [
+                    revisedPlanData.projectTitle,
+                    revisedPlanData.goal,
+                    revisedPlanData.objectives,
+                    revisedPlanData.activities,
+                    revisedPlanData.stakeholders,
+                    revisedPlanData.resources,
+                    revisedPlanData.budget,
+                    revisedPlanData.timeline,
+                    revisedPlanData.expectedOutcomes,
+                  ].filter((v) => v?.trim().length > 0).length;
+
+                  const isMissingErr = feedback && !feedback.success && feedback.message.includes("missing:");
+                  const selectedOpt = missionData.unexpectedEvent.options.find((o) => o.id === selectedChallengeOptId);
+
+                  return (
+                    <div className="space-y-5">
+                      {/* Challenge Context Banner */}
+                      <div className="p-4 bg-amber-500/10 rounded-xl border border-amber-500/30 space-y-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <span className="font-bold text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                            <AlertTriangle className="h-4 w-4 shrink-0" />
+                            Challenge Encountered in Step 6:
+                          </span>
+                          <Badge variant="outline" className="text-[10px] font-mono border-amber-500/40 text-amber-800 dark:text-amber-300">
+                            Strategy: {selectedOpt ? selectedOpt.text.slice(0, 35) + "..." : "Selected Option"}
+                          </Badge>
+                        </div>
+                        <p className="text-xs sm:text-sm font-medium text-amber-950 dark:text-amber-100">
+                          {missionData.unexpectedEvent.description}
+                        </p>
+                        {step6Justification && (
+                          <div className="pt-2 border-t border-amber-500/20 text-xs text-amber-900/80 dark:text-amber-200/80">
+                            <span className="font-semibold">Your Decision Justification: </span>
+                            <em>"{step6Justification}"</em>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Collapsible Original Plan Reference Accordion */}
+                      <div className="border border-border rounded-xl overflow-hidden bg-muted/20">
+                        <button
+                          type="button"
+                          onClick={() => setShowOriginalPlanRef(!showOriginalPlanRef)}
+                          className="w-full flex items-center justify-between p-3.5 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors text-left"
+                        >
+                          <div className="flex items-center gap-2">
+                            <History className="h-4 w-4 text-primary" />
+                            <span>View Original Step 5 Plan (Reference Only)</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-normal text-muted-foreground hidden sm:inline">
+                              {showOriginalPlanRef ? "Hide Original" : "Show Original"}
+                            </span>
+                            {showOriginalPlanRef ? (
+                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                        </button>
+
+                        {showOriginalPlanRef && (
+                          <div className="p-4 border-t border-border bg-card space-y-3 text-xs animate-fade-in-up">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <span className="font-bold text-muted-foreground block text-[11px]">Original Project Title:</span>
+                                <p className="font-medium text-foreground mt-0.5">{planData.projectTitle || "N/A"}</p>
+                              </div>
+                              <div>
+                                <span className="font-bold text-muted-foreground block text-[11px]">Original Goal:</span>
+                                <p className="font-medium text-foreground mt-0.5">{planData.goal || "N/A"}</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/60">
+                              <div>
+                                <span className="font-bold text-muted-foreground block text-[11px]">Original Budget:</span>
+                                <p className="font-medium text-foreground mt-0.5">{planData.budget || "N/A"}</p>
+                              </div>
+                              <div>
+                                <span className="font-bold text-muted-foreground block text-[11px]">Original Timeline:</span>
+                                <p className="font-medium text-foreground mt-0.5">{planData.timeline || "N/A"}</p>
+                              </div>
+                            </div>
+                            <div className="pt-2 border-t border-border/60">
+                              <span className="font-bold text-muted-foreground block text-[11px]">Original Activities:</span>
+                              <p className="font-medium text-foreground mt-0.5 whitespace-pre-wrap">{planData.activities || "N/A"}</p>
+                            </div>
+                            <div className="pt-2 border-t border-border/60">
+                              <span className="font-bold text-muted-foreground block text-[11px]">Original Stakeholders & Roles:</span>
+                              <p className="font-medium text-foreground mt-0.5">{planData.stakeholders || "N/A"}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Header Tracker with Reset Button */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                        <div>
+                          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                            <FileEdit className="h-4 w-4 text-primary" />
+                            <span>Adaptive Action Plan Matrix</span>
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            Update your activities, budget, timeline, or roles to accommodate the challenge.
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setRevisedPlanData({ ...planData });
+                            }}
+                            disabled={isReadOnly || loading}
+                            className="text-xs h-7 px-2 text-muted-foreground hover:text-foreground gap-1"
+                            title="Reset all fields back to your Step 5 original plan"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Reset to Initial Plan</span>
+                          </Button>
+                          <Badge
+                            variant={filledCount === 9 ? "default" : "secondary"}
+                            className={`text-xs font-mono font-bold px-2.5 py-0.5 ${
+                              filledCount === 9
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            {filledCount} of 9 Completed
+                          </Badge>
+                        </div>
+                      </div>
+
+                      {/* 9-Field Matrix for revisedPlanData (Matching Step 5 exactly) */}
+                      <div className="space-y-4 text-xs">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold flex items-center justify-between">
+                              <span>Project Title</span>
+                              <span className="text-destructive font-bold">*</span>
+                            </Label>
+                            <Input
+                              value={revisedPlanData.projectTitle}
+                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, projectTitle: e.target.value })}
+                              className={isMissingErr && !revisedPlanData.projectTitle?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                              disabled={isReadOnly || loading}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold flex items-center justify-between">
+                              <span>Goal</span>
+                              <span className="text-destructive font-bold">*</span>
+                            </Label>
+                            <Input
+                              value={revisedPlanData.goal}
+                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, goal: e.target.value })}
+                              placeholder="e.g. Reduce estero dumping by 80%"
+                              className={isMissingErr && !revisedPlanData.goal?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                              disabled={isReadOnly || loading}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold flex items-center justify-between">
+                            <span>Objectives</span>
+                            <span className="text-destructive font-bold">*</span>
+                          </Label>
+                          <Textarea
+                            value={revisedPlanData.objectives}
+                            onChange={(e) => setRevisedPlanData({ ...revisedPlanData, objectives: e.target.value })}
+                            className={`min-h-[60px] ${isMissingErr && !revisedPlanData.objectives?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                            placeholder="Specific, measurable goals..."
+                            disabled={isReadOnly || loading}
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold flex items-center justify-between">
+                            <span>Activities</span>
+                            <span className="text-destructive font-bold">*</span>
+                          </Label>
+                          <Textarea
+                            value={revisedPlanData.activities}
+                            onChange={(e) => setRevisedPlanData({ ...revisedPlanData, activities: e.target.value })}
+                            className={`min-h-[60px] ${isMissingErr && !revisedPlanData.activities?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                            placeholder="Key actions, clean-up drives, and community events..."
+                            disabled={isReadOnly || loading}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold flex items-center justify-between">
+                              <span>Stakeholders</span>
+                              <span className="text-destructive font-bold">*</span>
+                            </Label>
+                            <Input
+                              value={revisedPlanData.stakeholders}
+                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, stakeholders: e.target.value })}
+                              placeholder="e.g. SK Youth, Barangay Tanods, Residents"
+                              className={isMissingErr && !revisedPlanData.stakeholders?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                              disabled={isReadOnly || loading}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold flex items-center justify-between">
+                              <span>Resources</span>
+                              <span className="text-destructive font-bold">*</span>
+                            </Label>
+                            <Input
+                              value={revisedPlanData.resources}
+                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, resources: e.target.value })}
+                              placeholder="e.g. Color-coded bins, collection carts, flyers"
+                              className={isMissingErr && !revisedPlanData.resources?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                              disabled={isReadOnly || loading}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold flex items-center justify-between">
+                              <span>Budget</span>
+                              <span className="text-destructive font-bold">*</span>
+                            </Label>
+                            <Input
+                              value={revisedPlanData.budget}
+                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, budget: e.target.value })}
+                              placeholder="e.g. ₱15,000 SK Fund / Barangay allocation"
+                              className={isMissingErr && !revisedPlanData.budget?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                              disabled={isReadOnly || loading}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-semibold flex items-center justify-between">
+                              <span>Timeline</span>
+                              <span className="text-destructive font-bold">*</span>
+                            </Label>
+                            <Input
+                              value={revisedPlanData.timeline}
+                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, timeline: e.target.value })}
+                              placeholder="e.g. 3-month rollout (Weeks 1-12)"
+                              className={isMissingErr && !revisedPlanData.timeline?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
+                              disabled={isReadOnly || loading}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold flex items-center justify-between">
+                            <span>Expected Outcomes</span>
+                            <span className="text-destructive font-bold">*</span>
+                          </Label>
+                          <Textarea
+                            value={revisedPlanData.expectedOutcomes}
+                            onChange={(e) => setRevisedPlanData({ ...revisedPlanData, expectedOutcomes: e.target.value })}
+                            className={`min-h-[60px] ${isMissingErr && !revisedPlanData.expectedOutcomes?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                            placeholder="Cleaner public spaces, reduced health risks, increased community pride..."
+                            disabled={isReadOnly || loading}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* STEP 8: Assess Community Impact */}
+                {step === 8 && (
                   <div className="space-y-4 text-xs">
                     <div className="space-y-1">
                       <Label className="text-xs font-semibold">Short-Term Impact</Label>
@@ -883,7 +1308,7 @@ export function ActivityForm({
 
                 <Button onClick={handleNextStep} disabled={loading} className="gap-2 font-bold px-6 w-full sm:w-auto">
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  [Continue Mission] <ArrowRight className="h-4 w-4" />
+                  Continue Mission <ArrowRight className="h-4 w-4" />
                 </Button>
               </CardFooter>
             </Card>

@@ -249,7 +249,7 @@ export function ClassroomsView({
               <option value="newest">Newest First</option>
               <option value="name">Name (A - Z)</option>
               <option value="students">Most Students</option>
-              <option value="scenarios">Most Scenarios</option>
+              <option value="scenarios">Most Missions</option>
             </select>
           </div>
 
@@ -390,7 +390,7 @@ export function ClassroomsView({
                             trigger={
                               <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer gap-2">
                                 <Users className="h-3.5 w-3.5 text-primary" />
-                                <span>View Roster & Scenarios</span>
+                                <span>View Roster & Missions</span>
                               </DropdownMenuItem>
                             }
                           />
@@ -489,7 +489,7 @@ export function ClassroomsView({
                           <BookOpen className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-muted-foreground text-[10px] uppercase font-semibold">Scenarios</p>
+                          <p className="text-muted-foreground text-[10px] uppercase font-semibold">Missions</p>
                           <p className="font-bold text-foreground text-xs truncate">
                             {assignedScenarios.length} Assigned
                           </p>
@@ -522,7 +522,7 @@ export function ClassroomsView({
                       </div>
                     ) : (
                       <div className="text-[11px] text-muted-foreground italic py-1">
-                        No scenarios assigned yet.
+                        No missions assigned yet.
                       </div>
                     )}
                   </CardContent>
@@ -554,7 +554,7 @@ export function ClassroomsView({
                   <th className="py-3 px-4">Classroom Name</th>
                   <th className="py-3 px-4">Join Code</th>
                   <th className="py-3 px-4">Enrolled Students</th>
-                  <th className="py-3 px-4">Scenarios</th>
+                  <th className="py-3 px-4">Missions</th>
                   <th className="py-3 px-4">Teams</th>
                   <th className="py-3 px-4">Created</th>
                   <th className="py-3 px-4 text-right">Actions</th>

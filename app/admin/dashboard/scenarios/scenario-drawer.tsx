@@ -107,7 +107,7 @@ export function ScenarioDrawer({
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="text-[10px] font-semibold">
-                    Standard Scenario
+                    Standard Mission
                   </Badge>
                 )}
                 <span className="text-xs text-muted-foreground">
@@ -195,11 +195,11 @@ export function ScenarioDrawer({
               <div className="space-y-3">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <ListChecks className="h-3.5 w-3.5 text-primary" />
-                  Scenario Constraints & Evaluation Rules
+                  Mission Constraints & Evaluation Rules
                 </h4>
 
                 {scenario.constraints.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No constraints configured for this scenario.</p>
+                  <p className="text-xs text-muted-foreground italic">No constraints configured for this mission.</p>
                 ) : (
                   <div className="space-y-2">
                     {scenario.constraints.map((c, i) => (
@@ -224,7 +224,7 @@ export function ScenarioDrawer({
                 <div>
                   <h4 className="text-sm font-bold text-foreground">Classroom Sections</h4>
                   <p className="text-xs text-muted-foreground">
-                    Classrooms where students are currently assigned this scenario.
+                    Classrooms where students are currently assigned this mission.
                   </p>
                 </div>
                 <AssignScenarioDialog
@@ -296,7 +296,7 @@ export function ScenarioDrawer({
                   <div className="space-y-1 max-w-xs mx-auto">
                     <p className="text-sm font-semibold">Standard Mission</p>
                     <p className="text-xs text-muted-foreground">
-                      This scenario uses standard simulation criteria. You can edit it to add structured problem categories, evidence banks, and stakeholder roles.
+                      This mission uses standard simulation criteria. You can edit it to add structured problem categories, evidence banks, and stakeholder roles.
                     </p>
                   </div>
                   <Link href={`/admin/dashboard/scenarios/${scenario.id}/edit`}>
@@ -376,7 +376,7 @@ export function ScenarioDrawer({
                   <div className="space-y-1 max-w-xs mx-auto">
                     <p className="text-sm font-semibold">No Submissions Yet</p>
                     <p className="text-xs text-muted-foreground">
-                      Student action plans and evaluations for this scenario will appear here once submitted.
+                      Student action plans and evaluations for this mission will appear here once submitted.
                     </p>
                   </div>
                 </div>

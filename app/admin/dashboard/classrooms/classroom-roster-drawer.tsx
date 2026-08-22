@@ -160,11 +160,11 @@ export function ClassroomRosterDrawer({
       if (res && res.error) {
         toast.error(res.error);
       } else {
-        toast.success("Scenario assigned to classroom!");
+        toast.success("Mission assigned to classroom!");
         setAssigningScenarioId("");
       }
     } catch {
-      toast.error("Failed to assign scenario");
+      toast.error("Failed to assign mission");
     } finally {
       setAssignLoading(false);
     }
@@ -179,7 +179,7 @@ export function ClassroomRosterDrawer({
         toast.success(`"${title}" unassigned from classroom`);
       }
     } catch {
-      toast.error("Failed to unassign scenario");
+      toast.error("Failed to unassign mission");
     }
   };
 
@@ -192,7 +192,7 @@ export function ClassroomRosterDrawer({
           ) : (
             <Button variant="outline" size="sm" className="w-full gap-1.5 font-medium">
               <Users className="h-4 w-4" />
-              <span>View Roster & Scenarios</span>
+              <span>View Roster & Missions</span>
             </Button>
           )
         }
@@ -252,7 +252,7 @@ export function ClassroomRosterDrawer({
           </div>
 
           <DrawerDescription className="text-xs text-muted-foreground mt-2 line-clamp-2">
-            {classroom.description || "Manage student enrollment, assigned scenarios, and classroom collaboration settings."}
+            {classroom.description || "Manage student enrollment, assigned missions, and classroom collaboration settings."}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -269,7 +269,7 @@ export function ClassroomRosterDrawer({
               </TabsTrigger>
               <TabsTrigger value="scenarios" className="gap-1.5 text-xs font-semibold">
                 <BookOpen className="h-4 w-4" />
-                <span>Scenarios</span>
+                <span>Missions</span>
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">
                   {scenarios.length}
                 </Badge>
@@ -391,14 +391,14 @@ export function ClassroomRosterDrawer({
               )}
             </TabsContent>
 
-            {/* TAB 2: SCENARIOS */}
+            {/* TAB 2: MISSIONS */}
             <TabsContent value="scenarios" className="space-y-4 m-0 focus:outline-none">
-              {/* Quick Scenario Assignment Bar */}
+              {/* Quick Mission Assignment Bar */}
               {availableToAssign.length > 0 && (
                 <div className="p-3.5 rounded-xl border bg-muted/30 flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
                   <div className="text-xs">
-                    <p className="font-semibold text-foreground">Assign Civic Scenario</p>
-                    <p className="text-[11px] text-muted-foreground">Select a scenario from your library</p>
+                    <p className="font-semibold text-foreground">Assign Civic Mission</p>
+                    <p className="text-[11px] text-muted-foreground">Select a mission from your library</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <select
@@ -406,7 +406,7 @@ export function ClassroomRosterDrawer({
                       onChange={(e) => setAssigningScenarioId(e.target.value)}
                       className="h-8 rounded-md border bg-background px-2.5 text-xs text-foreground focus:outline-ring max-w-[200px]"
                     >
-                      <option value="">Choose scenario...</option>
+                      <option value="">Choose mission...</option>
                       {availableToAssign.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.title}
@@ -432,9 +432,9 @@ export function ClassroomRosterDrawer({
                     <BookOpen className="h-5 w-5" />
                   </div>
                   <div className="space-y-1 max-w-xs mx-auto">
-                    <p className="text-sm font-semibold">No Scenarios Assigned</p>
+                    <p className="text-sm font-semibold">No Missions Assigned</p>
                     <p className="text-xs text-muted-foreground">
-                      Assign a civic challenge or scenario from your library for students to solve.
+                      Assign a civic challenge or mission from your library for students to solve.
                     </p>
                   </div>
                 </div>

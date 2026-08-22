@@ -29,7 +29,8 @@ export const STEPS_CONFIG = [
   { step: 4, name: "Stakeholder Consultation", desc: "Gather insights from community members" },
   { step: 5, name: "Intervention Planning", desc: "Develop evidence-based action plan" },
   { step: 6, name: "Challenge Simulation", desc: "Respond to unexpected obstacles" },
-  { step: 7, name: "Impact Assessment", desc: "Evaluate sustainability & ethics" },
+  { step: 7, name: "Plan Revision", desc: "Adapt intervention plan based on obstacles" },
+  { step: 8, name: "Impact Assessment", desc: "Evaluate sustainability & ethics" },
 ];
 
 export function StepTracker({ currentStep, scenario, completedSteps = [], onSelectStep }: StepTrackerProps) {
@@ -40,7 +41,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
         <div className="flex items-center justify-between text-xs font-bold mb-2">
           <span className="text-primary uppercase tracking-wider">Mission Progress</span>
           <span className="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-            Step {Math.min(currentStep, 7)} of 7
+            Step {Math.min(currentStep, 8)} of 8
           </span>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none whitespace-nowrap">
@@ -52,9 +53,9 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
             return (
               <div
                 key={s.step}
-                onClick={() => isClickable && onSelectStep!(s.step)}
+                onClick={() => isClickable && onSelectStep && onSelectStep(s.step)}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 transition-colors ${
-                  isClickable ? "cursor-pointer hover:opacity-90" : ""
+                  isClickable ? "cursor-pointer hover:opacity-80" : ""
                 } ${
                   isCurrent
                     ? "bg-primary text-primary-foreground"
@@ -78,7 +79,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
           <CardTitle className="text-base font-semibold flex items-center justify-between">
             <span>Mission Timeline</span>
             <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
-              {Math.min(currentStep, 7)} / 7
+              {Math.min(currentStep, 8)} / 8
             </span>
           </CardTitle>
         </CardHeader>
@@ -123,11 +124,11 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
         </CardContent>
       </Card>
 
-      {/* Scenario Guidance Box */}
+      {/* Mission Guidance Box */}
       <Card className="border-border bg-card shadow-sm">
         <CardHeader className="pb-2 border-b border-border bg-muted/20">
           <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Scenario Context & Legal Guidance
+            Mission Context & Legal Guidance
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-3 text-xs leading-relaxed space-y-3">

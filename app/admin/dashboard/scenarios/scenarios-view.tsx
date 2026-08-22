@@ -158,14 +158,14 @@ export function ScenariosView({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h2 className="text-3xl font-bold tracking-tight text-foreground">
-              Scenario Library
+              Mission Library
             </h2>
             <Badge variant="outline" className="font-semibold text-xs px-2.5 py-0.5">
-              {stats.total} {stats.total === 1 ? "Scenario" : "Scenarios"}
+              {stats.total} {stats.total === 1 ? "Mission" : "Missions"}
             </Badge>
           </div>
           <p className="text-muted-foreground text-sm">
-            Author civic problem-solving scenarios, configure constraints, and assign simulations to classrooms.
+            Author civic problem-solving missions, configure constraints, and assign simulations to classrooms.
           </p>
         </div>
 
@@ -181,7 +181,7 @@ export function ScenariosView({
         <div className="relative flex-1 min-w-[240px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search scenarios, descriptions, constraints..."
+            placeholder="Search missions, descriptions, constraints..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 pr-8 h-9 text-xs"
@@ -269,11 +269,11 @@ export function ScenariosView({
             <BookOpen className="h-6 w-6" />
           </div>
           <div className="space-y-1 max-w-sm mx-auto">
-            <h3 className="text-base font-bold text-foreground">No Scenarios Found</h3>
+            <h3 className="text-base font-bold text-foreground">No Missions Found</h3>
             <p className="text-xs text-muted-foreground">
               {searchQuery || statusFilter !== "all"
-                ? "No scenarios match your search filters. Try adjusting your query."
-                : "Your scenario library is empty. Create your first civic scenario to get started."}
+                ? "No missions match your search filters. Try adjusting your query."
+                : "Your mission library is empty. Create your first civic mission to get started."}
             </p>
           </div>
           {searchQuery || statusFilter !== "all" ? (
@@ -292,7 +292,7 @@ export function ScenariosView({
             <Link href="/admin/dashboard/scenarios/new">
               <Button size="sm" className="gap-1.5 text-xs">
                 <Plus className="h-4 w-4" />
-                <span>Create Scenario</span>
+                <span>Create Mission</span>
               </Button>
             </Link>
           )}
@@ -322,7 +322,7 @@ export function ScenariosView({
                             </Badge>
                           ) : (
                             <Badge variant="secondary" className="text-[10px] font-semibold">
-                              Standard Scenario
+                              Standard Mission
                             </Badge>
                           )}
                           <span className="text-[11px] text-muted-foreground flex items-center gap-1">
@@ -380,7 +380,7 @@ export function ScenariosView({
                           <Link href={`/admin/dashboard/scenarios/${scenario.id}/edit`}>
                             <DropdownMenuItem className="cursor-pointer gap-2">
                               <Edit className="h-3.5 w-3.5" />
-                              <span>Edit Scenario</span>
+                              <span>Edit Mission</span>
                             </DropdownMenuItem>
                           </Link>
 
@@ -395,7 +395,7 @@ export function ScenariosView({
                                 className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
-                                <span>Delete Scenario</span>
+                                <span>Delete Mission</span>
                               </DropdownMenuItem>
                             }
                           />
@@ -505,7 +505,7 @@ export function ScenariosView({
             <table className="w-full text-xs text-left">
               <thead className="text-[11px] uppercase bg-muted/60 text-muted-foreground border-b font-semibold tracking-wider">
                 <tr>
-                  <th className="py-3 px-4">Scenario Title</th>
+                  <th className="py-3 px-4">Mission Title</th>
                   <th className="py-3 px-4">Type</th>
                   <th className="py-3 px-4">Constraints</th>
                   <th className="py-3 px-4">Assigned Classrooms</th>

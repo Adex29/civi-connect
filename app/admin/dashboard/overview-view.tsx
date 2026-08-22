@@ -135,7 +135,7 @@ export function OverviewView({
           <Link href="/admin/dashboard/scenarios/new">
             <Button variant="outline" className="gap-1.5 shadow-2xs font-medium text-xs">
               <Plus className="h-4 w-4" />
-              <span>New Scenario</span>
+              <span>New Mission</span>
             </Button>
           </Link>
         </div>
@@ -184,11 +184,11 @@ export function OverviewView({
           </div>
         </Card>
 
-        {/* Card 3: Scenario Library */}
+        {/* Card 3: Mission Library */}
         <Card className="p-4 shadow-2xs hover:shadow-xs hover:border-primary/40 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Scenarios
+              Missions
             </span>
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
               <BookOpen className="h-4 w-4" />
@@ -246,7 +246,7 @@ export function OverviewView({
           <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-primary transition-transform mt-1" />
         </Link>
 
-        {/* Tile 2: Scenarios */}
+        {/* Tile 2: Missions */}
         <Link
           href="/admin/dashboard/scenarios"
           className="p-4 rounded-xl border bg-card hover:bg-muted/40 hover:border-primary/40 transition-all shadow-2xs group flex items-start justify-between"
@@ -255,9 +255,9 @@ export function OverviewView({
             <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit">
               <BookOpen className="h-4 w-4" />
             </div>
-            <h4 className="font-bold text-sm text-foreground pt-1 group-hover:text-primary transition-colors">Scenario Library</h4>
+            <h4 className="font-bold text-sm text-foreground pt-1 group-hover:text-primary transition-colors">Mission Library</h4>
             <p className="text-xs text-muted-foreground">
-              Create civic scenarios and constraints.
+              Create civic missions and constraints.
             </p>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-primary transition-transform mt-1" />
@@ -437,7 +437,7 @@ export function OverviewView({
                         <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
                           <span>{studentCount} student{studentCount !== 1 ? "s" : ""}</span>
                           <span>•</span>
-                          <span>{assignedScenarios.length} scenario{assignedScenarios.length !== 1 ? "s" : ""}</span>
+                          <span>{assignedScenarios.length} mission{assignedScenarios.length !== 1 ? "s" : ""}</span>
                         </div>
                       </div>
 

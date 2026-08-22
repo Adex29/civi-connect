@@ -11,6 +11,7 @@ import {
   Users, 
   Lightbulb, 
   Zap, 
+  RefreshCw,
   Target,
   Play
 } from "lucide-react";
@@ -61,6 +62,13 @@ export default function LandingPage() {
     },
     {
       num: 7,
+      name: "Revise Plan",
+      desc: "Refine and adapt your intervention plan based on the simulation obstacle.",
+      icon: RefreshCw,
+      badge: "Revision"
+    },
+    {
+      num: 8,
       name: "Assess Community Impact",
       desc: "Evaluate the feasibility, sustainability, effectiveness, and ethical implications of your proposed solution.",
       icon: Target,
@@ -111,7 +119,7 @@ export default function LandingPage() {
                 What You Will Do?
               </h2>
               <p className="text-muted-foreground text-sm max-w-xl mx-auto">
-                Follow these 7 critical simulation stages to analyze, design, and validate evidence-based solutions for local communities.
+                Follow these 8 critical simulation stages to analyze, design, and validate evidence-based solutions for local communities.
               </p>
             </div>
 
