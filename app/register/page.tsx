@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignupFormSchema, SignupFormInput } from "@/lib/definitions";
 import { registerAction } from "./actions";
@@ -18,7 +17,6 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useForm<SignupFormInput>({
@@ -34,7 +32,7 @@ export default function RegisterPage() {
     },
   });
 
-  const isGroup = form.watch("isGroup");
+  const isGroup = useWatch({ control: form.control, name: "isGroup" });
 
   async function onSubmit(data: SignupFormInput) {
     setServerError(null);
@@ -52,15 +50,15 @@ export default function RegisterPage() {
     } else if (result.status === "success") {
       toast.success(result.message);
         //  router.push("/dashboard");
-      window.location.href = "/dashboard";
+      window.location.assign("/dashboard");
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg shadow-lg">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold tracking-tight">Student Registration</CardTitle>
+          <CardTitle className="page-title text-2xl">Student Registration</CardTitle>
           <CardDescription>Join your class to access civic missions.</CardDescription>
         </CardHeader>
         <CardContent>

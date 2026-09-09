@@ -128,7 +128,7 @@ export function CreateClassroomDialog({
                     key={preset}
                     type="button"
                     onClick={() => handlePresetClick(preset)}
-                    className="text-[11px] px-2 py-0.5 rounded-full border bg-muted/50 hover:bg-accent hover:text-accent-foreground transition-colors"
+                    className="rounded-md border bg-muted/50 px-2 py-0.5 text-[11px] transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     {preset}
                   </button>

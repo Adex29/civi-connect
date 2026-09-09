@@ -124,13 +124,13 @@ export function OverviewView({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Overview</h2>
+          <h2 className="page-title text-4xl">Overview</h2>
           <p className="text-muted-foreground mt-1">
             Welcome to the Civi-Tech Admin Dashboard.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <CreateClassroomDialog />
           <Link href="/admin/dashboard/scenarios/new">
             <Button variant="outline" className="gap-1.5 shadow-2xs font-medium text-xs">
@@ -144,7 +144,7 @@ export function OverviewView({
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Total Classrooms */}
-        <Card className="p-4 shadow-2xs hover:shadow-xs hover:border-primary/40 transition-all">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Classrooms
@@ -167,7 +167,7 @@ export function OverviewView({
         </Card>
 
         {/* Card 2: Registered Students */}
-        <Card className="p-4 shadow-2xs hover:shadow-xs hover:border-primary/40 transition-all">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Students
@@ -185,7 +185,7 @@ export function OverviewView({
         </Card>
 
         {/* Card 3: Mission Library */}
-        <Card className="p-4 shadow-2xs hover:shadow-xs hover:border-primary/40 transition-all">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Missions
@@ -203,7 +203,7 @@ export function OverviewView({
         </Card>
 
         {/* Card 4: Submissions */}
-        <Card className="p-4 shadow-2xs hover:shadow-xs hover:border-primary/40 transition-all">
+        <Card className="p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Submissions
@@ -232,7 +232,7 @@ export function OverviewView({
         {/* Tile 1: Classrooms */}
         <Link
           href="/admin/dashboard/classrooms"
-          className="p-4 rounded-xl border bg-card hover:bg-muted/40 hover:border-primary/40 transition-all shadow-2xs group flex items-start justify-between"
+          className="surface-panel surface-interactive group flex items-start justify-between rounded-xl p-4 hover:bg-muted/40"
         >
           <div className="space-y-1">
             <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit">
@@ -249,7 +249,7 @@ export function OverviewView({
         {/* Tile 2: Missions */}
         <Link
           href="/admin/dashboard/scenarios"
-          className="p-4 rounded-xl border bg-card hover:bg-muted/40 hover:border-primary/40 transition-all shadow-2xs group flex items-start justify-between"
+          className="surface-panel surface-interactive group flex items-start justify-between rounded-xl p-4 hover:bg-muted/40"
         >
           <div className="space-y-1">
             <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit">
@@ -266,7 +266,7 @@ export function OverviewView({
         {/* Tile 3: Submissions */}
         <Link
           href="/admin/dashboard/submissions"
-          className="p-4 rounded-xl border bg-card hover:bg-muted/40 hover:border-primary/40 transition-all shadow-2xs group flex items-start justify-between"
+          className="surface-panel surface-interactive group flex items-start justify-between rounded-xl p-4 hover:bg-muted/40"
         >
           <div className="space-y-1">
             <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit">
@@ -283,7 +283,7 @@ export function OverviewView({
         {/* Tile 4: Students Directory */}
         <Link
           href="/admin/dashboard/students"
-          className="p-4 rounded-xl border bg-card hover:bg-muted/40 hover:border-primary/40 transition-all shadow-2xs group flex items-start justify-between"
+          className="surface-panel surface-interactive group flex items-start justify-between rounded-xl p-4 hover:bg-muted/40"
         >
           <div className="space-y-1">
             <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit">
@@ -340,7 +340,7 @@ export function OverviewView({
                 return (
                   <div
                     key={sub.id}
-                    className="p-4 rounded-xl border bg-card hover:border-primary/40 hover:bg-muted/20 transition-all shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="surface-panel surface-interactive flex flex-col justify-between gap-3 rounded-xl p-4 hover:bg-muted/20 sm:flex-row sm:items-center"
                   >
                     <div className="space-y-1 min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -429,7 +429,7 @@ export function OverviewView({
                 return (
                   <div
                     key={classroom.id}
-                    className="p-3.5 rounded-xl border bg-card hover:border-primary/40 hover:bg-muted/20 transition-all shadow-2xs space-y-2"
+                    className="surface-panel surface-interactive space-y-2 rounded-xl p-3.5 hover:bg-muted/20"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">

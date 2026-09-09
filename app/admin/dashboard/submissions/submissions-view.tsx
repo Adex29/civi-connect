@@ -192,7 +192,7 @@ export function SubmissionsView({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Submissions Viewer</h2>
+          <h2 className="page-title text-4xl">Submissions Viewer</h2>
           <p className="text-muted-foreground mt-1">
             Review student civic action plans and inspect detailed AI evaluation results.
           </p>
@@ -200,9 +200,9 @@ export function SubmissionsView({
       </div>
 
       {/* Clean toolbar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-card p-3 rounded-lg border">
+      <div className="toolbar-panel flex flex-col items-stretch justify-between gap-3 rounded-xl p-3 lg:flex-row lg:items-center">
         {/* Search */}
-        <div className="relative flex-1">
+        <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={searchQuery}
@@ -213,8 +213,8 @@ export function SubmissionsView({
         </div>
 
         {/* Filters & Organization */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div className="min-w-[200px] max-w-xs">
+        <div className="grid min-w-0 gap-2 text-xs sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-center">
+          <div className="min-w-0 lg:w-[200px]">
             <MultiSelectCombobox
               options={classroomOptions}
               selectedValues={selectedClassrooms}
@@ -225,7 +225,7 @@ export function SubmissionsView({
             />
           </div>
 
-          <div className="min-w-[200px] max-w-xs">
+          <div className="min-w-0 lg:w-[200px]">
             <MultiSelectCombobox
               options={scenarioOptions}
               selectedValues={selectedScenarios}
@@ -237,24 +237,27 @@ export function SubmissionsView({
           </div>
 
           {/* Grouping toggles */}
-          <div className="flex items-center gap-1 border-l pl-2">
+          <div className="toolbar-control-group flex items-center gap-1 p-1 sm:col-span-2 lg:ml-1">
             <button
               onClick={() => setGroupBy("flat")}
-              className={`p-2 rounded-md transition-colors ${groupBy === "flat" ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+              data-selected={groupBy === "flat"}
+              className="toolbar-toggle rounded-md p-2 transition-all"
               title="List view"
             >
               <List className="h-4 w-4" />
             </button>
             <button
               onClick={() => setGroupBy("classroom")}
-              className={`p-2 rounded-md transition-colors ${groupBy === "classroom" ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+              data-selected={groupBy === "classroom"}
+              className="toolbar-toggle rounded-md p-2 transition-all"
               title="Group by Classroom"
             >
               <School className="h-4 w-4" />
             </button>
             <button
               onClick={() => setGroupBy("scenario")}
-              className={`p-2 rounded-md transition-colors ${groupBy === "scenario" ? "bg-accent text-accent-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+              data-selected={groupBy === "scenario"}
+              className="toolbar-toggle rounded-md p-2 transition-all"
               title="Group by Mission"
             >
               <LayoutGrid className="h-4 w-4" />

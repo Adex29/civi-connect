@@ -185,7 +185,7 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
     <Tabs defaultValue="issues" orientation="vertical" className="w-full block">
       <div className="w-full grid grid-cols-1 lg:grid-cols-[250px_minmax(0,1fr)] gap-6 items-start">
         {/* Sticky Vertical Sidebar Navigation */}
-        <aside className="lg:sticky lg:top-20 z-10 bg-card border border-border rounded-xl p-2.5 shadow-sm space-y-1">
+        <aside className="surface-panel z-10 space-y-1 rounded-xl p-2.5 lg:sticky lg:top-20">
           <div className="px-3 py-2 border-b border-border mb-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Mission Steps Navigation
@@ -198,9 +198,9 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
                 <TabsTrigger
                   key={step.value}
                   value={step.value}
-                  className="w-full justify-start gap-2.5 px-3 py-2.5 rounded-lg text-left text-xs font-medium transition-all group/trigger data-[state=active]:bg-primary/10 data-[state=active]:text-primary dark:data-[state=active]:bg-primary/20 hover:bg-muted/60"
+                  className="w-full justify-start gap-2.5 px-3 py-2.5 rounded-lg text-left text-xs font-semibold transition-all border border-transparent group/trigger data-active:border-surface-border data-active:bg-card data-active:text-primary data-active:shadow-xs hover:border-surface-border/60 hover:bg-card/50 hover:text-primary border-b-0 data-active:border-b-0"
                 >
-                  <span className="flex items-center justify-center h-6 w-6 rounded-md bg-muted text-[11px] font-bold group-data-[state=active]/trigger:bg-primary group-data-[state=active]/trigger:text-primary-foreground shrink-0 transition-colors">
+                  <span className="flex items-center justify-center h-6 w-6 rounded-md bg-muted text-[11px] font-bold group-data-active/trigger:bg-primary group-data-active/trigger:text-primary-foreground group-data-active/trigger:shadow-2xs shrink-0 transition-colors">
                     {step.stepNum}
                   </span>
                   <div className="flex-1 min-w-0">

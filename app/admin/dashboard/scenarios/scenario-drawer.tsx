@@ -32,6 +32,7 @@ import {
   Award,
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface ScenarioDrawerProps {
   scenario: Scenario;
@@ -97,12 +98,12 @@ export function ScenarioDrawer({
 
       <DrawerContent side="right" className="w-full max-w-xl sm:max-w-2xl h-full flex flex-col p-0">
         {/* Drawer Header */}
-        <DrawerHeader className="p-6 border-b shrink-0 bg-muted/20">
+        <DrawerHeader className="px-6 pt-6 pb-4 shrink-0 bg-background/50">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
                 {scenario.missionData ? (
-                  <Badge variant="outline" className="text-[10px] font-semibold">
+                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[10px] font-semibold">
                     <Sparkles className="h-3 w-3 mr-1 text-primary" /> Civic Mission
                   </Badge>
                 ) : (
@@ -138,44 +139,58 @@ export function ScenarioDrawer({
 
         {/* 4-Tab Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-          <div className="px-6 border-b bg-card shrink-0">
-            <TabsList className="h-11 bg-transparent p-0 gap-6 border-b-0">
+          <div className="px-6 border-b border-border/80 bg-background/95 backdrop-blur-sm sticky top-0 z-10 shrink-0">
+            <TabsList variant="line" className="h-12 w-full justify-start gap-6 bg-transparent p-0 border-b-0 -mb-px flex items-center">
               <TabsTrigger
                 value="overview"
-                className="data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent rounded-none px-1 pb-3 text-xs font-semibold gap-1.5"
+                className="relative h-full flex items-center gap-2 px-1 pb-3 pt-2 text-xs font-semibold tracking-tight transition-colors border-b-2 border-transparent hover:text-foreground text-muted-foreground data-active:border-primary data-active:text-primary data-[state=active]:border-primary data-[state=active]:text-primary -mb-px"
               >
-                <FileText className="h-3.5 w-3.5" />
+                <FileText className="h-4 w-4" />
                 <span>Overview & Criteria</span>
               </TabsTrigger>
 
               <TabsTrigger
                 value="classrooms"
-                className="data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent rounded-none px-1 pb-3 text-xs font-semibold gap-1.5"
+                className="relative h-full flex items-center gap-2 px-1 pb-3 pt-2 text-xs font-semibold tracking-tight transition-colors border-b-2 border-transparent hover:text-foreground text-muted-foreground data-active:border-primary data-active:text-primary data-[state=active]:border-primary data-[state=active]:text-primary -mb-px"
               >
-                <School className="h-3.5 w-3.5" />
+                <School className="h-4 w-4" />
                 <span>Classrooms</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4">
+                <span
+                  className={cn(
+                    "ml-1 inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 text-[10px] font-bold rounded-full transition-colors",
+                    activeTab === "classrooms"
+                      ? "bg-primary/15 text-primary border border-primary/25"
+                      : "bg-muted text-muted-foreground border border-border/60"
+                  )}
+                >
                   {assignedClassrooms.length}
-                </Badge>
+                </span>
               </TabsTrigger>
 
               <TabsTrigger
                 value="mission"
-                className="data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent rounded-none px-1 pb-3 text-xs font-semibold gap-1.5"
+                className="relative h-full flex items-center gap-2 px-1 pb-3 pt-2 text-xs font-semibold tracking-tight transition-colors border-b-2 border-transparent hover:text-foreground text-muted-foreground data-active:border-primary data-active:text-primary data-[state=active]:border-primary data-[state=active]:text-primary -mb-px"
               >
-                <ShieldCheck className="h-3.5 w-3.5" />
+                <ShieldCheck className="h-4 w-4" />
                 <span>Mission Structure</span>
               </TabsTrigger>
 
               <TabsTrigger
                 value="submissions"
-                className="data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent rounded-none px-1 pb-3 text-xs font-semibold gap-1.5"
+                className="relative h-full flex items-center gap-2 px-1 pb-3 pt-2 text-xs font-semibold tracking-tight transition-colors border-b-2 border-transparent hover:text-foreground text-muted-foreground data-active:border-primary data-active:text-primary data-[state=active]:border-primary data-[state=active]:text-primary -mb-px"
               >
-                <Award className="h-3.5 w-3.5" />
+                <Award className="h-4 w-4" />
                 <span>Submissions</span>
-                <Badge variant="secondary" className="ml-1 text-[10px] px-1.5 py-0 h-4">
+                <span
+                  className={cn(
+                    "ml-1 inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 text-[10px] font-bold rounded-full transition-colors",
+                    activeTab === "submissions"
+                      ? "bg-primary/15 text-primary border border-primary/25"
+                      : "bg-muted text-muted-foreground border border-border/60"
+                  )}
+                >
                   {scenarioSubmissions.length}
-                </Badge>
+                </span>
               </TabsTrigger>
             </TabsList>
           </div>

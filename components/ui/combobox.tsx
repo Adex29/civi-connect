@@ -79,6 +79,20 @@ export function MultiSelectCombobox({
     onSelectChange(selectedValues.filter((v) => v !== val))
   }
 
+  const displayText = React.useMemo(() => {
+    if (selectedValues.length === 0) return placeholder
+    if (selectedValues.length === 1) {
+      const option = options.find((o) => o.value === selectedValues[0])
+      return option ? option.label : selectedValues[0]
+    }
+    const clean = placeholder
+      .replace(/^(Filter|Select|Choose)\s+/i, "")
+      .replace(/\.{3}$/, "")
+      .replace(/\(s\)/i, "")
+      .trim()
+    return clean ? clean : `${selectedValues.length} selected`
+  }, [selectedValues, options, placeholder])
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
@@ -89,55 +103,53 @@ export function MultiSelectCombobox({
             aria-expanded={open}
             disabled={disabled}
             className={cn(
-              "w-full justify-between font-normal h-auto min-h-10 py-1.5 px-3",
+              "w-full justify-between font-normal h-10 px-3 text-xs bg-card border-surface-border shadow-none overflow-hidden",
               selectedValues.length === 0 && "text-muted-foreground",
               className
             )}
           >
-            <div className="flex flex-wrap gap-1 items-center max-w-[calc(100%-2rem)]">
-              {selectedValues.length === 0 && (
-                <span>{placeholder}</span>
-              )}
-              {selectedValues.length > 0 && selectedValues.length <= 3 && (
-                selectedValues.map((val) => {
-                  const option = options.find((o) => o.value === val)
-                  return (
-                    <Badge
-                      key={val}
-                      variant="secondary"
-                      className="text-xs px-2 py-0.5 flex items-center gap-1 font-normal"
-                    >
-                      {option ? option.label : val}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-foreground text-muted-foreground"
-                        onClick={(e) => removeValue(e, val)}
-                      />
-                    </Badge>
-                  )
-                })
-              )}
-              {selectedValues.length > 3 && (
-                <Badge variant="secondary" className="text-xs px-2 py-0.5 font-normal">
-                  {selectedValues.length} selected
-                </Badge>
+            <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
+              <span className={cn("truncate", selectedValues.length > 0 && "font-medium text-foreground")}>
+                {displayText}
+              </span>
+              {selectedValues.length > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/15 px-1.5 text-[10px] font-bold text-primary border border-primary/25 shrink-0">
+                  {selectedValues.length}
+                </span>
               )}
             </div>
-            <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
+            <div className="flex items-center gap-1 shrink-0 ml-1.5 text-muted-foreground">
+              {selectedValues.length > 0 && (
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    clearAll()
+                  }}
+                  className="rounded-full p-0.5 hover:bg-muted hover:text-foreground cursor-pointer"
+                  title="Clear filter"
+                >
+                  <X className="h-3 w-3" />
+                </span>
+              )}
+              <ChevronsUpDown className="h-3.5 w-3.5 opacity-50" />
+            </div>
           </Button>
         }
       />
-      <PopoverContent className="w-[var(--anchor-width)] p-0 shadow-lg" align="start">
+      <PopoverContent className="w-[var(--anchor-width)] min-w-[240px] p-0 shadow-lg z-50" align="start">
         <div className="p-2 border-b flex items-center gap-2">
-          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <Input
             placeholder={searchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-8 border-none shadow-none focus-visible:ring-0 text-sm p-0"
+            className="h-7 border-none shadow-none focus-visible:ring-0 text-xs p-0 bg-transparent"
           />
           {search && (
             <X
-              className="h-4 w-4 shrink-0 cursor-pointer text-muted-foreground hover:text-foreground"
+              className="h-3.5 w-3.5 shrink-0 cursor-pointer text-muted-foreground hover:text-foreground"
               onClick={() => setSearch("")}
             />
           )}
@@ -168,7 +180,7 @@ export function MultiSelectCombobox({
 
         <div className="max-h-60 overflow-y-auto p-1 space-y-0.5">
           {filteredOptions.length === 0 ? (
-            <div className="py-6 text-center text-sm text-muted-foreground">
+            <div className="py-6 text-center text-xs text-muted-foreground">
               {emptyText}
             </div>
           ) : (
@@ -179,25 +191,25 @@ export function MultiSelectCombobox({
                   key={option.value}
                   onClick={() => !option.disabled && toggleOption(option.value)}
                   className={cn(
-                    "flex items-center justify-between px-2.5 py-1.5 rounded-md text-sm cursor-pointer transition-colors select-none",
+                    "flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs cursor-pointer transition-colors select-none",
                     option.disabled
                       ? "opacity-50 cursor-not-allowed"
                       : isSelected
-                      ? "bg-accent text-accent-foreground font-medium"
-                      : "hover:bg-accent/50"
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-accent/60 text-foreground"
                   )}
                 >
-                  <div className="flex flex-col">
-                    <span>{option.label}</span>
+                  <div className="flex flex-col min-w-0 pr-2">
+                    <span className="truncate">{option.label}</span>
                     {option.sublabel && (
-                      <span className="text-xs text-muted-foreground font-normal">
+                      <span className="text-[10px] text-muted-foreground font-normal truncate">
                         {option.sublabel}
                       </span>
                     )}
                   </div>
                   <div
                     className={cn(
-                      "flex h-4 w-4 items-center justify-center rounded border transition-colors",
+                      "flex h-4 w-4 items-center justify-center rounded border transition-colors shrink-0",
                       isSelected
                         ? "bg-primary border-primary text-primary-foreground"
                         : "border-muted-foreground/40"
@@ -280,7 +292,7 @@ export function Combobox({
             placeholder={searchPlaceholder}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-7 border-none shadow-none focus-visible:ring-0 text-xs p-0"
+            className="h-7 border-none shadow-none focus-visible:ring-0 text-xs p-0 bg-transparent"
           />
           {search && (
             <X
@@ -313,8 +325,8 @@ export function Combobox({
                     option.disabled
                       ? "opacity-50 cursor-not-allowed"
                       : isSelected
-                      ? "bg-accent text-accent-foreground font-semibold"
-                      : "hover:bg-accent/50"
+                      ? "bg-primary/10 text-primary font-bold"
+                      : "hover:bg-accent/60 text-foreground"
                   )}
                 >
                   <div className="flex flex-col min-w-0">

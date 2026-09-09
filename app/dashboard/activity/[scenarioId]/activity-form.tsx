@@ -455,7 +455,7 @@ export function ActivityForm({
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-3xl font-extrabold tracking-tight">Congratulations, {studentName}!</h1>
+            <h1 className="page-title text-3xl">Congratulations, {studentName}!</h1>
             <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed">
               You have successfully completed the <strong>Civi-Tech Civic Engagement Simulation</strong> for{" "}
               <em>"{scenario.title}"</em>.
@@ -541,7 +541,7 @@ export function ActivityForm({
               <BookOpen className="h-3.5 w-3.5 text-primary" />
               Mission Overview
             </Button>
-            <span className="text-xs font-bold font-mono px-3 py-1 bg-primary text-primary-foreground rounded-full shrink-0 w-fit">
+            <span className="w-fit shrink-0 rounded-md bg-primary px-3 py-1 font-mono text-xs font-bold text-primary-foreground">
               {isReadOnly ? 100 : step <= 1 ? 0 : Math.min(Math.round(((step - 1) / 8) * 100), 95)}% Complete
             </span>
           </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginFormSchema, LoginFormInput } from "@/lib/definitions";
@@ -17,7 +16,6 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useForm<LoginFormInput>({
@@ -44,15 +42,15 @@ export default function LoginPage() {
     } else if (result.status === "success") {
       toast.success(result.message);
         // router.push("/dashboard");
-      window.location.href = "/dashboard";
+      window.location.assign("/dashboard");
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold tracking-tight">Student Login</CardTitle>
+          <CardTitle className="page-title text-2xl">Student Login</CardTitle>
           <CardDescription>Enter your LRN and password to continue.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,7 +106,7 @@ export default function LoginPage() {
         </CardContent>
         <CardFooter className="flex justify-center border-t p-4">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" className="text-primary hover:underline font-medium">
               Register here
             </Link>

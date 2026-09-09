@@ -519,9 +519,9 @@
       },
       "step2": {
         "orderedCauseIds": [
-          "c2",
           "c1",
-          "c3"
+          "c3",
+          "c2"
         ],
         "feedback": "Your cause ranking recognizes multiple systemic factors. Consider how these causes influence one another in the barangay.",
         "passed": true,

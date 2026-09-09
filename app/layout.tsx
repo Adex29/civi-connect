@@ -1,23 +1,24 @@
 import type { Metadata } from "next";
-import { Inter, Source_Serif_4, JetBrains_Mono } from "next/font/google";
+import { DM_Sans, Source_Serif_4, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/lib/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
-const fontSans = Inter({
+const fontSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-dm-sans",
 });
 
 const fontSerif = Source_Serif_4({
   subsets: ["latin"],
-  variable: "--font-serif",
+  variable: "--font-source-serif",
 });
 
-const fontMono = JetBrains_Mono({
+const fontMono = Space_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  weight: ["400", "700"],
+  variable: "--font-space-mono",
 });
 
 export const metadata: Metadata = {

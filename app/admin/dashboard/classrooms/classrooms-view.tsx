@@ -17,7 +17,15 @@ import { CreateClassroomDialog } from "./create-classroom-dialog";
 import { EditClassroomDialog } from "./edit-classroom-dialog";
 import { DeleteClassroomDialog } from "./delete-classroom-dialog";
 import { ClassroomRosterDrawer } from "./classroom-roster-drawer";
+import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { format } from "date-fns";
+
+const classroomSortOptions: ComboboxOption[] = [
+  { value: "newest", label: "Newest First" },
+  { value: "name", label: "Name (A - Z)" },
+  { value: "students", label: "Most Students" },
+  { value: "scenarios", label: "Most Missions" },
+];
 import {
   Users,
   BookOpen,
@@ -25,21 +33,14 @@ import {
   Check,
   School,
   Calendar,
-  Plus,
   Search,
   LayoutGrid,
   List,
-  Layers,
-  ArrowUpDown,
   MoreVertical,
-  SlidersHorizontal,
   Archive,
-  CheckCircle2,
   Sparkles,
-  ExternalLink,
   RotateCcw,
   GraduationCap,
-  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { toggleClassroomStatusAction } from "./actions";
@@ -166,7 +167,7 @@ export function ClassroomsView({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-3xl font-extrabold tracking-tight">Classrooms</h1>
+            <h1 className="page-title text-4xl">Classrooms</h1>
             <Badge variant="outline" className="font-semibold text-xs px-2.5 py-0.5">
               {stats.total} {stats.total === 1 ? "Section" : "Sections"}
             </Badge>
@@ -183,9 +184,9 @@ export function ClassroomsView({
 
 
       {/* Toolbar: Search, Status Filter, Sort, View Toggle */}
-      <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between p-3.5 rounded-xl border bg-card/60 shadow-2xs">
+      <div className="toolbar-panel flex flex-col items-stretch justify-between gap-3 rounded-xl p-3.5 lg:flex-row lg:items-center">
         {/* Search Bar */}
-        <div className="relative flex-1 min-w-[220px]">
+        <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search classrooms by name or join code..."
@@ -204,36 +205,27 @@ export function ClassroomsView({
         </div>
 
         {/* Status Filter Tabs & Controls */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           {/* Status Tabs */}
-          <div className="flex items-center p-0.5 rounded-lg bg-muted border text-xs font-medium">
+          <div className="toolbar-control-group grid w-full grid-cols-3 items-center rounded-lg p-1 text-xs sm:w-auto">
             <button
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1 rounded-md transition-colors ${
-                statusFilter === "all"
-                  ? "bg-background text-foreground shadow-xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              data-selected={statusFilter === "all"}
+              className="toolbar-toggle min-w-0 rounded-md px-2 py-1.5 transition-all sm:px-3"
             >
               All ({stats.total})
             </button>
             <button
               onClick={() => setStatusFilter("active")}
-              className={`px-3 py-1 rounded-md transition-colors ${
-                statusFilter === "active"
-                  ? "bg-background text-foreground shadow-xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              data-selected={statusFilter === "active"}
+              className="toolbar-toggle min-w-0 rounded-md px-2 py-1.5 transition-all sm:px-3"
             >
               Active ({stats.active})
             </button>
             <button
               onClick={() => setStatusFilter("archived")}
-              className={`px-3 py-1 rounded-md transition-colors ${
-                statusFilter === "archived"
-                  ? "bg-background text-foreground shadow-xs font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              data-selected={statusFilter === "archived"}
+              className="toolbar-toggle min-w-0 rounded-md px-2 py-1.5 transition-all sm:px-3"
             >
               Archived ({stats.archived})
             </button>
@@ -241,46 +233,34 @@ export function ClassroomsView({
 
           {/* Sort Dropdown */}
           <div className="flex items-center gap-1.5">
-            <select
+            <Combobox
+              options={classroomSortOptions}
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="h-9 rounded-lg border bg-background px-3 text-xs text-foreground font-medium focus:outline-ring cursor-pointer"
-            >
-              <option value="newest">Newest First</option>
-              <option value="name">Name (A - Z)</option>
-              <option value="students">Most Students</option>
-              <option value="scenarios">Most Missions</option>
-            </select>
+              onValueChange={(v) => setSortBy(v as typeof sortBy)}
+              placeholder="Sort classrooms..."
+              searchPlaceholder="Search sort options..."
+              className="h-9 min-w-0 flex-1 text-xs sm:w-[165px] sm:flex-none"
+            />
           </div>
 
           {/* View Mode Switcher */}
-          <div className="flex items-center p-0.5 rounded-lg bg-muted border">
-            <Button
-              variant="ghost"
-              size="icon-sm"
+          <div className="toolbar-control-group flex items-center rounded-lg p-0.5">
+            <button
+              data-selected={viewMode === "grid"}
               onClick={() => setViewMode("grid")}
-              className={`h-7 w-7 rounded-md ${
-                viewMode === "grid"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              className="toolbar-toggle flex h-7 w-7 items-center justify-center rounded-md"
               title="Cards Grid View"
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
+            </button>
+            <button
+              data-selected={viewMode === "table"}
               onClick={() => setViewMode("table")}
-              className={`h-7 w-7 rounded-md ${
-                viewMode === "table"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
+              className="toolbar-toggle flex h-7 w-7 items-center justify-center rounded-md"
               title="Table List View"
             >
               <List className="h-3.5 w-3.5" />
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -323,17 +303,16 @@ export function ClassroomsView({
         </div>
       ) : viewMode === "grid" ? (
         /* GRID CARDS VIEW */
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 xl:grid-cols-2 2xl:grid-cols-3">
           {filteredClassrooms.map((classroom) => {
             const assignedScenarios = scenariosMap[classroom.id] || [];
             const studentCount = getStudentCount(classroom.id);
-            const groupCount = getGroupCount(classroom.id);
             const isCopied = copiedId === classroom.id;
 
             return (
               <Card
                 key={classroom.id}
-                className={`group flex flex-col justify-between overflow-hidden transition-all duration-200 hover:shadow-md hover:border-primary/50 bg-card ${
+                className={`group flex flex-col justify-between overflow-hidden ${
                   classroom.status === "archived" ? "opacity-80 border-dashed" : ""
                 }`}
               >
@@ -545,7 +524,7 @@ export function ClassroomsView({
         </div>
       ) : (
         /* TABLE LIST VIEW */
-        <div className="border rounded-2xl overflow-hidden bg-card shadow-2xs">
+        <div className="surface-panel overflow-hidden rounded-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left border-collapse">
               <thead className="bg-muted/40 text-muted-foreground uppercase text-[10px] tracking-wider font-semibold border-b">
@@ -595,7 +574,7 @@ export function ClassroomsView({
                       {/* Join Code */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-xs font-bold text-foreground bg-muted/60 px-2 py-1 rounded-md border">
+                          <span className="info-chip rounded-md px-2 py-1 font-mono text-xs">
                             {classroom.code}
                           </span>
                           <Button

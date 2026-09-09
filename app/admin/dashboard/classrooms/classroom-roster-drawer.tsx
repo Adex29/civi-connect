@@ -15,6 +15,7 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import {
   Users,
   BookOpen,
@@ -31,7 +32,6 @@ import {
   ExternalLink,
   ShieldCheck,
   UserCheck,
-  CheckCircle2,
   Archive,
   RefreshCw,
   Info,
@@ -39,6 +39,7 @@ import {
 import { Classroom, Student, Scenario, Group, Submission } from "@/lib/definitions";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { EditClassroomDialog } from "./edit-classroom-dialog";
 import { DeleteClassroomDialog } from "./delete-classroom-dialog";
 import {
@@ -258,30 +259,63 @@ export function ClassroomRosterDrawer({
 
         {/* Drawer Body with Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-          <div className="px-6 border-b bg-background/50 sticky top-0 z-10">
-            <TabsList variant="line" className="h-11 w-full justify-start gap-4">
-              <TabsTrigger value="students" className="gap-1.5 text-xs font-semibold">
+          <div className="px-6 border-b border-border/80 bg-background/95 backdrop-blur-sm sticky top-0 z-10 shrink-0">
+            <TabsList variant="line" className="h-12 w-full justify-start gap-6 bg-transparent p-0 border-b-0 -mb-px flex items-center">
+              <TabsTrigger
+                value="students"
+                className="relative h-full flex items-center gap-2 px-1 pb-3 pt-2 text-xs font-semibold tracking-tight transition-colors border-b-2 border-transparent hover:text-foreground text-muted-foreground data-active:border-primary data-active:text-primary data-[state=active]:border-primary data-[state=active]:text-primary -mb-px"
+              >
                 <GraduationCap className="h-4 w-4" />
                 <span>Students</span>
-                <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">
+                <span
+                  className={cn(
+                    "ml-1 inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 text-[10px] font-bold rounded-full transition-colors",
+                    activeTab === "students"
+                      ? "bg-primary/15 text-primary border border-primary/25"
+                      : "bg-muted text-muted-foreground border border-border/60"
+                  )}
+                >
                   {classroomStudents.length}
-                </Badge>
+                </span>
               </TabsTrigger>
-              <TabsTrigger value="scenarios" className="gap-1.5 text-xs font-semibold">
+              <TabsTrigger
+                value="scenarios"
+                className="relative h-full flex items-center gap-2 px-1 pb-3 pt-2 text-xs font-semibold tracking-tight transition-colors border-b-2 border-transparent hover:text-foreground text-muted-foreground data-active:border-primary data-active:text-primary data-[state=active]:border-primary data-[state=active]:text-primary -mb-px"
+              >
                 <BookOpen className="h-4 w-4" />
                 <span>Missions</span>
-                <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">
+                <span
+                  className={cn(
+                    "ml-1 inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 text-[10px] font-bold rounded-full transition-colors",
+                    activeTab === "scenarios"
+                      ? "bg-primary/15 text-primary border border-primary/25"
+                      : "bg-muted text-muted-foreground border border-border/60"
+                  )}
+                >
                   {scenarios.length}
-                </Badge>
+                </span>
               </TabsTrigger>
-              <TabsTrigger value="groups" className="gap-1.5 text-xs font-semibold">
+              <TabsTrigger
+                value="groups"
+                className="relative h-full flex items-center gap-2 px-1 pb-3 pt-2 text-xs font-semibold tracking-tight transition-colors border-b-2 border-transparent hover:text-foreground text-muted-foreground data-active:border-primary data-active:text-primary data-[state=active]:border-primary data-[state=active]:text-primary -mb-px"
+              >
                 <Layers className="h-4 w-4" />
                 <span>Teams</span>
-                <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">
+                <span
+                  className={cn(
+                    "ml-1 inline-flex items-center justify-center min-w-[20px] h-[18px] px-1.5 text-[10px] font-bold rounded-full transition-colors",
+                    activeTab === "groups"
+                      ? "bg-primary/15 text-primary border border-primary/25"
+                      : "bg-muted text-muted-foreground border border-border/60"
+                  )}
+                >
                   {classroomGroups.length}
-                </Badge>
+                </span>
               </TabsTrigger>
-              <TabsTrigger value="share" className="gap-1.5 text-xs font-semibold">
+              <TabsTrigger
+                value="share"
+                className="relative h-full flex items-center gap-2 px-1 pb-3 pt-2 text-xs font-semibold tracking-tight transition-colors border-b-2 border-transparent hover:text-foreground text-muted-foreground data-active:border-primary data-active:text-primary data-[state=active]:border-primary data-[state=active]:text-primary -mb-px"
+              >
                 <Key className="h-4 w-4" />
                 <span>Share & Controls</span>
               </TabsTrigger>
@@ -304,20 +338,24 @@ export function ClassroomRosterDrawer({
 
                 {classroomGroups.length > 0 && (
                   <div className="flex items-center gap-1.5 text-xs">
-                    <span className="text-muted-foreground text-[11px]">Filter Team:</span>
-                    <select
-                      value={groupFilter}
-                      onChange={(e) => setGroupFilter(e.target.value)}
-                      className="h-8 rounded-md border bg-background px-2 text-xs text-foreground focus:outline-ring"
-                    >
-                      <option value="all">All Students ({classroomStudents.length})</option>
-                      <option value="ungrouped">Individual / No Team</option>
-                      {classroomGroups.map((g) => (
-                        <option key={g.id} value={g.id}>
-                          Team {g.name}
-                        </option>
-                      ))}
-                    </select>
+                    <span className="text-muted-foreground text-[11px] shrink-0">Filter Team:</span>
+                    <div className="w-[190px]">
+                      <Combobox
+                        options={[
+                          { value: "all", label: `All Students (${classroomStudents.length})` },
+                          { value: "ungrouped", label: "Individual / No Team" },
+                          ...classroomGroups.map((g) => ({
+                            value: g.id,
+                            label: `Team ${g.name}`,
+                          })),
+                        ]}
+                        value={groupFilter}
+                        onValueChange={(v) => setGroupFilter(v)}
+                        placeholder="Filter Team..."
+                        searchPlaceholder="Search teams..."
+                        className="h-9 text-xs"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -401,23 +439,24 @@ export function ClassroomRosterDrawer({
                     <p className="text-[11px] text-muted-foreground">Select a mission from your library</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <select
-                      value={assigningScenarioId}
-                      onChange={(e) => setAssigningScenarioId(e.target.value)}
-                      className="h-8 rounded-md border bg-background px-2.5 text-xs text-foreground focus:outline-ring max-w-[200px]"
-                    >
-                      <option value="">Choose mission...</option>
-                      {availableToAssign.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.title}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="w-[200px]">
+                      <Combobox
+                        options={availableToAssign.map((s) => ({
+                          value: s.id,
+                          label: s.title,
+                        }))}
+                        value={assigningScenarioId}
+                        onValueChange={(v) => setAssigningScenarioId(v)}
+                        placeholder="Choose mission..."
+                        searchPlaceholder="Search missions..."
+                        className="h-8 text-xs"
+                      />
+                    </div>
                     <Button
                       size="sm"
                       onClick={handleAssignScenario}
                       disabled={!assigningScenarioId || assignLoading}
-                      className="h-8 gap-1 text-xs"
+                      className="h-8 gap-1 text-xs shrink-0"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Assign

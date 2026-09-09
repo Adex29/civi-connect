@@ -31,21 +31,22 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 md:px-8 flex h-14 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/90 shadow-xs backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
+      <div className="container mx-auto flex h-18 items-center justify-between px-4 md:px-8">
         
         {/* Desktop Brand & Nav */}
-        <div className="mr-4 hidden md:flex items-center space-x-6">
-          <Link href={role === "admin" ? "/admin/dashboard" : "/dashboard"} className="flex items-center space-x-2">
-            <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-primary via-primary/80 to-indigo-600 bg-clip-text text-transparent">
-              Civi-Tech
-            </span>
+        <div className="mr-4 hidden items-center gap-8 md:flex">
+          <Link href={role === "admin" ? "/admin/dashboard" : "/dashboard"} className="flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-xs font-black text-primary-foreground shadow-xs border border-primary/20">CT</span>
+            <span className="text-lg font-black leading-none tracking-tight text-foreground">Civi-Tech</span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
+          <nav className="flex items-center text-sm font-bold">
             <Link
               href={role === "admin" ? "/admin/dashboard" : "/dashboard"}
-              className={`transition-colors hover:text-foreground/80 ${
-                pathname === (role === "admin" ? "/admin/dashboard" : "/dashboard") ? "text-foreground" : "text-foreground/60"
+              className={`rounded-lg px-3.5 py-1.5 text-xs font-extrabold tracking-wide uppercase transition-all border ${
+                pathname === (role === "admin" ? "/admin/dashboard" : "/dashboard")
+                  ? "border-surface-border bg-card text-primary shadow-xs"
+                  : "border-transparent text-muted-foreground hover:border-surface-border/60 hover:bg-card/50 hover:text-foreground hover:shadow-2xs"
               }`}
             >
               Dashboard
@@ -58,17 +59,20 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
           <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger
               render={
-                <Button variant="ghost" size="icon-sm" aria-label="Open Mobile Menu">
-                  <Menu className="h-5 w-5" />
+                <Button variant="outline" size="icon-sm" className="shadow-xs border-border" aria-label="Open Mobile Menu">
+                  <Menu className="h-4 w-4" />
                 </Button>
               }
             />
             <DrawerContent side="left" className="w-72 p-0">
               <DrawerHeader className="p-4 border-b text-left">
-                <DrawerTitle className="text-xl font-bold text-primary">Civi-Tech</DrawerTitle>
+                <DrawerTitle className="flex items-center gap-3 text-xl font-black text-primary">
+                  <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-xs font-black text-primary-foreground shadow-xs">CT</span>
+                  <span>Civi-Tech</span>
+                </DrawerTitle>
               </DrawerHeader>
 
-              <div className="p-4 space-y-1">
+              <div className="p-4 space-y-1.5">
                 {role === "admin" ? (
                   adminNavItems.map((item) => {
                     const Icon = item.icon;
@@ -78,13 +82,13 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
                         key={item.href}
                         href={item.href}
                         onClick={() => setOpen(false)}
-                        className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-colors ${
+                        className={`flex items-center gap-3 px-3.5 py-2.5 text-sm font-bold rounded-lg transition-all border ${
                           isActive
-                            ? "bg-accent text-accent-foreground font-semibold"
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            ? "border-surface-border bg-card text-primary shadow-xs"
+                            : "border-transparent text-muted-foreground hover:border-surface-border/60 hover:bg-card/50 hover:text-foreground hover:shadow-2xs"
                         }`}
                       >
-                        <Icon className="h-4 w-4 shrink-0" />
+                        <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
                         {item.label}
                       </Link>
                     );
@@ -93,16 +97,16 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
                   <Link
                     href="/dashboard"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md bg-accent text-accent-foreground"
+                    className="flex items-center gap-3 px-3.5 py-2.5 text-sm font-bold rounded-lg border border-surface-border bg-card text-primary shadow-xs"
                   >
-                    <LayoutDashboard className="h-4 w-4 shrink-0" />
+                    <LayoutDashboard className="h-4 w-4 shrink-0 text-primary" />
                     Dashboard
                   </Link>
                 )}
               </div>
 
               <div className="mt-auto p-4 border-t">
-                <Button variant="outline" className="w-full justify-start gap-2" onClick={handleLogout}>
+                <Button variant="outline" className="w-full justify-start gap-2 shadow-xs" onClick={handleLogout}>
                   <LogOut className="h-4 w-4" />
                   Logout
                 </Button>
@@ -110,7 +114,7 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
             </DrawerContent>
           </Drawer>
           
-          <Link href={role === "admin" ? "/admin/dashboard" : "/dashboard"} className="font-bold text-base">
+          <Link href={role === "admin" ? "/admin/dashboard" : "/dashboard"} className="text-base font-black text-primary">
             Civi-Tech
           </Link>
         </div>
@@ -118,8 +122,8 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
         {/* Right Action */}
         <div className="flex items-center space-x-2">
           <ModeToggle />
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="hidden md:flex">
-            Logout
+          <Button variant="outline" size="sm" onClick={handleLogout} className="hidden gap-2 text-xs font-bold md:flex shadow-2xs hover:shadow-xs hover:border-primary/50">
+            <LogOut className="size-3.5" /> Logout
           </Button>
         </div>
       </div>

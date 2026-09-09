@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AdminLoginFormSchema, AdminLoginFormInput } from "@/lib/definitions";
@@ -16,7 +15,6 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useForm<AdminLoginFormInput>({
@@ -43,15 +41,15 @@ export default function AdminLoginPage() {
     } else if (result.status === "success") {
       toast.success(result.message);
           //  router.push("/admin/dashboard");
-      window.location.href = "/admin/dashboard";
+      window.location.assign("/admin/dashboard");
     }
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-md shadow-lg border-border">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md border-border shadow-lg">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold tracking-tight">Admin Access</CardTitle>
+          <CardTitle className="page-title text-2xl">Admin Access</CardTitle>
           <CardDescription className="text-muted-foreground">Restricted area for CiviConnect administrators.</CardDescription>
         </CardHeader>
         <CardContent>

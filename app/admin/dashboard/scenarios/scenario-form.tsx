@@ -71,7 +71,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
           >
             <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back to Mission Library
           </Link>
-          <h2 className="text-2xl font-bold tracking-tight">
+          <h2 className="page-title text-3xl">
             {isEditing ? `Edit: ${scenario?.title}` : "Create New Civic Mission"}
           </h2>
           <p className="text-sm text-muted-foreground">

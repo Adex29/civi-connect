@@ -1,6 +1,7 @@
 import { Navigation } from "@/components/navigation";
 import { getCurrentStudent } from "@/lib/dal";
 import { redirect } from "next/navigation";
+// import { DashboardFloatingBackdrop } from "@/components/floating-elements";
 
 export default async function StudentDashboardLayout({
   children,
@@ -13,9 +14,10 @@ export default async function StudentDashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="community-shell relative flex min-h-screen flex-col bg-background text-foreground overflow-hidden">
+      {/* <DashboardFloatingBackdrop /> */}
       <Navigation role="student" />
-      <main className="flex-1 container mx-auto px-4 md:px-8 py-6 lg:py-8">
+      <main className="container relative z-10 mx-auto flex-1 px-4 py-8 md:px-8 lg:py-10">
         {children}
       </main>
     </div>

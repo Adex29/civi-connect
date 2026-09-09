@@ -13,7 +13,7 @@ import {
   DrawerFooter,
   DrawerClose,
 } from "@/components/ui/drawer";
-import { CheckCircle, Clock, Eye, FileText, User, GraduationCap, Award, Sparkles, AlertCircle, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { CheckCircle, Clock, Eye, User, GraduationCap, Award, Sparkles, ShieldAlert, CheckCircle2 } from "lucide-react";
 import { Classroom, Scenario, Student, Submission } from "@/lib/definitions";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
@@ -23,7 +23,6 @@ import {
   TimelineConnector,
   TimelineHeader,
   TimelineTitle,
-  TimelineDescription,
   TimelineContent,
 } from "@/components/ui/timeline";
 
@@ -70,7 +69,7 @@ export function SubmissionDrawer({
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger
         render={
-          <Button variant="outline" size="sm" className="gap-1.5 shrink-0" nativeButton={false}>
+          <Button variant="outline" size="sm" className="gap-1.5 shrink-0">
             <Eye className="h-4 w-4 shrink-0" />
             <span className="hidden sm:inline">Inspect Submission & AI Verification</span>
             <span className="sm:hidden">Inspect</span>
@@ -192,7 +191,7 @@ export function SubmissionDrawer({
                       </span>
                     </TimelineHeader>
                     <p className="text-xs text-foreground p-2.5 bg-muted/20 border rounded-md mt-1">
-                      "{simState.step1.justification}"
+                      &ldquo;{simState.step1.justification}&rdquo;
                     </p>
                     {simState.step1.evaluation?.flags && simState.step1.evaluation.flags.length > 0 && (
                       <div className="flex gap-1 flex-wrap mt-1">
@@ -264,7 +263,7 @@ export function SubmissionDrawer({
                       <TimelineTitle className="text-xs font-bold">Step 6: Challenge Simulation Decision</TimelineTitle>
                     </TimelineHeader>
                     <p className="text-xs text-foreground p-2.5 bg-muted/20 border rounded-md mt-1">
-                      "{simState.step6.justification}"
+                      &ldquo;{simState.step6.justification}&rdquo;
                     </p>
                     {simState.step6.feedback && (
                       <p className="text-[11px] text-muted-foreground italic mt-1">
@@ -344,7 +343,7 @@ export function SubmissionDrawer({
                       <TimelineTitle className="text-xs font-bold">Final Reflection</TimelineTitle>
                     </TimelineHeader>
                     <p className="text-xs text-foreground p-2.5 bg-muted/20 border rounded-md mt-1">
-                      "{simState.reflection.answer}"
+                      &ldquo;{simState.reflection.answer}&rdquo;
                     </p>
                     {simState.reflection.evaluation?.flags && simState.reflection.evaluation.flags.length > 0 && (
                       <div className="flex gap-1 flex-wrap mt-1">
@@ -384,7 +383,7 @@ export function SubmissionDrawer({
                       AI Diagnostic Summary
                     </AlertTitle>
                     <AlertDescription className="text-xs italic leading-relaxed mt-1">
-                      "{submission.feedback || "Simulation in progress..."}"
+                      &ldquo;{submission.feedback || "Simulation in progress..."}&rdquo;
                     </AlertDescription>
                   </Alert>
                 </TimelineContent>
@@ -396,7 +395,7 @@ export function SubmissionDrawer({
         <DrawerFooter className="border-t">
           <DrawerClose
             render={
-              <Button variant="outline" className="w-full" nativeButton={false}>
+              <Button variant="outline" className="w-full">
                 Close Inspector
               </Button>
             }

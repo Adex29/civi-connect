@@ -54,7 +54,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
               <div
                 key={s.step}
                 onClick={() => isClickable && onSelectStep && onSelectStep(s.step)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 transition-colors ${
+                className={`flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
                   isClickable ? "cursor-pointer hover:opacity-80" : ""
                 } ${
                   isCurrent
@@ -78,7 +78,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
         <CardHeader className="pb-3 border-b border-border bg-muted/30">
           <CardTitle className="text-base font-semibold flex items-center justify-between">
             <span>Mission Timeline</span>
-            <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
+            <span className="rounded-md bg-primary/10 px-2.5 py-0.5 font-mono text-xs font-bold text-primary">
               {Math.min(currentStep, 8)} / 8
             </span>
           </CardTitle>

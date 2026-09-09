@@ -11,11 +11,11 @@ export const verifySession = cache(async () => {
   const session = await decrypt(cookie);
 
   if (!session?.userId) {
-    redirect("/login");
+    return null;
   }
 
   return {
-    isAuth: true,
+    isAuth: true as const,
     userId: session.userId,
     role: session.role,
   };
@@ -24,7 +24,7 @@ export const verifySession = cache(async () => {
 export const requireRole = cache(async (role: UserRole) => {
   const session = await verifySession();
   
-  if (session.role !== role) {
+  if (!session || session.role !== role) {
     if (role === "admin") {
       redirect("/admin");
     } else {
@@ -37,7 +37,7 @@ export const requireRole = cache(async (role: UserRole) => {
 
 export const getCurrentStudent = cache(async () => {
   const session = await verifySession();
-  if (session.role !== "student") return null;
+  if (!session || session.role !== "student") return null;
 
   const student = await findStudentById(session.userId);
   if (!student) return null;
@@ -54,7 +54,7 @@ export const getCurrentStudent = cache(async () => {
 
 export const getCurrentAdmin = cache(async () => {
   const session = await verifySession();
-  if (session.role !== "admin") return null;
+  if (!session || session.role !== "admin") return null;
 
   const admin = await findAdminById(session.userId);
   if (!admin) return null;

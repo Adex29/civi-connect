@@ -1,6 +1,6 @@
 import { getAllStudents, getAllClassrooms, getAllGroups } from "@/lib/db";
 import { Classroom, Student, Group } from "@/lib/definitions";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
@@ -12,7 +12,7 @@ export default async function StudentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">Students Directory</h2>
+        <h2 className="page-title text-4xl">Students Directory</h2>
         <p className="text-muted-foreground">
           View all students registered across all classrooms.
         </p>
@@ -27,9 +27,9 @@ export default async function StudentsPage() {
           return (
             <Card key={classroom.id}>
               <CardHeader className="bg-muted/40 pb-4">
-                <CardTitle className="text-xl flex items-center justify-between">
-                  <span>{classroom.name} ({classroom.code})</span>
-                  <Badge variant="secondary">{classStudents.length} Students</Badge>
+                <CardTitle className="flex min-w-0 flex-col items-start justify-between gap-2 text-xl sm:flex-row sm:items-center">
+                  <span className="min-w-0 break-words">{classroom.name} ({classroom.code})</span>
+                  <Badge variant="secondary" className="shrink-0">{classStudents.length} Students</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">

@@ -14,16 +14,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { CreateScenarioDialog } from "./create-scenario-dialog";
 import { AssignScenarioDialog } from "./assign-scenario-dialog";
-import { EditScenarioDialog } from "./edit-scenario-dialog";
 import { DeleteScenarioDialog } from "./delete-scenario-dialog";
 import { ScenarioDrawer } from "./scenario-drawer";
 import { UnassignScenarioButton } from "./unassign-scenario-button";
@@ -31,7 +24,6 @@ import { format } from "date-fns";
 import {
   BookOpen,
   School,
-  FileText,
   Sparkles,
   Search,
   X,
@@ -39,13 +31,10 @@ import {
   MoreVertical,
   LayoutGrid,
   Table as TableIcon,
-  Layers,
   Edit,
   Trash2,
   Calendar,
   ListChecks,
-  Users,
-  Award,
 } from "lucide-react";
 
 interface ScenariosViewProps {
@@ -55,6 +44,13 @@ interface ScenariosViewProps {
   submissions: Submission[];
   students: Student[];
 }
+
+const sortOptions: ComboboxOption[] = [
+  { value: "newest", label: "Newest First" },
+  { value: "title", label: "Title (A-Z)" },
+  { value: "most-classrooms", label: "Most Classrooms" },
+  { value: "most-constraints", label: "Most Constraints" },
+];
 
 export function ScenariosView({
   scenarios,
@@ -152,15 +148,15 @@ export function ScenariosView({
   }, [scenarios, scenarioClassroomsMap, statusFilter, searchQuery, sortBy]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-7 animate-fade-in">
       {/* Header & Primary Action */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b">
+      <div className="flex flex-col items-start justify-between gap-4 border-b border-primary/10 pb-5 sm:flex-row sm:items-end">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            <h2 className="page-title text-4xl">
               Mission Library
             </h2>
-            <Badge variant="outline" className="font-semibold text-xs px-2.5 py-0.5">
+            <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-bold">
               {stats.total} {stats.total === 1 ? "Mission" : "Missions"}
             </Badge>
           </div>
@@ -176,15 +172,15 @@ export function ScenariosView({
 
 
       {/* Toolbar: Search, Status Filter Pills, Sort & View Toggle */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 rounded-2xl border bg-card/60 shadow-2xs">
+      <div className="toolbar-panel flex flex-col items-stretch justify-between gap-3 rounded-xl p-2.5 lg:flex-row lg:items-center">
         {/* Search Input */}
-        <div className="relative flex-1 min-w-[240px]">
+        <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search missions, descriptions, constraints..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-8 h-9 text-xs"
+            className="h-10 pl-9 pr-8 text-xs"
           />
           {searchQuery && (
             <button
@@ -197,67 +193,59 @@ export function ScenariosView({
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl shrink-0">
-          <Button
-            variant={statusFilter === "all" ? "default" : "ghost"}
-            size="sm"
+        <div className="toolbar-control-group grid grid-cols-3 gap-1 rounded-lg p-1 sm:flex sm:shrink-0 sm:items-center">
+          <button
+            data-selected={statusFilter === "all"}
             onClick={() => setStatusFilter("all")}
-            className="h-7 text-xs px-2.5 rounded-lg shadow-2xs font-medium"
+            className="toolbar-toggle h-8 w-full rounded-md px-2 text-[11px] sm:w-auto sm:px-3 sm:text-xs"
           >
             All ({stats.total})
-          </Button>
-          <Button
-            variant={statusFilter === "assigned" ? "default" : "ghost"}
-            size="sm"
+          </button>
+          <button
+            data-selected={statusFilter === "assigned"}
             onClick={() => setStatusFilter("assigned")}
-            className="h-7 text-xs px-2.5 rounded-lg shadow-2xs font-medium"
+            className="toolbar-toggle h-8 w-full rounded-md px-2 text-[11px] sm:w-auto sm:px-3 sm:text-xs"
           >
             Assigned ({stats.assignedScenarios})
-          </Button>
-          <Button
-            variant={statusFilter === "unassigned" ? "default" : "ghost"}
-            size="sm"
+          </button>
+          <button
+            data-selected={statusFilter === "unassigned"}
             onClick={() => setStatusFilter("unassigned")}
-            className="h-7 text-xs px-2.5 rounded-lg shadow-2xs font-medium"
+            className="toolbar-toggle h-8 w-full rounded-md px-2 text-[11px] sm:w-auto sm:px-3 sm:text-xs"
           >
             Unassigned ({stats.unassignedScenarios})
-          </Button>
+          </button>
         </div>
 
         {/* Sort & View Switcher */}
-        <div className="flex items-center gap-2 shrink-0">
-          <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-            <SelectTrigger className="h-9 text-xs w-[160px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent className="text-xs">
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="title">Title (A-Z)</SelectItem>
-              <SelectItem value="most-classrooms">Most Classrooms</SelectItem>
-              <SelectItem value="most-constraints">Most Constraints</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex min-w-0 items-center gap-2 sm:shrink-0">
+          <Combobox
+            options={sortOptions}
+            value={sortBy}
+            onValueChange={(v) => setSortBy(v as typeof sortBy)}
+            placeholder="Sort by"
+            searchPlaceholder="Search sort options..."
+            className="h-9 min-w-0 flex-1 text-xs sm:w-[165px] sm:flex-none"
+          />
 
           {/* Grid / Table Toggle */}
-          <div className="flex items-center border rounded-lg p-0.5 bg-muted/40 shrink-0">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="icon-sm"
+          <div className="toolbar-control-group flex shrink-0 items-center rounded-lg p-0.5">
+            <button
+              data-selected={viewMode === "grid"}
               onClick={() => setViewMode("grid")}
-              className="h-7 w-7"
+              className="toolbar-toggle flex h-7 w-7 items-center justify-center rounded-md"
               title="Grid View"
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant={viewMode === "table" ? "default" : "ghost"}
-              size="icon-sm"
+            </button>
+            <button
+              data-selected={viewMode === "table"}
               onClick={() => setViewMode("table")}
-              className="h-7 w-7"
+              className="toolbar-toggle flex h-7 w-7 items-center justify-center rounded-md"
               title="Table View"
             >
               <TableIcon className="h-3.5 w-3.5" />
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -299,7 +287,7 @@ export function ScenariosView({
         </div>
       ) : viewMode === "grid" ? (
         /* GRID VIEW */
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-5 xl:grid-cols-2">
           {filteredScenarios.map((scenario) => {
             const assigned = scenarioClassroomsMap[scenario.id] || [];
             const assignedClassroomIds = assigned.map((c) => c.id);
@@ -308,32 +296,29 @@ export function ScenariosView({
             return (
               <Card
                 key={scenario.id}
-                className="overflow-hidden shadow-2xs hover:shadow-xs hover:border-primary/40 transition-all flex flex-col justify-between group"
+                className="group flex min-h-[440px] flex-col gap-0 overflow-hidden p-0"
               >
-                <div>
+                <div className="flex flex-1 flex-col">
                   {/* Card Header */}
-                  <CardHeader className="pb-3 border-b bg-muted/20">
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
+                  <CardHeader className="border-b border-primary/20 p-5 pb-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
                           {scenario.missionData ? (
-                            <Badge variant="outline" className="text-[10px] font-semibold">
-                              <Sparkles className="h-3 w-3 mr-1 text-primary" /> Civic Mission
+                            <Badge variant="secondary" className="border-0 bg-secondary/20 text-[10px] text-primary">
+                              <Sparkles className="mr-1 h-3 w-3" /> Civic Mission
                             </Badge>
                           ) : (
-                            <Badge variant="secondary" className="text-[10px] font-semibold">
+                            <Badge variant="secondary" className="border-0 text-[10px]">
                               Standard Mission
                             </Badge>
                           )}
-                          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                             <Calendar className="h-3 w-3" />
                             {format(new Date(scenario.createdAt), "MMM d, yyyy")}
                           </span>
                         </div>
 
-                        <CardTitle className="text-lg font-bold tracking-tight pt-1 truncate">
-                          {scenario.title}
-                        </CardTitle>
                       </div>
 
                       {/* Dropdown Action Menu */}
@@ -343,7 +328,7 @@ export function ScenariosView({
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
                             >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
@@ -403,49 +388,46 @@ export function ScenariosView({
                       </DropdownMenu>
                     </div>
 
-                    <CardDescription className="line-clamp-2 text-xs mt-1 leading-relaxed">
+                    <CardTitle className="mt-4 line-clamp-2 text-xl font-black leading-tight tracking-tight text-primary">
+                      {scenario.title}
+                    </CardTitle>
+                    <CardDescription className="mt-2 line-clamp-2 text-sm leading-6">
                       {scenario.description || "No description provided."}
                     </CardDescription>
                   </CardHeader>
 
-                  {/* Card Content: Constraints Preview */}
-                  <CardContent className="pt-4 space-y-4">
-                    {/* Constraints Pills */}
+                  <CardContent className="flex flex-1 flex-col gap-6 px-5 py-5">
                     <div>
-                      <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="font-semibold text-muted-foreground flex items-center gap-1">
-                          <ListChecks className="h-3.5 w-3.5 text-primary" />
-                          Constraints ({scenario.constraints?.length || 0})
-                        </span>
+                      <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                        <ListChecks className="h-4 w-4 text-primary" />
+                        <span>Constraints ({scenario.constraints?.length || 0})</span>
                       </div>
+
                       {scenario.constraints && scenario.constraints.length > 0 ? (
-                        <div className="space-y-1">
-                          {scenario.constraints.slice(0, 2).map((c, i) => (
-                            <div
-                              key={i}
-                              className="text-[11px] text-muted-foreground line-clamp-1 bg-muted/40 p-1.5 px-2 rounded-md border"
-                            >
-                              • {c}
+                        <div className="mt-2 space-y-2">
+                          {scenario.constraints.slice(0, 2).map((constraint, index) => (
+                            <div key={index} className="flex h-9 min-w-0 items-center border border-primary/25 bg-muted/25 px-3 text-xs text-muted-foreground">
+                              <span className="mr-1 shrink-0" aria-hidden="true">•</span>
+                              <span className="min-w-0 truncate">{constraint}</span>
                             </div>
                           ))}
                           {scenario.constraints.length > 2 && (
-                            <p className="text-[10px] text-muted-foreground italic pl-1">
-                              +{scenario.constraints.length - 2} more constraint{scenario.constraints.length - 2 !== 1 ? "s" : ""}
+                            <p className="px-1 text-[11px] italic leading-4 text-muted-foreground">
+                              +{scenario.constraints.length - 2} more constraint{scenario.constraints.length - 2 === 1 ? "" : "s"}
                             </p>
                           )}
                         </div>
                       ) : (
-                        <p className="text-[11px] text-muted-foreground italic">No constraints configured.</p>
+                        <p className="mt-2 text-xs italic text-muted-foreground">No constraints configured.</p>
                       )}
                     </div>
 
-                    {/* Assigned Classrooms */}
-                    <div>
-                      <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="font-semibold text-muted-foreground flex items-center gap-1">
-                          <School className="h-3.5 w-3.5 text-primary" />
-                          Assigned Classrooms ({assigned.length})
-                        </span>
+                    <div className="mt-auto">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                          <School className="h-4 w-4 text-primary" />
+                          <span>Assigned Classrooms ({assigned.length})</span>
+                        </div>
                         <AssignScenarioDialog
                           scenarioId={scenario.id}
                           scenarioTitle={scenario.title}
@@ -455,37 +437,31 @@ export function ScenariosView({
                       </div>
 
                       {assigned.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          {assigned.map((c) => (
-                            <span
-                              key={c.id}
-                              className="inline-flex items-center gap-1 text-[11px] font-medium bg-muted/60 text-foreground border rounded-md px-2 py-0.5"
-                            >
-                              <span>{c.name}</span>
+                        <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+                          {assigned.map((classroom) => (
+                            <span key={classroom.id} className="info-chip inline-flex max-w-full items-center px-2.5 py-1 text-xs">
+                              <span className="truncate">{classroom.name}</span>
                               <UnassignScenarioButton
                                 scenarioId={scenario.id}
-                                classroomId={c.id}
-                                classroomName={c.name}
+                                classroomId={classroom.id}
+                                classroomName={classroom.name}
                               />
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-[11px] text-muted-foreground italic">
-                          Not assigned to any classrooms yet.
-                        </p>
+                        <p className="mt-2 text-xs italic text-muted-foreground">Not assigned to any classrooms yet.</p>
                       )}
                     </div>
                   </CardContent>
                 </div>
 
                 {/* Card Footer */}
-                <CardFooter className="pt-3 border-t bg-muted/10 flex items-center justify-between text-xs">
+                <CardFooter className="flex items-center justify-between gap-3 border-t border-primary/20 bg-transparent px-5 py-4 text-xs">
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <span className="font-medium text-foreground">{scenarioSubmissionsCount}</span>
-                    <span>submission{scenarioSubmissionsCount !== 1 ? "s" : ""}</span>
+                    <span className="font-bold text-foreground">{scenarioSubmissionsCount}</span>
+                    <span>submission{scenarioSubmissionsCount === 1 ? "" : "s"}</span>
                   </div>
-
                   <ScenarioDrawer
                     scenario={scenario}
                     classrooms={classrooms}

@@ -14,18 +14,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { Edit2, Loader2, School, Save, CheckCircle2, Archive } from "lucide-react";
 import { updateClassroomAction } from "./actions";
 import { Classroom } from "@/lib/definitions";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+
+const statusOptions: ComboboxOption[] = [
+  { value: "active", label: "Active", sublabel: "Students can join & submit" },
+  { value: "archived", label: "Archived", sublabel: "Read-only historical view" },
+];
 
 export function EditClassroomDialog({
   classroom,
@@ -143,27 +142,14 @@ export function EditClassroomDialog({
               <Label htmlFor={`edit-status-${classroom.id}`} className="text-xs font-semibold">
                 Classroom Status
               </Label>
-              <Select value={status} onValueChange={(val) => setStatus(val as "active" | "archived")}>
-                <SelectTrigger id={`edit-status-${classroom.id}`} className="h-10">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-primary" />
-                      <span className="font-medium">Active</span>
-                      <span className="text-muted-foreground text-xs">(Students can join & submit)</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="archived">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-muted-foreground" />
-                      <span className="font-medium">Archived</span>
-                      <span className="text-muted-foreground text-xs">(Read-only historical view)</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <Combobox
+                options={statusOptions}
+                value={status}
+                onValueChange={(val) => setStatus(val as "active" | "archived")}
+                placeholder="Select status..."
+                searchPlaceholder="Search status..."
+                className="h-10 text-xs"
+              />
             </div>
           </div>
 

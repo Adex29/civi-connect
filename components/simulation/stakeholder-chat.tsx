@@ -56,7 +56,7 @@ export function StakeholderChat({
                   <div className="absolute top-3 right-3 sm:top-2 sm:right-2 z-10">
                     <Badge
                       variant="outline"
-                      className="bg-primary text-primary-foreground border-primary/30 text-[10px] font-bold gap-1 px-2 py-0.5 shadow-sm rounded-full"
+                      className="gap-1 rounded-md border-primary/30 bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground shadow-sm"
                     >
                       <CheckCircle2 className="h-3 w-3 text-primary-foreground" /> {askedCount} Asked
                     </Badge>

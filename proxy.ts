@@ -1,45 +1,83 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { updateSession } from './lib/session';
+import { decrypt } from './lib/session';
+import type { UserRole } from './lib/definitions';
 
 export async function proxy(request: NextRequest) {
-  // Update session to refresh expiration
-  await updateSession();
-
   const { pathname } = request.nextUrl;
 
   const sessionCookie = request.cookies.get("session")?.value;
-  // Basic check, full decryption happens in DAL but we need to verify it's not a stale/invalid cookie
   let isAuth = false;
+  let role: UserRole | undefined;
+
   if (sessionCookie) {
-    const { decrypt } = await import('./lib/session');
     const payload = await decrypt(sessionCookie);
-    isAuth = !!payload;
-    if (!isAuth) {
-      request.cookies.delete("session");
+    if (payload?.userId && payload?.role) {
+      isAuth = true;
+      role = payload.role;
     }
   }
 
-  // Protected routes
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin/dashboard')) {
-    if (!isAuth) {
-      if (pathname.startsWith('/admin')) {
-        return NextResponse.redirect(new URL('/admin', request.url));
-      }
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
+  // If a session cookie was provided but could not be decrypted,
+  // instruct the client browser to delete it to avoid infinite redirect loops.
+  const isCorruptedSession = Boolean(sessionCookie && !isAuth);
 
-  // Auth pages (redirect if already logged in)
-  if (pathname === '/login' || pathname === '/register' || pathname === '/admin') {
-    if (isAuth) {
-      // In a real app we'd decode to check role, but DAL will handle exact redirection.
-      // We can just optimistically redirect to student dashboard, DAL will kick admins to /admin if needed
+  const cleanResponse = (response: NextResponse) => {
+    if (isCorruptedSession) {
+      response.cookies.delete("session");
+    }
+    return response;
+  };
+
+  // 1. Protected Admin Routes (/admin/dashboard and subpaths)
+  if (pathname.startsWith('/admin/dashboard')) {
+    if (!isAuth) {
+      return cleanResponse(NextResponse.redirect(new URL('/admin', request.url)));
+    }
+    if (role !== 'admin') {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+    return isCorruptedSession ? cleanResponse(NextResponse.next()) : NextResponse.next();
   }
 
-  return NextResponse.next();
+  // 2. Protected Student Routes (/dashboard and subpaths)
+  if (pathname.startsWith('/dashboard')) {
+    if (!isAuth) {
+      return cleanResponse(NextResponse.redirect(new URL('/login', request.url)));
+    }
+    if (role !== 'student') {
+      return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+    }
+    return isCorruptedSession ? cleanResponse(NextResponse.next()) : NextResponse.next();
+  }
+
+  // 3. Admin Auth Page (/admin)
+  if (pathname === '/admin') {
+    if (isAuth) {
+      if (role === 'admin') {
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      }
+      if (role === 'student') {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    }
+    return isCorruptedSession ? cleanResponse(NextResponse.next()) : NextResponse.next();
+  }
+
+  // 4. Student Auth Pages (/login, /register)
+  if (pathname === '/login' || pathname === '/register') {
+    if (isAuth) {
+      if (role === 'student') {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+      if (role === 'admin') {
+        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
+      }
+    }
+    return isCorruptedSession ? cleanResponse(NextResponse.next()) : NextResponse.next();
+  }
+
+  return isCorruptedSession ? cleanResponse(NextResponse.next()) : NextResponse.next();
 }
 
 export const config = {
