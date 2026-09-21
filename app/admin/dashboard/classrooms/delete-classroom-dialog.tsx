@@ -20,13 +20,23 @@ export function DeleteClassroomDialog({
   classroomName,
   studentCount = 0,
   trigger,
+  open: propOpen,
+  onOpenChange: propOnOpenChange,
 }: {
   classroomId: string;
   classroomName: string;
   studentCount?: number;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = propOpen !== undefined;
+  const open = isControlled ? propOpen : internalOpen;
+  const setOpen = (val: boolean) => {
+    if (!isControlled) setInternalOpen(val);
+    propOnOpenChange?.(val);
+  };
   const [loading, setLoading] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState(false);
 
@@ -66,22 +76,24 @@ export function DeleteClassroomDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          trigger ? (
-            (trigger as any)
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-              title="Delete Classroom"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          )
-        }
-      />
+      {trigger !== null && (!isControlled || trigger !== undefined) && (
+        <DialogTrigger
+          render={
+            trigger ? (
+              (trigger as any)
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                title="Delete Classroom"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )
+          }
+        />
+      )}
       <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
           <div className="flex items-center gap-2.5">
@@ -117,7 +129,7 @@ export function DeleteClassroomDialog({
           )}
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between pt-2 border-t">
+        <DialogFooter className="flex-col sm:flex-row gap-3 sm:justify-between pt-2 border-t">
           <Button
             type="button"
             variant="outline"
@@ -130,7 +142,7 @@ export function DeleteClassroomDialog({
             Archive Instead
           </Button>
 
-          <div className="flex items-center gap-2 order-1 sm:order-2">
+          <div className="flex items-center gap-3 order-1 sm:order-2">
             <Button
               type="button"
               variant="outline"
@@ -146,7 +158,7 @@ export function DeleteClassroomDialog({
               size="sm"
               disabled={loading || archiveLoading}
               onClick={handleDelete}
-              className="gap-1.5"
+              className="gap-1.5 font-bold"
             >
               {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
               Delete Classroom

@@ -41,6 +41,8 @@ interface ScenarioDrawerProps {
   submissions: Submission[];
   students: Student[];
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ScenarioDrawer({
@@ -50,8 +52,16 @@ export function ScenarioDrawer({
   submissions,
   students,
   trigger,
+  open: propOpen,
+  onOpenChange: propOnOpenChange,
 }: ScenarioDrawerProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = propOpen !== undefined;
+  const open = isControlled ? propOpen : internalOpen;
+  const setOpen = (val: boolean) => {
+    if (!isControlled) setInternalOpen(val);
+    propOnOpenChange?.(val);
+  };
   const [activeTab, setActiveTab] = useState("overview");
 
   // Assigned classrooms for this scenario
@@ -82,19 +92,21 @@ export function ScenarioDrawer({
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger
-        nativeButton={!trigger}
-        render={
-          trigger ? (
-            (trigger as any)
-          ) : (
-            <Button variant="outline" size="sm" className="gap-1 text-xs">
-              <BookOpen className="h-3.5 w-3.5" />
-              <span>Details</span>
-            </Button>
-          )
-        }
-      />
+      {trigger !== null && (!isControlled || trigger !== undefined) && (
+        <DrawerTrigger
+          nativeButton={!trigger}
+          render={
+            trigger ? (
+              (trigger as any)
+            ) : (
+              <Button variant="outline" size="sm" className="gap-1 text-xs">
+                <BookOpen className="h-3.5 w-3.5" />
+                <span>Details</span>
+              </Button>
+            )
+          }
+        />
+      )}
 
       <DrawerContent side="right" className="w-full max-w-xl sm:max-w-2xl h-full flex flex-col p-0">
         {/* Drawer Header */}
@@ -102,15 +114,6 @@ export function ScenarioDrawer({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                {scenario.missionData ? (
-                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[10px] font-semibold">
-                    <Sparkles className="h-3 w-3 mr-1 text-primary" /> Civic Mission
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="text-[10px] font-semibold">
-                    Standard Mission
-                  </Badge>
-                )}
                 <span className="text-xs text-muted-foreground">
                   Created {format(new Date(scenario.createdAt), "MMM d, yyyy")}
                 </span>
@@ -309,9 +312,9 @@ export function ScenarioDrawer({
                     <Sparkles className="h-5 w-5" />
                   </div>
                   <div className="space-y-1 max-w-xs mx-auto">
-                    <p className="text-sm font-semibold">Standard Mission</p>
+                    <p className="text-sm font-semibold">Custom Structure Not Configured</p>
                     <p className="text-xs text-muted-foreground">
-                      This mission uses standard simulation criteria. You can edit it to add structured problem categories, evidence banks, and stakeholder roles.
+                      This mission uses default simulation criteria. You can edit it to add structured problem categories, evidence banks, and stakeholder roles.
                     </p>
                   </div>
                   <Link href={`/admin/dashboard/scenarios/${scenario.id}/edit`}>

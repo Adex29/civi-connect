@@ -32,73 +32,33 @@ export interface MissionEditorTabsProps {
 }
 
 export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabsProps) {
-  // Local state for each section
+  // Local state for each section - clean and empty by default when adding a new mission
   const [issuesText, setIssuesText] = useState<string>(
-    (initialConfig?.issues || [
-      "Improper Waste Disposal",
-      "Lack of Community Participation",
-      "Weak Policy Enforcement",
-      "Limited Resource Allocation",
-    ]).join("\n")
+    (initialConfig?.issues || []).join("\n")
   );
 
   const [causes, setCauses] = useState<CauseItem[]>(
-    initialConfig?.causes || [
-      { id: "c1", title: "Weak Regulatory Enforcement", description: "Local tanods rarely issue citations." },
-      { id: "c2", title: "Resource & Budget Constraints", description: "Insufficient funds for frequent collection." },
-    ]
+    initialConfig?.causes || []
   );
 
   const [evidence, setEvidence] = useState<EvidenceItem[]>(
-    initialConfig?.evidenceLibrary || [
-      {
-        id: "ev1",
-        title: "Official Barangay Environmental Report",
-        type: "Government Report",
-        snippet: "Evaluation showing 45% compliance with waste segregation.",
-        fullText: "Municipal audit confirms urgent intervention needed in low-lying sitios.",
-        defaultCredibility: 5,
-        supports: ["cause", "need"],
-      },
-    ]
+    initialConfig?.evidenceLibrary || []
   );
 
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>(
-    initialConfig?.stakeholders || [
-      {
-        id: "st1",
-        name: "Hon. Manuel Cruz",
-        role: "Barangay Chairman",
-        initialStatement: "We are taking steps to address this issue, but need active community support.",
-        followUps: [
-          { question: "How can students help?", answer: "Students can lead sitio awareness and eco-brick collection drives." },
-        ],
-      },
-    ]
+    initialConfig?.stakeholders || []
   );
 
   const [unexpectedEvent, setUnexpectedEvent] = useState<UnexpectedEvent>(
     initialConfig?.unexpectedEvent || {
-      title: "Unexpected Challenge: Subsidies Reduced by 25%",
-      description: "Emergency calamity reallocation has reduced the initial budget allocation.",
-      options: [
-        { id: "opt1", text: "Halt operations until funds return.", isOptimal: false, feedback: "Halting operations causes project failure." },
-        { id: "opt2", text: "Mobilize local youth volunteers and junk shop recycling revenue.", isOptimal: true, feedback: "Great adaptive decision!" },
-      ],
+      title: "",
+      description: "",
+      options: [],
     }
   );
 
   const [stepTips, setStepTips] = useState<Record<number, string>>(
-    initialConfig?.stepTips || {
-      1: "Differentiate symptoms from root issues before prioritizing.",
-      2: "Analyze trigger cause relationships.",
-      3: "Combine official reports with community evidence.",
-      4: "Interview both grassroots residents and officials.",
-      5: "Ensure the intervention plan is actionable and budgeted.",
-      6: "Adapt to unexpected challenges while preserving core goals.",
-      7: "Refine and adapt your intervention plan based on the simulation obstacle.",
-      8: "Assess ethical impacts and who benefits.",
-    }
+    initialConfig?.stepTips || {}
   );
 
   type UpdatePayload = Partial<MissionDataConfig> & {
@@ -114,13 +74,29 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
+    const nextCauses = updated.causes !== undefined ? updated.causes : causes;
+    const nextEvidence = updated.evidence !== undefined
+      ? updated.evidence
+      : (updated.evidenceLibrary !== undefined ? updated.evidenceLibrary : evidence);
+    const nextStakeholders = updated.stakeholders !== undefined ? updated.stakeholders : stakeholders;
+    const nextUnexpectedEvent = updated.unexpectedEvent !== undefined ? updated.unexpectedEvent : unexpectedEvent;
+    const nextStepTips = updated.stepTips !== undefined ? updated.stepTips : stepTips;
+
+    // Filter out any completely empty tips
+    const cleanedTips: Record<number, string> = {};
+    for (const [key, val] of Object.entries(nextStepTips)) {
+      if (val && val.trim().length > 0) {
+        cleanedTips[Number(key)] = val.trim();
+      }
+    }
+
     const config: MissionDataConfig = {
       issues,
-      causes: updated.causes || causes,
-      evidenceLibrary: updated.evidence || updated.evidenceLibrary || evidence,
-      stakeholders: updated.stakeholders || stakeholders,
-      unexpectedEvent: updated.unexpectedEvent || unexpectedEvent,
-      stepTips: updated.stepTips || stepTips,
+      causes: nextCauses,
+      evidenceLibrary: nextEvidence,
+      stakeholders: nextStakeholders,
+      unexpectedEvent: nextUnexpectedEvent,
+      stepTips: cleanedTips,
     };
     onChange(config);
   };
@@ -129,6 +105,10 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
     .split("\n")
     .map((s) => s.trim())
     .filter((s) => s.length > 0).length;
+
+  const activeTipsCount = Object.values(stepTips).filter(
+    (t) => t && t.trim().length > 0
+  ).length;
 
   const stepsNav = [
     {
@@ -169,15 +149,15 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
       title: "Challenge Event",
       icon: Zap,
       count: `${unexpectedEvent.options?.length || 0} choices`,
-      hasData: Boolean(unexpectedEvent.title),
+      hasData: Boolean(unexpectedEvent.title?.trim()) || (unexpectedEvent.options?.length || 0) > 0,
     },
     {
       value: "tips",
       stepNum: "Tips",
       title: "Step Guidance",
       icon: Lightbulb,
-      count: `${Object.keys(stepTips).length} tips`,
-      hasData: Object.keys(stepTips).length > 0,
+      count: `${activeTipsCount} tips`,
+      hasData: activeTipsCount > 0,
     },
   ];
 

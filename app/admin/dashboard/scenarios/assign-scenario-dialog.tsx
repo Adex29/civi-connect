@@ -24,14 +24,24 @@ export function AssignScenarioDialog({
   classrooms,
   assignedClassroomIds = [],
   trigger,
+  open: propOpen,
+  onOpenChange: propOnOpenChange,
 }: {
   scenarioId: string;
   scenarioTitle: string;
   classrooms: Classroom[];
   assignedClassroomIds?: string[];
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = propOpen !== undefined;
+  const open = isControlled ? propOpen : internalOpen;
+  const setOpen = (val: boolean) => {
+    if (!isControlled) setInternalOpen(val);
+    propOnOpenChange?.(val);
+  };
   const [loading, setLoading] = useState(false);
   const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>(assignedClassroomIds);
 
@@ -75,19 +85,21 @@ export function AssignScenarioDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        nativeButton={!trigger}
-        render={
-          trigger ? (
-            (trigger as any)
-          ) : (
-            <Button variant="outline" size="sm" className="gap-1 text-xs">
-              <Plus className="h-3.5 w-3.5" />
-              <span>Assign to Class</span>
-            </Button>
-          )
-        }
-      />
+      {trigger !== null && (!isControlled || trigger !== undefined) && (
+        <DialogTrigger
+          nativeButton={!trigger}
+          render={
+            trigger ? (
+              (trigger as any)
+            ) : (
+              <Button variant="outline" size="sm" className="gap-1 text-xs">
+                <Plus className="h-3.5 w-3.5" />
+                <span>Assign to Class</span>
+              </Button>
+            )
+          }
+        />
+      )}
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
           <DialogTitle>Manage Classroom Assignments</DialogTitle>

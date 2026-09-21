@@ -2,7 +2,7 @@
 
 import { getCurrentStudent } from "@/lib/dal";
 import { findScenarioById, getAllSubmissions, createSubmission, updateSubmission, getAllClassrooms, getAllClassroomScenarios } from "@/lib/db";
-import { Submission, SubmissionId, SimulationStateData } from "@/lib/definitions";
+import { Submission, SubmissionId, SimulationStateData, SIMULATION_PASSING_THRESHOLD } from "@/lib/definitions";
 import {
   evaluateStep1,
   evaluateStep2,
@@ -71,6 +71,11 @@ export async function processSimulationStepAction(
 
   let evalResult = { passed: true, feedback: "", evaluation: undefined as any };
 
+  const isStepPassing = (res: { passed: boolean; evaluation?: { step_score?: number } }) => {
+    const score = res.evaluation?.step_score;
+    return Boolean(res.passed) && (score === undefined || score >= SIMULATION_PASSING_THRESHOLD);
+  };
+
   if (stepNumber === 1) {
     evalResult = await evaluateStep1(scenario, payload.selectedIssue, payload.justification);
     state.step1 = {
@@ -80,7 +85,7 @@ export async function processSimulationStepAction(
       passed: evalResult.passed,
       evaluation: evalResult.evaluation,
     };
-    if (evalResult.passed) {
+    if (isStepPassing(evalResult)) {
       state.currentStep = Math.max(state.currentStep, 2);
     }
   } else if (stepNumber === 2) {
@@ -91,7 +96,7 @@ export async function processSimulationStepAction(
       passed: evalResult.passed,
       evaluation: evalResult.evaluation,
     };
-    if (evalResult.passed) {
+    if (isStepPassing(evalResult)) {
       state.currentStep = Math.max(state.currentStep, 3);
     }
   } else if (stepNumber === 3) {
@@ -102,7 +107,7 @@ export async function processSimulationStepAction(
       passed: evalResult.passed,
       evaluation: evalResult.evaluation,
     };
-    if (evalResult.passed) {
+    if (isStepPassing(evalResult)) {
       state.currentStep = Math.max(state.currentStep, 4);
     }
   } else if (stepNumber === 4) {
@@ -115,7 +120,7 @@ export async function processSimulationStepAction(
       passed: evalResult.passed,
       evaluation: evalResult.evaluation,
     };
-    if (evalResult.passed) {
+    if (isStepPassing(evalResult)) {
       state.currentStep = Math.max(state.currentStep, 5);
     }
   } else if (stepNumber === 5) {
@@ -126,7 +131,7 @@ export async function processSimulationStepAction(
       passed: evalResult.passed,
       evaluation: evalResult.evaluation,
     };
-    if (evalResult.passed) {
+    if (isStepPassing(evalResult)) {
       state.currentStep = Math.max(state.currentStep, 6);
     }
   } else if (stepNumber === 6) {
@@ -138,7 +143,7 @@ export async function processSimulationStepAction(
       passed: evalResult.passed,
       evaluation: evalResult.evaluation,
     };
-    if (evalResult.passed) {
+    if (isStepPassing(evalResult)) {
       state.currentStep = Math.max(state.currentStep, 7);
     }
   } else if (stepNumber === 7) {
@@ -149,7 +154,7 @@ export async function processSimulationStepAction(
       passed: evalResult.passed,
       evaluation: evalResult.evaluation,
     };
-    if (evalResult.passed) {
+    if (isStepPassing(evalResult)) {
       state.currentStep = Math.max(state.currentStep, 8);
     }
   } else if (stepNumber === 8) {
@@ -160,7 +165,7 @@ export async function processSimulationStepAction(
       passed: evalResult.passed,
       evaluation: evalResult.evaluation,
     };
-    if (evalResult.passed) {
+    if (isStepPassing(evalResult)) {
       // Calculate final score performance breakdown across 7 dimensions
       const scores = calculateMissionScores(state);
       state.scores = scores;
@@ -175,11 +180,12 @@ export async function processSimulationStepAction(
 
   revalidatePath(`/dashboard/activity/${scenarioId}`);
 
+  const isPassed = isStepPassing(evalResult);
   return {
-    success: evalResult.passed,
+    success: isPassed,
     feedback: evalResult.feedback,
     evaluation: evalResult.evaluation,
-    nextStep: state.currentStep,
+    nextStep: isPassed ? state.currentStep : stepNumber,
     scores: state.scores,
   };
 }
@@ -223,8 +229,9 @@ export async function submitReflectionAction(scenarioId: string, answer: string)
     evaluation: evalResult.evaluation,
   };
 
-  if (evalResult.passed) {
-    state.currentStep = 9; // Step 9 = Certificate & Complete Screen
+  const isPassed = Boolean(evalResult.passed) && (evalResult.evaluation?.step_score === undefined || evalResult.evaluation.step_score >= SIMULATION_PASSING_THRESHOLD);
+  if (isPassed) {
+    state.currentStep = 10; // Step 10 = Completion screen
 
     submission.simulationState = state;
     submission.status = "completed";

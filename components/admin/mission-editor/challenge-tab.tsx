@@ -24,9 +24,9 @@ export function ChallengeTab({ unexpectedEvent, onChange }: ChallengeTabProps) {
       ...options,
       {
         id: `opt${Date.now()}`,
-        text: "New Decision Choice",
-        isOptimal: false,
-        feedback: "Feedback explaining the consequences of this choice.",
+        text: "",
+        isOptimal: options.length === 0,
+        feedback: "",
       },
     ];
     onChange({ ...unexpectedEvent, options: newOptions });
@@ -77,18 +77,16 @@ export function ChallengeTab({ unexpectedEvent, onChange }: ChallengeTabProps) {
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">Event Title</Label>
               <Input
-                value={unexpectedEvent.title}
+                value={unexpectedEvent?.title || ""}
                 onChange={(e) => onChange({ ...unexpectedEvent, title: e.target.value })}
-                placeholder="e.g. Unexpected Challenge: Subsidies Reduced by 25%"
                 className="text-xs font-medium"
               />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold">Event Description & Context</Label>
               <Textarea
-                value={unexpectedEvent.description}
+                value={unexpectedEvent?.description || ""}
                 onChange={(e) => onChange({ ...unexpectedEvent, description: e.target.value })}
-                placeholder="Explain what unexpected emergency happened mid-project..."
                 className="text-xs leading-relaxed"
                 rows={3}
               />
@@ -112,8 +110,11 @@ export function ChallengeTab({ unexpectedEvent, onChange }: ChallengeTabProps) {
             </div>
 
             {options.length === 0 ? (
-              <div className="text-center py-6 px-4 border border-dashed border-border rounded-lg bg-muted/30">
-                <p className="text-xs text-muted-foreground">No decision options added yet.</p>
+              <div className="text-center py-6 px-4 border border-dashed border-border rounded-lg bg-muted/30 space-y-2">
+                <p className="text-xs text-muted-foreground font-medium">No decision options added yet.</p>
+                <Button type="button" size="sm" variant="outline" onClick={addOption} className="text-xs gap-1">
+                  <Plus className="h-3.5 w-3.5" /> Add First Option
+                </Button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -157,11 +158,11 @@ export function ChallengeTab({ unexpectedEvent, onChange }: ChallengeTabProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeOption(i)}
-                          title="Delete decision option"
-                          className="h-7 text-[11px] gap-1 text-destructive/80 hover:text-destructive hover:bg-destructive/10 px-2 transition-colors"
+                          title="Remove decision option"
+                          className="h-7 text-xs gap-1.5 px-2.5 font-bold shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
-                          <span>Delete Option</span>
+                          <span>Remove</span>
                         </Button>
                       </div>
                     </div>
@@ -171,7 +172,6 @@ export function ChallengeTab({ unexpectedEvent, onChange }: ChallengeTabProps) {
                       <Input
                         value={opt.text}
                         onChange={(e) => updateOption(i, "text", e.target.value)}
-                        placeholder="Action students can take..."
                         className="text-xs"
                       />
                     </div>
@@ -181,7 +181,6 @@ export function ChallengeTab({ unexpectedEvent, onChange }: ChallengeTabProps) {
                       <Textarea
                         value={opt.feedback}
                         onChange={(e) => updateOption(i, "feedback", e.target.value)}
-                        placeholder="Explanation shown to students when they pick this option..."
                         className="text-xs leading-relaxed"
                         rows={2}
                       />

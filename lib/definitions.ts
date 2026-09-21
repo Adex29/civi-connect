@@ -17,6 +17,9 @@ export type SubmissionStatus = "draft" | "in_progress" | "submitted";
 export type ScenarioStatus = "active" | "archived";
 export type UserRole = "student" | "admin";
 
+// --- Simulation Constants ---
+export const SIMULATION_PASSING_THRESHOLD = 70;
+
 // --- Zod Schemas ---
 export const SignupFormSchema = z.object({
   classCode: z.string().min(1, { message: "Class code is required." }).length(6, { message: "Class code must be exactly 6 characters." }),
@@ -317,7 +320,7 @@ export interface SimulationStateData {
     evaluatedEvidences: {
       evidenceId: string;
       userCredibility: number;
-      selectedSupports: ("cause" | "solution" | "need")[];
+      selectedSupports: ("cause" | "solution" | "need" | "not_related")[];
       justification: string;
     }[];
     feedback?: string;

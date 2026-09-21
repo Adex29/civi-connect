@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/drawer";
 import { CheckCircle, Clock, Eye, User, GraduationCap, Award, Sparkles, ShieldAlert, CheckCircle2 } from "lucide-react";
 import { Classroom, Scenario, Student, Submission } from "@/lib/definitions";
+import { formatFlagLabel } from "@/lib/flag-utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   Timeline,
@@ -201,7 +202,7 @@ export function SubmissionDrawer({
                             variant={f === "AI_GENERATED_CONTENT" ? "destructive" : "outline"}
                             className={`text-[9px] ${f !== "AI_GENERATED_CONTENT" ? "text-rose-600 border-rose-500/30" : ""}`}
                           >
-                            {f}
+                            {formatFlagLabel(f)}
                           </Badge>
                         ))}
                       </div>
@@ -242,7 +243,7 @@ export function SubmissionDrawer({
                             variant={f === "AI_GENERATED_CONTENT" ? "destructive" : "outline"}
                             className={`text-[9px] ${f !== "AI_GENERATED_CONTENT" ? "text-rose-600 border-rose-500/30" : ""}`}
                           >
-                            {f}
+                            {formatFlagLabel(f)}
                           </Badge>
                         ))}
                       </div>
@@ -301,7 +302,7 @@ export function SubmissionDrawer({
                             variant={f === "AI_GENERATED_CONTENT" ? "destructive" : "outline"}
                             className={`text-[9px] ${f !== "AI_GENERATED_CONTENT" ? "text-rose-600 border-rose-500/30" : ""}`}
                           >
-                            {f}
+                            {formatFlagLabel(f)}
                           </Badge>
                         ))}
                       </div>
@@ -353,7 +354,7 @@ export function SubmissionDrawer({
                             variant={f === "AI_GENERATED_CONTENT" ? "destructive" : "outline"}
                             className={`text-[9px] ${f !== "AI_GENERATED_CONTENT" ? "text-rose-600 border-rose-500/30" : ""}`}
                           >
-                            {f}
+                            {formatFlagLabel(f)}
                           </Badge>
                         ))}
                       </div>

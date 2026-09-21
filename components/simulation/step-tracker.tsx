@@ -1,7 +1,18 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import {
+  CheckCircle2,
+  ArrowRight,
+  Target,
+  GitBranch,
+  FileSearch,
+  Users,
+  ClipboardList,
+  AlertTriangle,
+  RotateCcw,
+  TrendingUp,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Scenario } from "@/lib/definitions";
 import {
@@ -17,20 +28,20 @@ import {
 
 export interface StepTrackerProps {
   currentStep: number; // 1 to 7
-  scenario: Scenario;
+  scenario?: Scenario;
   completedSteps?: number[];
   onSelectStep?: (step: number) => void;
 }
 
 export const STEPS_CONFIG = [
-  { step: 1, name: "Identify Issue", desc: "Recognize & define community problem" },
-  { step: 2, name: "Analyze Causes", desc: "Order root causes & contributing factors" },
-  { step: 3, name: "Evidence Evaluation", desc: "Assess digital sources & credibility" },
-  { step: 4, name: "Stakeholder Consultation", desc: "Gather insights from community members" },
-  { step: 5, name: "Intervention Planning", desc: "Develop evidence-based action plan" },
-  { step: 6, name: "Challenge Simulation", desc: "Respond to unexpected obstacles" },
-  { step: 7, name: "Plan Revision", desc: "Adapt intervention plan based on obstacles" },
-  { step: 8, name: "Impact Assessment", desc: "Evaluate sustainability & ethics" },
+  { step: 1, name: "Identify Issue", desc: "Recognize & define community problem", icon: Target },
+  { step: 2, name: "Analyze Causes", desc: "Order root causes & contributing factors", icon: GitBranch },
+  { step: 3, name: "Evidence Evaluation", desc: "Assess digital sources & credibility", icon: FileSearch },
+  { step: 4, name: "Stakeholder Consultation", desc: "Gather insights from community members", icon: Users },
+  { step: 5, name: "Intervention Planning", desc: "Develop evidence-based action plan", icon: ClipboardList },
+  { step: 6, name: "Challenge Simulation", desc: "Respond to unexpected obstacles", icon: AlertTriangle },
+  { step: 7, name: "Plan Revision", desc: "Adapt intervention plan based on obstacles", icon: RotateCcw },
+  { step: 8, name: "Impact Assessment", desc: "Evaluate sustainability & ethics", icon: TrendingUp },
 ];
 
 export function StepTracker({ currentStep, scenario, completedSteps = [], onSelectStep }: StepTrackerProps) {
@@ -49,6 +60,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
             const isCurrent = currentStep === s.step;
             const isDone = completedSteps.includes(s.step) || currentStep > s.step;
             const isClickable = onSelectStep !== undefined && (isDone || isCurrent);
+            const StepIcon = s.icon;
 
             return (
               <div
@@ -58,13 +70,13 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
                   isClickable ? "cursor-pointer hover:opacity-80" : ""
                 } ${
                   isCurrent
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground shadow-xs"
                     : isDone
                     ? "bg-primary/15 text-primary"
                     : "bg-muted text-muted-foreground opacity-60"
                 }`}
               >
-                <span>{s.step}.</span>
+                <StepIcon className="h-3.5 w-3.5 shrink-0" />
                 <span>{s.name}</span>
                 {isDone && <CheckCircle2 className="h-3 w-3 shrink-0" />}
               </div>
@@ -90,6 +102,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
               const isDone = completedSteps.includes(s.step) || currentStep > s.step;
               const isClickable = onSelectStep !== undefined && (isDone || isCurrent);
               const status = isDone ? "completed" : isCurrent ? "current" : "upcoming";
+              const StepIcon = s.icon;
 
               return (
                 <TimelineItem
@@ -103,16 +116,17 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
                     {isDone ? (
                       <CheckCircle2 className="h-3.5 w-3.5" />
                     ) : isCurrent ? (
-                      <ArrowRight className="h-3.5 w-3.5 text-primary-foreground" />
+                      <StepIcon className="h-3.5 w-3.5 text-primary-foreground" />
                     ) : (
-                      <span className="text-[11px]">{s.step}</span>
+                      <span className="text-[11px] font-mono">{s.step}</span>
                     )}
                   </TimelineDot>
                   <TimelineConnector />
                   <TimelineContent>
                     <TimelineHeader>
-                      <TimelineTitle className={isCurrent ? "text-primary font-extrabold" : ""}>
-                        {s.name}
+                      <TimelineTitle className={`flex items-center gap-1.5 ${isCurrent ? "text-primary font-extrabold" : ""}`}>
+                        <StepIcon className={`h-3.5 w-3.5 shrink-0 ${isCurrent ? "text-primary" : "text-muted-foreground/70"}`} />
+                        <span>{s.name}</span>
                       </TimelineTitle>
                     </TimelineHeader>
                     <TimelineDescription>{s.desc}</TimelineDescription>
@@ -121,25 +135,6 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
               );
             })}
           </Timeline>
-        </CardContent>
-      </Card>
-
-      {/* Mission Guidance Box */}
-      <Card className="border-border bg-card shadow-sm">
-        <CardHeader className="pb-2 border-b border-border bg-muted/20">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Mission Context & Legal Guidance
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-3 text-xs leading-relaxed space-y-3">
-          <h4 className="font-bold text-sm text-foreground">{scenario.title}</h4>
-          <p className="text-muted-foreground">{scenario.description}</p>
-          {scenario.context && (
-            <div className="pt-2 border-t border-border text-muted-foreground italic">
-              <span className="font-semibold not-italic block mb-1 text-foreground">Legal & Statutory Framework:</span>
-              {scenario.context}
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

@@ -61,7 +61,6 @@ export function TipsTab({ stepTips, onChange }: TipsTabProps) {
                 <Textarea
                   value={stepTips[num] || ""}
                   onChange={(e) => onChange({ ...stepTips, [num]: e.target.value })}
-                  placeholder={`Enter tip for ${stepInfo.name}...`}
                   className="text-xs leading-relaxed bg-background"
                   rows={2}
                 />

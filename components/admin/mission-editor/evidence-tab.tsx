@@ -43,12 +43,12 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
       ...evidence,
       {
         id,
-        title: "New Evidence Source",
+        title: "",
         type: "Government Report",
-        snippet: "Short preview snippet...",
-        fullText: "Full body text of the evidence document...",
-        defaultCredibility: 4,
-        supports: ["cause", "need"],
+        snippet: "",
+        fullText: "",
+        defaultCredibility: 3,
+        supports: [],
       },
     ]);
     setExpandedIds((prev) => ({ ...prev, [id]: true }));
@@ -146,12 +146,12 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="icon-sm"
                         onClick={() => removeEvidence(i)}
-                        title="Delete evidence document"
-                        className="text-destructive/80 hover:text-destructive hover:bg-destructive/10 shrink-0 h-7 w-7 transition-colors"
+                        title="Remove evidence document"
+                        className="h-8 w-8 shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
 
@@ -164,7 +164,6 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                             <Input
                               value={ev.title}
                               onChange={(e) => updateEvidence(i, "title", e.target.value)}
-                              placeholder="e.g. Official Barangay Environmental Report"
                               className="text-xs"
                             />
                           </div>
@@ -220,7 +219,6 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                           <Input
                             value={ev.snippet}
                             onChange={(e) => updateEvidence(i, "snippet", e.target.value)}
-                            placeholder="Brief snippet displayed in search results..."
                             className="text-xs"
                           />
                         </div>
@@ -230,7 +228,6 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                           <Textarea
                             value={ev.fullText}
                             onChange={(e) => updateEvidence(i, "fullText", e.target.value)}
-                            placeholder="Full body text of the report or interview..."
                             className="text-xs leading-relaxed"
                             rows={3}
                           />
@@ -245,7 +242,6 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                             {ev.imageUrl && <span className="text-[10px] text-primary font-bold">✓ Attached</span>}
                           </div>
                           <Input
-                            placeholder="https://images.unsplash.com/... or data:image/..."
                             value={ev.imageUrl || ""}
                             onChange={(e) => updateEvidence(i, "imageUrl", e.target.value)}
                             className="text-xs"

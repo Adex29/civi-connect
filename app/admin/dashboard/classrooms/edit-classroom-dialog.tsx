@@ -29,11 +29,21 @@ const statusOptions: ComboboxOption[] = [
 export function EditClassroomDialog({
   classroom,
   trigger,
+  open: propOpen,
+  onOpenChange: propOnOpenChange,
 }: {
   classroom: Classroom;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = propOpen !== undefined;
+  const open = isControlled ? propOpen : internalOpen;
+  const setOpen = (val: boolean) => {
+    if (!isControlled) setInternalOpen(val);
+    propOnOpenChange?.(val);
+  };
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState(classroom.name);
   const [description, setDescription] = useState(classroom.description || "");
@@ -75,22 +85,24 @@ export function EditClassroomDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={
-          trigger ? (
-            (trigger as any)
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              title="Edit Classroom"
-            >
-              <Edit2 className="h-3.5 w-3.5" />
-            </Button>
-          )
-        }
-      />
+      {trigger !== null && (!isControlled || trigger !== undefined) && (
+        <DialogTrigger
+          render={
+            trigger ? (
+              (trigger as any)
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                title="Edit Classroom"
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+              </Button>
+            )
+          }
+        />
+      )}
       <DialogContent className="sm:max-w-[460px]">
         <form onSubmit={handleUpdate} className="space-y-4">
           <DialogHeader>
@@ -153,7 +165,7 @@ export function EditClassroomDialog({
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t">
+          <DialogFooter className="gap-3 sm:gap-3 pt-2 border-t">
             <Button
               type="button"
               variant="outline"

@@ -12,7 +12,7 @@ import { EvidenceItem } from "@/lib/definitions";
 export interface EvaluatedEvidence {
   evidenceId: string;
   userCredibility: number;
-  selectedSupports: ("cause" | "solution" | "need")[];
+  selectedSupports: ("cause" | "solution" | "need" | "not_related")[];
   justification: string;
 }
 
@@ -47,8 +47,8 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
   const [viewerImage, setViewerImage] = useState<ViewerImage | null>(null);
 
   // Inspector form state
-  const [credibility, setCredibility] = useState(3);
-  const [supports, setSupports] = useState<("cause" | "solution" | "need")[]>([]);
+  const [credibility, setCredibility] = useState(0);
+  const [supports, setSupports] = useState<("cause" | "solution" | "need" | "not_related")[]>([]);
   const [justification, setJustification] = useState("");
 
   const openInspector = (item: EvidenceItem) => {
@@ -59,14 +59,14 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
       setSupports(existing.selectedSupports);
       setJustification(existing.justification);
     } else {
-      setCredibility(item.defaultCredibility || 3);
+      setCredibility(0);
       setSupports([]);
       setJustification("");
     }
   };
 
   const saveEvaluation = () => {
-    if (!selectedItem) return;
+    if (!selectedItem || credibility === 0) return;
     const updated = evaluated.filter((e) => e.evidenceId !== selectedItem.id);
     updated.push({
       evidenceId: selectedItem.id,
@@ -78,11 +78,22 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
     setSelectedItem(null);
   };
 
-  const toggleSupport = (tag: "cause" | "solution" | "need") => {
-    if (supports.includes(tag)) {
-      setSupports(supports.filter((t) => t !== tag));
+  const toggleSupport = (tag: "cause" | "solution" | "need" | "not_related") => {
+    if (tag === "not_related") {
+      if (supports.includes("not_related")) {
+        setSupports(supports.filter((t) => t !== "not_related"));
+      } else {
+        // Mutually exclusive: selecting "Not Related" clears any positive supports
+        setSupports(["not_related"]);
+      }
     } else {
-      setSupports([...supports, tag]);
+      // Selecting Cause, Solution, or Community Need unselects "Not Related"
+      const withoutNotRelated = supports.filter((t) => t !== "not_related");
+      if (withoutNotRelated.includes(tag)) {
+        setSupports(withoutNotRelated.filter((t) => t !== tag));
+      } else {
+        setSupports([...withoutNotRelated, tag]);
+      }
     }
   };
 
@@ -159,7 +170,14 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
                           />
                         ))}
                       </div>
-                      <span className="text-primary text-[11px] font-bold">Evaluated</span>
+                      <div className="flex items-center gap-1.5">
+                        {evalData.selectedSupports?.includes("not_related") && (
+                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/25">
+                            Not Related
+                          </span>
+                        )}
+                        <span className="text-primary text-[11px] font-bold">Evaluated</span>
+                      </div>
                     </>
                   ) : (
                     <span className="text-muted-foreground text-[11px] italic">Click to Inspect Source →</span>
@@ -172,11 +190,11 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
       </div>
 
       {/* Selected Items Summary */}
-      <div className="text-xs text-muted-foreground flex flex-col sm:flex-row sm:items-center justify-between bg-muted/30 p-3 rounded-lg border border-border gap-1">
-        <span>
-          Evaluated Evidence Count: <strong>{evaluated.length}</strong> of {items.length}
+      <div className="text-xs flex flex-col sm:flex-row sm:items-center justify-between bg-muted/30 p-3 rounded-lg border border-border gap-1">
+        <span className={evaluated.length >= items.length ? "text-primary font-bold" : "text-muted-foreground font-medium"}>
+          Evaluated Evidence Count: <strong className="font-bold text-foreground">{evaluated.length}</strong> of {items.length} {evaluated.length >= items.length ? "✓ (All evaluated)" : "(You need to evaluate all the evidence)"}
         </span>
-        <span className="italic text-[11px]">Click any item to inspect & assess credibility</span>
+        <span className="italic text-[11px] text-muted-foreground">Click any item to inspect & assess credibility</span>
       </div>
 
       {/* Evidence Inspector Dialog */}
@@ -248,7 +266,7 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
                       >
                         <Star
                           className={`h-5 w-5 sm:h-6 sm:w-6 ${
-                            starVal <= credibility
+                            credibility > 0 && starVal <= credibility
                               ? "fill-primary text-primary"
                               : "text-muted-foreground/30 hover:text-primary/50"
                           }`}
@@ -256,8 +274,8 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
                       </button>
                     );
                   })}
-                  <span className="text-xs font-bold text-primary ml-2">
-                    {credibility} / 5 Stars
+                  <span className={`text-xs font-bold ml-2 ${credibility > 0 ? "text-primary" : "text-muted-foreground"}`}>
+                    {credibility > 0 ? `${credibility} / 5 Stars` : "Select a rating (1-5 stars)"}
                   </span>
                 </div>
               </div>
@@ -270,8 +288,10 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
                     { key: "cause", label: "Cause" },
                     { key: "solution", label: "Solution" },
                     { key: "need", label: "Community Need" },
+                    { key: "not_related", label: "Not Related / Irrelevant" },
                   ].map((t) => {
                     const isChecked = supports.includes(t.key as any);
+                    const isNotRelated = t.key === "not_related";
                     return (
                       <button
                         key={t.key}
@@ -279,8 +299,12 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
                         onClick={() => !disabled && toggleSupport(t.key as any)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                           isChecked
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-background text-foreground hover:bg-muted border-border"
+                            ? isNotRelated
+                              ? "bg-amber-600 text-white border-amber-600 dark:bg-amber-600"
+                              : "bg-primary text-primary-foreground border-primary"
+                            : isNotRelated
+                              ? "bg-background text-muted-foreground hover:bg-amber-500/10 hover:text-amber-700 dark:hover:text-amber-300 border-border hover:border-amber-500/30"
+                              : "bg-background text-foreground hover:bg-muted border-border"
                         }`}
                       >
                         {isChecked ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
@@ -308,7 +332,7 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
               <Button variant="outline" onClick={() => setSelectedItem(null)}>
                 Cancel
               </Button>
-              <Button onClick={saveEvaluation} disabled={disabled || !justification.trim()}>
+              <Button onClick={saveEvaluation} disabled={disabled || !justification.trim() || credibility === 0}>
                 Save Evaluation
               </Button>
             </DialogFooter>

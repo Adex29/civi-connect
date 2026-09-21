@@ -17,6 +17,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Loader2,
   CheckCircle2,
   AlertTriangle,
@@ -33,9 +41,17 @@ import {
   ChevronUp,
   FileEdit,
   History,
+  Scale,
+  Target,
+  GitBranch,
+  FileSearch,
+  Users,
+  ClipboardList,
+  TrendingUp,
 } from "lucide-react";
-import { Scenario, Submission, SimulationStateData, EvidenceItem, AIEvaluationResult } from "@/lib/definitions";
+import { Scenario, Submission, SimulationStateData, EvidenceItem, AIEvaluationResult, SIMULATION_PASSING_THRESHOLD } from "@/lib/definitions";
 import { getMissionDataForScenario } from "@/lib/mission-data";
+import { formatFlagLabel, isAiControlFlag } from "@/lib/flag-utils";
 import { StepTracker } from "@/components/simulation/step-tracker";
 import { CauseRanker } from "@/components/simulation/cause-ranker";
 import { EvidenceLibrary, EvaluatedEvidence } from "@/components/simulation/evidence-library";
@@ -43,6 +59,28 @@ import { StakeholderChat } from "@/components/simulation/stakeholder-chat";
 import { PerformanceReport } from "@/components/simulation/performance-report";
 import { MissionBriefing } from "@/components/simulation/mission-briefing";
 import { processSimulationStepAction, submitReflectionAction } from "./actions";
+
+const STEP_TITLES: Record<number, string> = {
+  1: "Identify Community Issues",
+  2: "Analyze Causes",
+  3: "Evaluate Digital Evidence",
+  4: "Consult Simulated Stakeholders",
+  5: "Develop an Intervention Plan",
+  6: "Anticipate Challenges (Simulation)",
+  7: "Revise Intervention Plan (Adaptive Revision)",
+  8: "Assess Community Impact",
+};
+
+const STEP_ICONS: Record<number, React.ComponentType<{ className?: string }>> = {
+  1: Target,
+  2: GitBranch,
+  3: FileSearch,
+  4: Users,
+  5: ClipboardList,
+  6: AlertTriangle,
+  7: RotateCcw,
+  8: TrendingUp,
+};
 
 export function ActivityForm({
   scenario,
@@ -70,6 +108,7 @@ export function ActivityForm({
     if (existingSubmission?.status === "completed") return 10;
     return initialState.currentStep || 1;
   });
+  const CurrentStepIcon = STEP_ICONS[step] || Sparkles;
   const [simState, setSimState] = useState<SimulationStateData>(initialState);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
@@ -77,15 +116,22 @@ export function ActivityForm({
     message: string;
     evaluation?: AIEvaluationResult;
   } | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // --- Step 1 State ---
   const [selectedIssue, setSelectedIssue] = useState<string>(
-    simState.step1?.selectedIssue || missionData.issues[0]
+    simState.step1?.selectedIssue || ""
   );
   const [step1Justification, setStep1Justification] = useState<string>(
     simState.step1?.justification || ""
   );
-  const [showStep1RevisionPrompt, setShowStep1RevisionPrompt] = useState(false);
+  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+  const [evaluationModalData, setEvaluationModalData] = useState<{
+    success: boolean;
+    message: string;
+    nextStep?: number;
+    evaluation?: AIEvaluationResult;
+  } | null>(null);
 
   // --- Step 2 State ---
   const [orderedCauseIds, setOrderedCauseIds] = useState<string[]>(
@@ -110,7 +156,7 @@ export function ActivityForm({
 
   // --- Step 5 State (Original Intervention Plan) ---
   const [planData, setPlanData] = useState({
-    projectTitle: simState.step5?.plan?.projectTitle || `Community Action Plan: ${scenario.title}`,
+    projectTitle: simState.step5?.plan?.projectTitle || "",
     goal: simState.step5?.plan?.goal || "",
     objectives: simState.step5?.plan?.objectives || "",
     activities: simState.step5?.plan?.activities || "",
@@ -123,7 +169,7 @@ export function ActivityForm({
 
   // --- Step 6 State (Challenge Simulation) ---
   const [selectedChallengeOptId, setSelectedChallengeOptId] = useState<string>(
-    simState.step6?.selectedOptionId || missionData.unexpectedEvent.options[0]?.id || ""
+    simState.step6?.selectedOptionId || ""
   );
   const [step6Justification, setStep6Justification] = useState<string>(
     simState.step6?.justification || ""
@@ -131,7 +177,7 @@ export function ActivityForm({
 
   // --- Step 7 State (Adaptive Plan Revision - Prefilled from Step 5) ---
   const [revisedPlanData, setRevisedPlanData] = useState({
-    projectTitle: simState.step7?.revisedPlan?.projectTitle || simState.step5?.plan?.projectTitle || `Community Action Plan: ${scenario.title}`,
+    projectTitle: simState.step7?.revisedPlan?.projectTitle || simState.step5?.plan?.projectTitle || "",
     goal: simState.step7?.revisedPlan?.goal || simState.step5?.plan?.goal || "",
     objectives: simState.step7?.revisedPlan?.objectives || simState.step5?.plan?.objectives || "",
     activities: simState.step7?.revisedPlan?.activities || simState.step5?.plan?.activities || "",
@@ -198,21 +244,27 @@ export function ActivityForm({
     }
 
     setLoading(true);
+    setFormError(null);
     setFeedback(null);
 
     let payload: any = {};
 
     if (step === 1) {
+      if (!selectedIssue || !selectedIssue.trim()) {
+        setLoading(false);
+        setFormError("Please select a priority community concern before proceeding.");
+        return;
+      }
       payload = { selectedIssue, justification: step1Justification };
     } else if (step === 2) {
       payload = { orderedCauseIds };
     } else if (step === 3) {
-      if (evaluatedEvidences.length < 2) {
+      const totalRequired = missionData.evidenceLibrary?.length || 0;
+      if (evaluatedEvidences.length < totalRequired) {
         setLoading(false);
-        setFeedback({
-          success: false,
-          message: "Please evaluate and rate at least 2 pieces of evidence before proceeding.",
-        });
+        setFormError(
+          `You need to evaluate all ${totalRequired} evidence sources before proceeding. Currently, you have evaluated ${evaluatedEvidences.length} of ${totalRequired}. Please inspect and evaluate all the evidence.`
+        );
         return;
       }
       payload = { evaluatedEvidences };
@@ -221,6 +273,11 @@ export function ActivityForm({
     } else if (step === 5) {
       payload = { plan: planData };
     } else if (step === 6) {
+      if (!selectedChallengeOptId) {
+        setLoading(false);
+        setFormError("Please select an adaptive action option before proceeding.");
+        return;
+      }
       const opt = missionData.unexpectedEvent.options.find((o) => o.id === selectedChallengeOptId);
       payload = {
         selectedOptionId: selectedChallengeOptId,
@@ -241,10 +298,9 @@ export function ActivityForm({
 
       if (missing.length > 0) {
         setLoading(false);
-        setFeedback({
-          success: false,
-          message: `Please complete all 9 fields of your revised intervention plan. Missing: ${missing.join(", ")}.`,
-        });
+        setFormError(
+          `Please complete all 9 fields of your revised intervention plan. Missing: ${missing.join(", ")}.`
+        );
         return;
       }
       payload = { revisedPlan: revisedPlanData };
@@ -255,28 +311,36 @@ export function ActivityForm({
     const res = await processSimulationStepAction(scenario.id, step, payload);
     setLoading(false);
 
-    if (res.success) {
-      setFeedback({ success: true, message: res.feedback, evaluation: res.evaluation });
-
-      if (res.scores) {
-        setSimState((prev) => ({ ...prev, scores: res.scores }));
-      }
-
-      if (step === 1 && !showStep1RevisionPrompt) {
-        setShowStep1RevisionPrompt(true);
-        return;
-      }
-
-      if (res.nextStep) {
-        setStep(res.nextStep);
-      }
-    } else {
-      setFeedback({
-        success: false,
-        message: res.feedback || "Please revise your response.",
-        evaluation: res.evaluation,
-      });
+    if ("error" in res && res.error) {
+      setFormError(res.error);
+      return;
     }
+
+    if (res.scores) {
+      setSimState((prev) => ({ ...prev, scores: res.scores }));
+    }
+
+    const isSuccess = !!res.success;
+    const feedbackMsg = res.feedback || (isSuccess ? "Step validated successfully." : "Please revise your response.");
+
+    setEvaluationModalData({
+      success: isSuccess,
+      message: feedbackMsg,
+      nextStep: res.nextStep,
+      evaluation: res.evaluation,
+    });
+    setShowEvaluationModal(true);
+  };
+
+  const handleContinueMissionFromModal = () => {
+    if (!evaluationModalData?.success) return;
+    const score = evaluationModalData.evaluation?.step_score;
+    if (score !== undefined && score < SIMULATION_PASSING_THRESHOLD) return;
+    const nextStepNumber = evaluationModalData.nextStep || (step + 1);
+    setShowEvaluationModal(false);
+    setFormError(null);
+    setFeedback(null);
+    setStep(nextStepNumber);
   };
 
   const handleFinalReflectionSubmit = async () => {
@@ -386,11 +450,13 @@ export function ActivityForm({
                             Score: {feedback.evaluation.step_score}%
                           </Badge>
                         )}
-                        {feedback.evaluation?.flags?.map((flag) => (
-                          <Badge key={flag} variant="outline" className="text-[10px] font-mono border-rose-500/40 text-rose-700 dark:text-rose-300">
-                            {flag}
-                          </Badge>
-                        ))}
+                        {feedback.evaluation?.flags
+                          ?.filter((flag) => !isAiControlFlag(flag) || !feedback.evaluation?.is_ai_generated)
+                          .map((flag) => (
+                            <Badge key={flag} variant="outline" className="text-[10px] font-medium border-rose-500/40 text-rose-700 dark:text-rose-300">
+                              {formatFlagLabel(flag)}
+                            </Badge>
+                          ))}
                       </div>
                     </div>
 
@@ -515,20 +581,18 @@ export function ActivityForm({
 
         {/* Step Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-primary/5 p-3 sm:p-4 rounded-xl border border-primary/20">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">
-              Mission Step 0{step} of 08
-            </span>
-            <h2 className="text-lg sm:text-xl font-extrabold tracking-tight mt-0.5">
-              {step === 1 && "Identify Community Issues"}
-              {step === 2 && "Analyze Causes"}
-              {step === 3 && "Evaluate Digital Evidence"}
-              {step === 4 && "Consult Simulated Stakeholders"}
-              {step === 5 && "Develop an Intervention Plan"}
-              {step === 6 && "Anticipate Challenges (Simulation)"}
-              {step === 7 && "Revise Intervention Plan (Adaptive Revision)"}
-              {step === 8 && "Assess Community Impact"}
-            </h2>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shrink-0 shadow-2xs">
+              <CurrentStepIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+            </div>
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                Mission Step 0{step} of 08
+              </span>
+              <h2 className="text-lg sm:text-xl font-extrabold tracking-tight mt-0.5">
+                {STEP_TITLES[step] || "Civic Simulation Step"}
+              </h2>
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button
@@ -552,15 +616,18 @@ export function ActivityForm({
           <div className="xl:col-span-8 space-y-6">
             <Card className="border shadow-sm">
               <CardHeader className="border-b bg-muted/20 pb-4">
-                <CardTitle className="text-base font-bold">
-                  {step === 1 && "Which community issue should be prioritized?"}
-                  {step === 2 && "Arrange the causes (Most Significant → Least Significant)"}
-                  {step === 3 && "Evidence Library Inspection"}
-                  {step === 4 && "Stakeholder Consultation"}
-                  {step === 5 && "Intervention Plan Builder"}
-                  {step === 6 && missionData.unexpectedEvent.title}
-                  {step === 7 && "Adaptive Plan Revision (Post-Challenge)"}
-                  {step === 8 && "Community Impact Assessment"}
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <CurrentStepIcon className="h-4 w-4 text-primary shrink-0" />
+                  <span>
+                    {step === 1 && "Which community issue should be prioritized?"}
+                    {step === 2 && "Arrange the causes (Most Significant → Least Significant)"}
+                    {step === 3 && "Evidence Library Inspection"}
+                    {step === 4 && "Stakeholder Consultation"}
+                    {step === 5 && "Intervention Plan Builder"}
+                    {step === 6 && missionData.unexpectedEvent.title}
+                    {step === 7 && "Adaptive Plan Revision (Post-Challenge)"}
+                    {step === 8 && "Community Impact Assessment"}
+                  </span>
                 </CardTitle>
               </CardHeader>
 
@@ -610,34 +677,6 @@ export function ActivityForm({
                         disabled={isReadOnly || loading}
                       />
                     </div>
-
-                    {showStep1RevisionPrompt && (
-                      <Alert className="bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200">
-                        <Sparkles className="h-4 w-4 text-amber-600 shrink-0" />
-                        <AlertTitle className="font-bold text-xs text-amber-800 dark:text-amber-300">
-                          AI Insights & Revision Guidance
-                        </AlertTitle>
-                        <AlertDescription className="text-xs space-y-3 mt-1.5">
-                          <p>
-                            You identified <strong>"{selectedIssue}"</strong>. Consider whether this issue is the primary concern or one contributing factor. Would you like to revise?
-                          </p>
-                          <div className="flex gap-3 pt-1">
-                            <Button size="xs" variant="outline" onClick={() => setShowStep1RevisionPrompt(false)}>
-                              [YES] Revise Choice
-                            </Button>
-                            <Button
-                              size="xs"
-                              onClick={() => {
-                                setStep(2);
-                                setShowStep1RevisionPrompt(false);
-                              }}
-                            >
-                              [NO] Keep & Proceed <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </AlertDescription>
-                      </Alert>
-                    )}
                   </div>
                 )}
 
@@ -690,7 +729,7 @@ export function ActivityForm({
                     planData.timeline,
                     planData.expectedOutcomes,
                   ].filter((f) => f && f.trim().length > 0).length;
-                  const isMissingErr = feedback && !feedback.success;
+                  const isMissingErr = Boolean(formError);
 
                   return (
                     <div className="space-y-4 text-xs">
@@ -721,6 +760,7 @@ export function ActivityForm({
                           <Input
                             value={planData.projectTitle}
                             onChange={(e) => setPlanData({ ...planData, projectTitle: e.target.value })}
+                            placeholder={`e.g. Community Action Plan: ${scenario.title}`}
                             className={isMissingErr && !planData.projectTitle?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
                             disabled={isReadOnly || loading}
                           />
@@ -912,7 +952,7 @@ export function ActivityForm({
                     revisedPlanData.expectedOutcomes,
                   ].filter((v) => v?.trim().length > 0).length;
 
-                  const isMissingErr = feedback && !feedback.success && feedback.message.includes("missing:");
+                  const isMissingErr = Boolean(formError && formError.toLowerCase().includes("missing"));
                   const selectedOpt = missionData.unexpectedEvent.options.find((o) => o.id === selectedChallengeOptId);
 
                   return (
@@ -1046,6 +1086,7 @@ export function ActivityForm({
                             <Input
                               value={revisedPlanData.projectTitle}
                               onChange={(e) => setRevisedPlanData({ ...revisedPlanData, projectTitle: e.target.value })}
+                              placeholder={`e.g. Community Action Plan: ${scenario.title}`}
                               className={isMissingErr && !revisedPlanData.projectTitle?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
                               disabled={isReadOnly || loading}
                             />
@@ -1225,81 +1266,26 @@ export function ActivityForm({
                   </div>
                 )}
 
-                {/* AI Feedback Notification */}
-                {feedback && (
-                  <Alert
-                    className={`animate-fade-in-up border ${
-                      feedback.success
-                        ? "bg-primary/5 border-primary/30 text-foreground"
-                        : "bg-rose-500/10 border-rose-500/30 text-rose-900 dark:text-rose-200"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3 w-full">
-                      <Sparkles
-                        className={`h-5 w-5 shrink-0 mt-0.5 ${
-                          feedback.success ? "text-primary" : "text-rose-600"
-                        }`}
-                      />
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <AlertTitle className="font-bold text-xs flex items-center gap-1.5 mb-0">
-                            {feedback.success ? "AI Verification: Step Validated!" : "AI Verification: Revision Required"}
-                          </AlertTitle>
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            {feedback.evaluation?.step_score !== undefined && (
-                              <Badge variant={feedback.success ? "default" : "destructive"} className="text-[10px] font-mono font-bold">
-                                Score: {feedback.evaluation.step_score}%
-                              </Badge>
-                            )}
-                            {feedback.evaluation?.flags?.map((flag) => (
-                              <Badge key={flag} variant="outline" className="text-[10px] font-mono border-rose-500/40 text-rose-700 dark:text-rose-300">
-                                {flag}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <AlertDescription className="text-xs leading-relaxed">
-                          "{feedback.message}"
-                        </AlertDescription>
-
-                        {feedback.evaluation?.is_ai_generated && (
-                          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-900 dark:text-rose-200 text-xs font-semibold">
-                            <ShieldAlert className="h-4 w-4 text-rose-600 shrink-0" />
-                            <span>AI-Generated Content Flagged: Please rewrite using your own authentic student voice.</span>
-                          </div>
-                        )}
-
-                        {feedback.evaluation?.strengths && feedback.evaluation.strengths.length > 0 && (
-                          <div className="pt-1.5 border-t border-border/40 text-[11px] space-y-1">
-                            <span className="font-bold text-emerald-700 dark:text-emerald-400 block">Strengths:</span>
-                            <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
-                              {feedback.evaluation.strengths.map((s, idx) => (
-                                <li key={idx}>{s}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {feedback.evaluation?.areas_for_improvement && feedback.evaluation.areas_for_improvement.length > 0 && (
-                          <div className="pt-1 text-[11px] space-y-1">
-                            <span className="font-bold text-amber-700 dark:text-amber-400 block">Areas for Improvement:</span>
-                            <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
-                              {feedback.evaluation.areas_for_improvement.map((imp, idx) => (
-                                <li key={idx}>{imp}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                {/* Client Validation / Submission Error */}
+                {formError && (
+                  <Alert variant="destructive" className="animate-fade-in-up">
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <AlertDescription className="text-xs">{formError}</AlertDescription>
                   </Alert>
                 )}
               </CardContent>
 
               <CardFooter className="bg-muted/20 border-t p-3 sm:p-4 flex flex-col-reverse sm:flex-row justify-between gap-2 sm:gap-4">
                 {step > 1 ? (
-                  <Button variant="outline" onClick={() => setStep(step - 1)} disabled={loading} className="w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setFormError(null);
+                      setStep(step - 1);
+                    }}
+                    disabled={loading}
+                    className="w-full sm:w-auto"
+                  >
                     Back
                   </Button>
                 ) : (
@@ -1308,18 +1294,18 @@ export function ActivityForm({
 
                 <Button onClick={handleNextStep} disabled={loading} className="gap-2 font-bold px-6 w-full sm:w-auto">
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Continue Mission <ArrowRight className="h-4 w-4" />
+                  {isReadOnly ? "Next Step" : "Submit Response"} <ArrowRight className="h-4 w-4" />
                 </Button>
               </CardFooter>
             </Card>
           </div>
 
-          {/* Right Panel: Mission Tips */}
+          {/* Right Panel: Mission Tips & Mission Context */}
           <div className="xl:col-span-4 space-y-4">
             <Card className="border border-amber-500/20 bg-amber-500/5 shadow-xs">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                  <Lightbulb className="h-4 w-4" /> Mission Tips
+                  <CurrentStepIcon className="h-4 w-4 shrink-0" /> Step 0{step} Mission Tips
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xs text-amber-900/80 dark:text-amber-200/80 leading-relaxed space-y-2">
@@ -1329,9 +1315,187 @@ export function ActivityForm({
                 </div>
               </CardContent>
             </Card>
+
+            {/* Mission Context & Legal Guidance */}
+            <Card className="border border-primary/30 bg-primary/5 shadow-xs">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
+                  <Scale className="h-4 w-4 shrink-0" /> Mission Context & Legal Guidance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-xs text-foreground/90 leading-relaxed space-y-3">
+                <h4 className="font-bold text-sm text-foreground">{scenario.title}</h4>
+                <p className="text-muted-foreground">{scenario.description}</p>
+                {scenario.context && (
+                  <div className="pt-2 border-t border-primary/20 text-muted-foreground italic">
+                    <span className="font-semibold not-italic block mb-1 text-primary flex items-center gap-1.5">
+                      <BookOpen className="h-3.5 w-3.5 shrink-0" />
+                      Legal & Statutory Framework:
+                    </span>
+                    {scenario.context}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
+
+      {/* AI Evaluation Response Modal */}
+      <Dialog open={showEvaluationModal} onOpenChange={setShowEvaluationModal}>
+        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                <CurrentStepIcon className="h-4 w-4" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold">
+                  AI Evaluation Response
+                </DialogTitle>
+                <DialogDescription className="text-xs flex items-center gap-1.5 mt-0.5">
+                  <span className="font-semibold text-primary">Step 0{step}:</span>
+                  <span>{STEP_TITLES[step] || "Step Evaluation"}</span>
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Status Banner */}
+            {evaluationModalData?.success && (evaluationModalData.evaluation?.step_score === undefined || evaluationModalData.evaluation.step_score >= SIMULATION_PASSING_THRESHOLD) ? (
+              <div className="flex items-center justify-between gap-3 p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <div>
+                    <p className="font-bold text-sm">Step Validated!</p>
+                    <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                      Passing threshold met (≥{SIMULATION_PASSING_THRESHOLD}%). You can now continue your mission.
+                    </p>
+                  </div>
+                </div>
+                {evaluationModalData?.evaluation?.step_score !== undefined && (
+                  <div className="flex flex-col items-end gap-0.5 shrink-0">
+                    <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white font-mono text-xs px-2.5 py-1">
+                      Score: {evaluationModalData.evaluation.step_score}%
+                    </Badge>
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">
+                      Threshold: ≥{SIMULATION_PASSING_THRESHOLD}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3 p-3.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-900 dark:text-rose-200">
+                <div className="flex items-center gap-2.5">
+                  <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0" />
+                  <div>
+                    <p className="font-bold text-sm">Revision Required</p>
+                    <p className="text-xs text-rose-700 dark:text-rose-300">
+                      {evaluationModalData?.evaluation?.step_score !== undefined && evaluationModalData.evaluation.step_score < SIMULATION_PASSING_THRESHOLD
+                        ? `A score of ${SIMULATION_PASSING_THRESHOLD}% or higher is required to advance (Current Score: ${evaluationModalData.evaluation.step_score}%).`
+                        : "Please review the feedback below and revise your response."}
+                    </p>
+                  </div>
+                </div>
+                {evaluationModalData?.evaluation?.step_score !== undefined && (
+                  <div className="flex flex-col items-end gap-0.5 shrink-0">
+                    <Badge variant="destructive" className="font-mono text-xs px-2.5 py-1">
+                      Score: {evaluationModalData.evaluation.step_score}%
+                    </Badge>
+                    <span className="text-[10px] text-rose-700 dark:text-rose-300 font-semibold">
+                      Required: ≥{SIMULATION_PASSING_THRESHOLD}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* AI-Generated Content Alert */}
+            {evaluationModalData?.evaluation?.is_ai_generated && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-900 dark:text-rose-200 text-xs font-semibold">
+                <ShieldAlert className="h-4 w-4 text-rose-600 shrink-0" />
+                <span>AI-Generated Content Flagged: Please rewrite using your own authentic student voice.</span>
+              </div>
+            )}
+
+            {/* Flags */}
+            {evaluationModalData?.evaluation?.flags && evaluationModalData.evaluation.flags.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {evaluationModalData.evaluation.flags
+                  .filter((flag) => !isAiControlFlag(flag) || !evaluationModalData.evaluation?.is_ai_generated)
+                  .map((flag) => (
+                    <Badge key={flag} variant="outline" className="text-[11px] font-medium border-rose-500/40 text-rose-700 dark:text-rose-300">
+                      {formatFlagLabel(flag)}
+                    </Badge>
+                  ))}
+              </div>
+            )}
+
+            {/* Evaluator Feedback */}
+            <div className="space-y-1.5 bg-muted/40 p-3.5 rounded-lg border text-xs leading-relaxed">
+              <span className="font-semibold text-foreground block">Evaluator Feedback:</span>
+              <p className="text-muted-foreground whitespace-pre-wrap">
+                "{evaluationModalData?.message}"
+              </p>
+            </div>
+
+            {/* Strengths */}
+            {evaluationModalData?.evaluation?.strengths && evaluationModalData.evaluation.strengths.length > 0 && (
+              <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/15 text-xs space-y-1.5">
+                <span className="font-bold text-emerald-700 dark:text-emerald-400 block flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Strengths:
+                </span>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground pl-1">
+                  {evaluationModalData.evaluation.strengths.map((s, idx) => (
+                    <li key={idx}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Areas for Improvement */}
+            {evaluationModalData?.evaluation?.areas_for_improvement && evaluationModalData.evaluation.areas_for_improvement.length > 0 && (
+              <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/15 text-xs space-y-1.5">
+                <span className="font-bold text-amber-700 dark:text-amber-400 block flex items-center gap-1.5">
+                  <Lightbulb className="h-3.5 w-3.5" /> Areas for Improvement:
+                </span>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground pl-1">
+                  {evaluationModalData.evaluation.areas_for_improvement.map((imp, idx) => (
+                    <li key={idx}>{imp}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-between items-center gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowEvaluationModal(false)}
+              className="w-full sm:w-auto gap-1.5"
+            >
+              <FileEdit className="h-4 w-4" />
+              Revise
+            </Button>
+
+            <Button
+              type="button"
+              onClick={handleContinueMissionFromModal}
+              disabled={
+                !evaluationModalData?.success ||
+                (evaluationModalData?.evaluation?.step_score !== undefined &&
+                  evaluationModalData.evaluation.step_score < SIMULATION_PASSING_THRESHOLD)
+              }
+              className="w-full sm:w-auto gap-1.5 font-bold"
+            >
+              Continue Mission
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -28,7 +28,6 @@ import {
   Trash2,
   Calendar,
   Layers,
-  Sparkles,
   ExternalLink,
   ShieldCheck,
   UserCheck,
@@ -57,6 +56,8 @@ interface ClassroomRosterDrawerProps {
   groups?: Group[];
   submissions?: Submission[];
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ClassroomRosterDrawer({
@@ -67,8 +68,16 @@ export function ClassroomRosterDrawer({
   groups = [],
   submissions = [],
   trigger,
+  open: propOpen,
+  onOpenChange: propOnOpenChange,
 }: ClassroomRosterDrawerProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = propOpen !== undefined;
+  const open = isControlled ? propOpen : internalOpen;
+  const setOpen = (val: boolean) => {
+    if (!isControlled) setInternalOpen(val);
+    propOnOpenChange?.(val);
+  };
   const [activeTab, setActiveTab] = useState("students");
   const [copiedCode, setCopiedCode] = useState(false);
   const [studentSearch, setStudentSearch] = useState("");
@@ -186,18 +195,20 @@ export function ClassroomRosterDrawer({
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger
-        render={
-          trigger ? (
-            (trigger as any)
-          ) : (
-            <Button variant="outline" size="sm" className="w-full gap-1.5 font-medium">
-              <Users className="h-4 w-4" />
-              <span>View Roster & Missions</span>
-            </Button>
-          )
-        }
-      />
+      {trigger !== null && (!isControlled || trigger !== undefined) && (
+        <DrawerTrigger
+          render={
+            trigger ? (
+              (trigger as any)
+            ) : (
+              <Button variant="outline" size="sm" className="w-full gap-1.5 font-medium">
+                <Users className="h-4 w-4" />
+                <span>View Roster & Missions</span>
+              </Button>
+            )
+          }
+        />
+      )}
       <DrawerContent side="right" className="w-full max-w-xl sm:max-w-2xl h-full flex flex-col p-0">
         {/* Drawer Header */}
         <DrawerHeader className="p-6 border-b shrink-0 bg-muted/20">
@@ -488,11 +499,6 @@ export function ClassroomRosterDrawer({
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h4 className="font-bold text-sm text-foreground">{sc.title}</h4>
-                            {sc.missionData && (
-                              <Badge variant="outline" className="text-[10px]">
-                                <Sparkles className="h-3 w-3 mr-1 text-primary" /> Civic Mission
-                              </Badge>
-                            )}
                           </div>
                           <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                             {sc.description}
@@ -504,9 +510,9 @@ export function ClassroomRosterDrawer({
                           size="icon-sm"
                           onClick={() => handleUnassignScenario(sc.id, sc.title)}
                           title="Unassign from classroom"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 transition-colors"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
 

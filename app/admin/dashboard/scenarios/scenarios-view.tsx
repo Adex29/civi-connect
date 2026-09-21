@@ -52,6 +52,370 @@ const sortOptions: ComboboxOption[] = [
   { value: "most-constraints", label: "Most Constraints" },
 ];
 
+interface ScenarioCardProps {
+  scenario: Scenario;
+  classrooms: Classroom[];
+  assignments: ClassroomScenario[];
+  submissions: Submission[];
+  students: Student[];
+  assigned: Classroom[];
+  assignedClassroomIds: string[];
+  scenarioSubmissionsCount: number;
+}
+
+function ScenarioCard({
+  scenario,
+  classrooms,
+  assignments,
+  submissions,
+  students,
+  assigned,
+  assignedClassroomIds,
+  scenarioSubmissionsCount,
+}: ScenarioCardProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  return (
+    <>
+      <Card className="group flex min-h-[440px] flex-col gap-0 overflow-hidden p-0">
+        <div className="flex flex-1 flex-col">
+          {/* Card Header */}
+          <CardHeader className="border-b border-primary/20 p-5 pb-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <Calendar className="h-3 w-3" />
+                    {format(new Date(scenario.createdAt), "MMM d, yyyy")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Dropdown Action Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end" className="w-48 text-xs">
+                  <DropdownMenuItem
+                    onClick={() => setDrawerOpen(true)}
+                    className="cursor-pointer gap-2"
+                  >
+                    <BookOpen className="h-3.5 w-3.5 text-primary" />
+                    <span>Inspect & Submissions</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => setAssignOpen(true)}
+                    className="cursor-pointer gap-2"
+                  >
+                    <School className="h-3.5 w-3.5 text-primary" />
+                    <span>Assign to Class</span>
+                  </DropdownMenuItem>
+
+                  <Link href={`/admin/dashboard/scenarios/${scenario.id}/edit`}>
+                    <DropdownMenuItem className="cursor-pointer gap-2">
+                      <Edit className="h-3.5 w-3.5" />
+                      <span>Edit Mission</span>
+                    </DropdownMenuItem>
+                  </Link>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={() => setDeleteOpen(true)}
+                    className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Delete Mission</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <CardTitle className="mt-4 line-clamp-2 text-xl font-black leading-tight tracking-tight text-primary">
+              {scenario.title}
+            </CardTitle>
+            <CardDescription className="mt-2 line-clamp-2 text-sm leading-6">
+              {scenario.description || "No description provided."}
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="flex flex-1 flex-col gap-6 px-5 py-5">
+            <div>
+              <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                <ListChecks className="h-4 w-4 text-primary" />
+                <span>Constraints ({scenario.constraints?.length || 0})</span>
+              </div>
+
+              {scenario.constraints && scenario.constraints.length > 0 ? (
+                <div className="mt-2 space-y-2">
+                  {scenario.constraints.slice(0, 2).map((constraint, index) => (
+                    <div key={index} className="flex h-9 min-w-0 items-center border border-primary/25 bg-muted/25 px-3 text-xs text-muted-foreground">
+                      <span className="mr-1 shrink-0" aria-hidden="true">•</span>
+                      <span className="min-w-0 truncate">{constraint}</span>
+                    </div>
+                  ))}
+                  {scenario.constraints.length > 2 && (
+                    <p className="px-1 text-[11px] italic leading-4 text-muted-foreground">
+                      +{scenario.constraints.length - 2} more constraint{scenario.constraints.length - 2 === 1 ? "" : "s"}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="mt-2 text-xs italic text-muted-foreground">No constraints configured.</p>
+              )}
+            </div>
+
+            <div className="mt-auto">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
+                  <School className="h-4 w-4 text-primary" />
+                  <span>Assigned Classrooms ({assigned.length})</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 text-xs"
+                  onClick={() => setAssignOpen(true)}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Assign to Class</span>
+                </Button>
+              </div>
+
+              {assigned.length > 0 ? (
+                <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+                  {assigned.map((classroom) => (
+                    <span key={classroom.id} className="info-chip inline-flex max-w-full items-center px-2.5 py-1 text-xs">
+                      <span className="truncate">{classroom.name}</span>
+                      <UnassignScenarioButton
+                        scenarioId={scenario.id}
+                        classroomId={classroom.id}
+                        classroomName={classroom.name}
+                      />
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-2 text-xs italic text-muted-foreground">Not assigned to any classrooms yet.</p>
+              )}
+            </div>
+          </CardContent>
+        </div>
+
+        {/* Card Footer */}
+        <CardFooter className="flex items-center justify-between gap-3 border-t border-primary/20 bg-transparent px-5 py-4 text-xs">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span className="font-bold text-foreground">{scenarioSubmissionsCount}</span>
+            <span>submission{scenarioSubmissionsCount === 1 ? "" : "s"}</span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 text-xs"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            <span>Details</span>
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Controlled Dialogs and Drawer outside DropdownMenu */}
+      <ScenarioDrawer
+        scenario={scenario}
+        classrooms={classrooms}
+        assignments={assignments}
+        submissions={submissions}
+        students={students}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        trigger={null}
+      />
+
+      <AssignScenarioDialog
+        scenarioId={scenario.id}
+        scenarioTitle={scenario.title}
+        classrooms={classrooms}
+        assignedClassroomIds={assignedClassroomIds}
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        trigger={null}
+      />
+
+      <DeleteScenarioDialog
+        scenarioId={scenario.id}
+        scenarioTitle={scenario.title}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        trigger={null}
+      />
+    </>
+  );
+}
+
+interface ScenarioTableRowProps {
+  scenario: Scenario;
+  classrooms: Classroom[];
+  assignments: ClassroomScenario[];
+  submissions: Submission[];
+  students: Student[];
+  assigned: Classroom[];
+  assignedClassroomIds: string[];
+  subCount: number;
+}
+
+function ScenarioTableRow({
+  scenario,
+  classrooms,
+  assignments,
+  submissions,
+  students,
+  assigned,
+  assignedClassroomIds,
+  subCount,
+}: ScenarioTableRowProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  return (
+    <tr className="hover:bg-muted/30 transition-colors">
+      {/* Title & Description */}
+      <td className="py-3 px-4 font-semibold text-foreground max-w-[260px]">
+        <div className="truncate text-sm">{scenario.title}</div>
+        <div className="text-[11px] font-normal text-muted-foreground line-clamp-1">
+          {scenario.description || "No description."}
+        </div>
+      </td>
+
+      {/* Constraints Count */}
+      <td className="py-3 px-4 whitespace-nowrap font-medium text-foreground">
+        {scenario.constraints?.length || 0} rules
+      </td>
+
+      {/* Assigned Classrooms */}
+      <td className="py-3 px-4 max-w-[220px]">
+        {assigned.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {assigned.slice(0, 2).map((c) => (
+              <Badge key={c.id} variant="secondary" className="text-[10px] px-1.5 py-0">
+                {c.name}
+              </Badge>
+            ))}
+            {assigned.length > 2 && (
+              <span className="text-[10px] text-muted-foreground self-center">
+                +{assigned.length - 2} more
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-muted-foreground italic text-[11px]">Unassigned</span>
+        )}
+      </td>
+
+      {/* Submissions Count */}
+      <td className="py-3 px-4 whitespace-nowrap font-medium text-foreground">
+        {subCount}
+      </td>
+
+      {/* Created Date */}
+      <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">
+        {format(new Date(scenario.createdAt), "MMM d, yyyy")}
+      </td>
+
+      {/* Actions */}
+      <td className="py-3 px-4 text-right whitespace-nowrap">
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 text-xs"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <BookOpen className="h-3.5 w-3.5" />
+            <span>Details</span>
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon-sm" className="h-7 w-7 text-muted-foreground">
+                  <MoreVertical className="h-3.5 w-3.5" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="w-44 text-xs">
+              <DropdownMenuItem
+                onClick={() => setAssignOpen(true)}
+                className="cursor-pointer gap-2"
+              >
+                <School className="h-3.5 w-3.5 text-primary" />
+                <span>Assign to Class</span>
+              </DropdownMenuItem>
+              <Link href={`/admin/dashboard/scenarios/${scenario.id}/edit`}>
+                <DropdownMenuItem className="cursor-pointer gap-2">
+                  <Edit className="h-3.5 w-3.5" />
+                  <span>Edit</span>
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setDeleteOpen(true)}
+                className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Delete Mission</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Dialogs and Drawer teleport via Portal */}
+        <ScenarioDrawer
+          scenario={scenario}
+          classrooms={classrooms}
+          assignments={assignments}
+          submissions={submissions}
+          students={students}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          trigger={null}
+        />
+
+        <AssignScenarioDialog
+          scenarioId={scenario.id}
+          scenarioTitle={scenario.title}
+          classrooms={classrooms}
+          assignedClassroomIds={assignedClassroomIds}
+          open={assignOpen}
+          onOpenChange={setAssignOpen}
+          trigger={null}
+        />
+
+        <DeleteScenarioDialog
+          scenarioId={scenario.id}
+          scenarioTitle={scenario.title}
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          trigger={null}
+        />
+      </td>
+    </tr>
+  );
+}
+
 export function ScenariosView({
   scenarios,
   classrooms,
@@ -294,183 +658,17 @@ export function ScenariosView({
             const scenarioSubmissionsCount = submissions.filter((s) => s.scenarioId === scenario.id).length;
 
             return (
-              <Card
+              <ScenarioCard
                 key={scenario.id}
-                className="group flex min-h-[440px] flex-col gap-0 overflow-hidden p-0"
-              >
-                <div className="flex flex-1 flex-col">
-                  {/* Card Header */}
-                  <CardHeader className="border-b border-primary/20 p-5 pb-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          {scenario.missionData ? (
-                            <Badge variant="secondary" className="border-0 bg-secondary/20 text-[10px] text-primary">
-                              <Sparkles className="mr-1 h-3 w-3" /> Civic Mission
-                            </Badge>
-                          ) : (
-                            <Badge variant="secondary" className="border-0 text-[10px]">
-                              Standard Mission
-                            </Badge>
-                          )}
-                          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
-                            {format(new Date(scenario.createdAt), "MMM d, yyyy")}
-                          </span>
-                        </div>
-
-                      </div>
-
-                      {/* Dropdown Action Menu */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          }
-                        />
-                        <DropdownMenuContent align="end" className="w-48 text-xs">
-                          <ScenarioDrawer
-                            scenario={scenario}
-                            classrooms={classrooms}
-                            assignments={assignments}
-                            submissions={submissions}
-                            students={students}
-                            trigger={
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer gap-2">
-                                <BookOpen className="h-3.5 w-3.5 text-primary" />
-                                <span>Inspect & Submissions</span>
-                              </DropdownMenuItem>
-                            }
-                          />
-
-                          <AssignScenarioDialog
-                            scenarioId={scenario.id}
-                            scenarioTitle={scenario.title}
-                            classrooms={classrooms}
-                            assignedClassroomIds={assignedClassroomIds}
-                            trigger={
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer gap-2">
-                                <School className="h-3.5 w-3.5 text-primary" />
-                                <span>Assign to Class</span>
-                              </DropdownMenuItem>
-                            }
-                          />
-
-                          <Link href={`/admin/dashboard/scenarios/${scenario.id}/edit`}>
-                            <DropdownMenuItem className="cursor-pointer gap-2">
-                              <Edit className="h-3.5 w-3.5" />
-                              <span>Edit Mission</span>
-                            </DropdownMenuItem>
-                          </Link>
-
-                          <DropdownMenuSeparator />
-
-                          <DeleteScenarioDialog
-                            scenarioId={scenario.id}
-                            scenarioTitle={scenario.title}
-                            trigger={
-                              <DropdownMenuItem
-                                onSelect={(e) => e.preventDefault()}
-                                className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                                <span>Delete Mission</span>
-                              </DropdownMenuItem>
-                            }
-                          />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    <CardTitle className="mt-4 line-clamp-2 text-xl font-black leading-tight tracking-tight text-primary">
-                      {scenario.title}
-                    </CardTitle>
-                    <CardDescription className="mt-2 line-clamp-2 text-sm leading-6">
-                      {scenario.description || "No description provided."}
-                    </CardDescription>
-                  </CardHeader>
-
-                  <CardContent className="flex flex-1 flex-col gap-6 px-5 py-5">
-                    <div>
-                      <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-                        <ListChecks className="h-4 w-4 text-primary" />
-                        <span>Constraints ({scenario.constraints?.length || 0})</span>
-                      </div>
-
-                      {scenario.constraints && scenario.constraints.length > 0 ? (
-                        <div className="mt-2 space-y-2">
-                          {scenario.constraints.slice(0, 2).map((constraint, index) => (
-                            <div key={index} className="flex h-9 min-w-0 items-center border border-primary/25 bg-muted/25 px-3 text-xs text-muted-foreground">
-                              <span className="mr-1 shrink-0" aria-hidden="true">•</span>
-                              <span className="min-w-0 truncate">{constraint}</span>
-                            </div>
-                          ))}
-                          {scenario.constraints.length > 2 && (
-                            <p className="px-1 text-[11px] italic leading-4 text-muted-foreground">
-                              +{scenario.constraints.length - 2} more constraint{scenario.constraints.length - 2 === 1 ? "" : "s"}
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-xs italic text-muted-foreground">No constraints configured.</p>
-                      )}
-                    </div>
-
-                    <div className="mt-auto">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-1.5 text-sm font-bold text-foreground">
-                          <School className="h-4 w-4 text-primary" />
-                          <span>Assigned Classrooms ({assigned.length})</span>
-                        </div>
-                        <AssignScenarioDialog
-                          scenarioId={scenario.id}
-                          scenarioTitle={scenario.title}
-                          classrooms={classrooms}
-                          assignedClassroomIds={assignedClassroomIds}
-                        />
-                      </div>
-
-                      {assigned.length > 0 ? (
-                        <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
-                          {assigned.map((classroom) => (
-                            <span key={classroom.id} className="info-chip inline-flex max-w-full items-center px-2.5 py-1 text-xs">
-                              <span className="truncate">{classroom.name}</span>
-                              <UnassignScenarioButton
-                                scenarioId={scenario.id}
-                                classroomId={classroom.id}
-                                classroomName={classroom.name}
-                              />
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="mt-2 text-xs italic text-muted-foreground">Not assigned to any classrooms yet.</p>
-                      )}
-                    </div>
-                  </CardContent>
-                </div>
-
-                {/* Card Footer */}
-                <CardFooter className="flex items-center justify-between gap-3 border-t border-primary/20 bg-transparent px-5 py-4 text-xs">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <span className="font-bold text-foreground">{scenarioSubmissionsCount}</span>
-                    <span>submission{scenarioSubmissionsCount === 1 ? "" : "s"}</span>
-                  </div>
-                  <ScenarioDrawer
-                    scenario={scenario}
-                    classrooms={classrooms}
-                    assignments={assignments}
-                    submissions={submissions}
-                    students={students}
-                  />
-                </CardFooter>
-              </Card>
+                scenario={scenario}
+                classrooms={classrooms}
+                assignments={assignments}
+                submissions={submissions}
+                students={students}
+                assigned={assigned}
+                assignedClassroomIds={assignedClassroomIds}
+                scenarioSubmissionsCount={scenarioSubmissionsCount}
+              />
             );
           })}
         </div>
@@ -482,7 +680,6 @@ export function ScenariosView({
               <thead className="text-[11px] uppercase bg-muted/60 text-muted-foreground border-b font-semibold tracking-wider">
                 <tr>
                   <th className="py-3 px-4">Mission Title</th>
-                  <th className="py-3 px-4">Type</th>
                   <th className="py-3 px-4">Constraints</th>
                   <th className="py-3 px-4">Assigned Classrooms</th>
                   <th className="py-3 px-4">Submissions</th>
@@ -497,120 +694,17 @@ export function ScenariosView({
                   const subCount = submissions.filter((s) => s.scenarioId === scenario.id).length;
 
                   return (
-                    <tr key={scenario.id} className="hover:bg-muted/30 transition-colors">
-                      {/* Title & Description */}
-                      <td className="py-3 px-4 font-semibold text-foreground max-w-[260px]">
-                        <div className="truncate text-sm">{scenario.title}</div>
-                        <div className="text-[11px] font-normal text-muted-foreground line-clamp-1">
-                          {scenario.description || "No description."}
-                        </div>
-                      </td>
-
-                      {/* Type */}
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        {scenario.missionData ? (
-                          <Badge variant="outline" className="text-[10px]">
-                            <Sparkles className="h-3 w-3 mr-1 text-primary" /> Civic Mission
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="text-[10px]">
-                            Standard
-                          </Badge>
-                        )}
-                      </td>
-
-                      {/* Constraints Count */}
-                      <td className="py-3 px-4 whitespace-nowrap font-medium text-foreground">
-                        {scenario.constraints?.length || 0} rules
-                      </td>
-
-                      {/* Assigned Classrooms */}
-                      <td className="py-3 px-4 max-w-[220px]">
-                        {assigned.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {assigned.slice(0, 2).map((c) => (
-                              <Badge key={c.id} variant="secondary" className="text-[10px] px-1.5 py-0">
-                                {c.name}
-                              </Badge>
-                            ))}
-                            {assigned.length > 2 && (
-                              <span className="text-[10px] text-muted-foreground self-center">
-                                +{assigned.length - 2} more
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground italic text-[11px]">Unassigned</span>
-                        )}
-                      </td>
-
-                      {/* Submissions */}
-                      <td className="py-3 px-4 whitespace-nowrap font-semibold text-foreground">
-                        {subCount}
-                      </td>
-
-                      {/* Created Date */}
-                      <td className="py-3 px-4 whitespace-nowrap text-muted-foreground">
-                        {format(new Date(scenario.createdAt), "MMM d, yyyy")}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1">
-                          <ScenarioDrawer
-                            scenario={scenario}
-                            classrooms={classrooms}
-                            assignments={assignments}
-                            submissions={submissions}
-                            students={students}
-                          />
-
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              render={
-                                <Button variant="ghost" size="icon-sm" className="h-7 w-7 text-muted-foreground">
-                                  <MoreVertical className="h-3.5 w-3.5" />
-                                </Button>
-                              }
-                            />
-                            <DropdownMenuContent align="end" className="w-44 text-xs">
-                              <AssignScenarioDialog
-                                scenarioId={scenario.id}
-                                scenarioTitle={scenario.title}
-                                classrooms={classrooms}
-                                assignedClassroomIds={assignedClassroomIds}
-                                trigger={
-                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer gap-2">
-                                    <School className="h-3.5 w-3.5 text-primary" />
-                                    <span>Assign to Class</span>
-                                  </DropdownMenuItem>
-                                }
-                              />
-                              <Link href={`/admin/dashboard/scenarios/${scenario.id}/edit`}>
-                                <DropdownMenuItem className="cursor-pointer gap-2">
-                                  <Edit className="h-3.5 w-3.5" />
-                                  <span>Edit</span>
-                                </DropdownMenuItem>
-                              </Link>
-                              <DropdownMenuSeparator />
-                              <DeleteScenarioDialog
-                                scenarioId={scenario.id}
-                                scenarioTitle={scenario.title}
-                                trigger={
-                                  <DropdownMenuItem
-                                    onSelect={(e) => e.preventDefault()}
-                                    className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                    <span>Delete</span>
-                                  </DropdownMenuItem>
-                                }
-                              />
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </td>
-                    </tr>
+                    <ScenarioTableRow
+                      key={scenario.id}
+                      scenario={scenario}
+                      classrooms={classrooms}
+                      assignments={assignments}
+                      submissions={submissions}
+                      students={students}
+                      assigned={assigned}
+                      assignedClassroomIds={assignedClassroomIds}
+                      subCount={subCount}
+                    />
                   );
                 })}
               </tbody>

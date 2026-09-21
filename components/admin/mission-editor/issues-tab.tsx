@@ -29,18 +29,21 @@ export function IssuesTab({ issuesText, onChange }: IssuesTabProps) {
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
-  const items: IssueItem[] = lines.map((text, index) => ({
-    id: `issue-${index}-${text.slice(0, 10)}`,
-    text,
-  }));
+  const [items, setItems] = useState<IssueItem[]>(() =>
+    lines.map((text, index) => ({
+      id: `issue-${index}-${text.slice(0, 10)}`,
+      text,
+    }))
+  );
 
   const updateFromItems = (newItems: IssueItem[]) => {
+    setItems(newItems);
     const text = newItems.map((i) => i.text.trim()).filter(Boolean).join("\n");
     onChange(text);
   };
 
   const addItem = () => {
-    const newItems = [...items, { id: `issue-${Date.now()}`, text: "New Priority Issue" }];
+    const newItems = [...items, { id: `issue-${Date.now()}`, text: "" }];
     updateFromItems(newItems);
   };
 
@@ -53,6 +56,20 @@ export function IssuesTab({ issuesText, onChange }: IssuesTabProps) {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], text: newText };
     updateFromItems(newItems);
+  };
+
+  const handleToggleView = () => {
+    if (viewMode === "raw") {
+      const parsed = issuesText
+        .split("\n")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+        .map((text, idx) => ({ id: `issue-${idx}-${text.slice(0, 10)}`, text }));
+      setItems(parsed);
+      setViewMode("list");
+    } else {
+      setViewMode("raw");
+    }
   };
 
   return (
@@ -79,7 +96,7 @@ export function IssuesTab({ issuesText, onChange }: IssuesTabProps) {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setViewMode(viewMode === "list" ? "raw" : "list")}
+              onClick={handleToggleView}
               className="text-xs gap-1.5 text-muted-foreground hover:text-foreground"
             >
               {viewMode === "list" ? (
@@ -109,7 +126,6 @@ export function IssuesTab({ issuesText, onChange }: IssuesTabProps) {
                 onChange={(e) => onChange(e.target.value)}
                 rows={6}
                 className="font-mono text-xs leading-relaxed"
-                placeholder="Improper Waste Disposal&#10;Lack of Community Participation..."
               />
             </div>
           ) : (
@@ -136,15 +152,14 @@ export function IssuesTab({ issuesText, onChange }: IssuesTabProps) {
                         value={item.text}
                         onChange={(e) => updateItemText(index, e.target.value)}
                         className="flex-1 text-xs h-8 bg-background"
-                        placeholder="Enter problem statement..."
                       />
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="icon-sm"
                         onClick={() => removeItem(index)}
-                        title="Delete this issue"
-                        className="text-destructive/80 hover:text-destructive hover:bg-destructive/10 shrink-0 h-8 w-8 transition-colors"
+                        title="Remove issue"
+                        className="h-8 w-8 shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

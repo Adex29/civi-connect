@@ -28,7 +28,7 @@ export function CausesTab({ causes, onChange }: CausesTabProps) {
     const id = `c${Date.now()}`;
     onChange([
       ...causes,
-      { id, title: "New Contributing Factor", description: "Brief description of this cause." },
+      { id, title: "", description: "" },
     ]);
     setExpandedIds((prev) => ({ ...prev, [id]: true }));
   };
@@ -113,12 +113,12 @@ export function CausesTab({ causes, onChange }: CausesTabProps) {
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="icon-sm"
                         onClick={() => removeCause(i)}
-                        title="Delete cause factor"
-                        className="text-destructive/80 hover:text-destructive hover:bg-destructive/10 shrink-0 h-7 w-7 transition-colors"
+                        title="Remove cause factor"
+                        className="h-8 w-8 shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
 
@@ -130,7 +130,6 @@ export function CausesTab({ causes, onChange }: CausesTabProps) {
                           <Input
                             value={c.title}
                             onChange={(e) => updateCause(i, "title", e.target.value)}
-                            placeholder="e.g. Weak Regulatory Enforcement"
                             className="text-xs"
                           />
                         </div>
@@ -139,7 +138,6 @@ export function CausesTab({ causes, onChange }: CausesTabProps) {
                           <Textarea
                             value={c.description}
                             onChange={(e) => updateCause(i, "description", e.target.value)}
-                            placeholder="Describe how this cause impacts the civic problem..."
                             className="text-xs leading-relaxed"
                             rows={2}
                           />

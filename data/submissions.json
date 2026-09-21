@@ -486,9 +486,9 @@
     "simulationState": {
       "currentStep": 4,
       "step1": {
-        "selectedIssue": "Irresponsible Pet Ownership & Unconfined Animals",
+        "selectedIssue": "Unvaccinated Free-Roaming Stray Dogs",
         "justification": "🦠 Direct public health risk: Stray dogs that are unvaccinated are the most immediate source of rabies transmission. This directly endangers both people and other animals.\n\n⏳ Urgency: Rabies is almost always fatal once symptoms appear, so prevention through vaccination and controlling stray populations is critical.\n\n🔗 Root cause linkage: The other issues (irresponsible ownership, lack of pound facilities, high vaccine costs) are important, but they are secondary drivers. Stray dogs without vaccination are the frontline hazard that ties all the other concerns together.\n\n📊 Impact scope: Addressing this first reduces bite incidents, lowers demand for costly post-exposure vaccines, and strengthens the case for barangay-lev",
-        "feedback": "You identified \"Irresponsible Pet Ownership & Unconfined Animals\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom.",
+        "feedback": "You identified \"Unvaccinated Free-Roaming Stray Dogs\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom.",
         "passed": true,
         "evaluation": {
           "step_number": 1,
@@ -506,7 +506,7 @@
           "flags": [],
           "is_ai_generated": false,
           "ai_confidence_score": 0,
-          "evaluation_summary": "Prioritized \"Irresponsible Pet Ownership & Unconfined Animals\" with coherent community justification.",
+          "evaluation_summary": "Prioritized \"Unvaccinated Free-Roaming Stray Dogs\" with coherent community justification.",
           "strengths": [
             "Clear civic priority identification",
             "Contextualized rationale"
@@ -514,7 +514,7 @@
           "areas_for_improvement": [
             "Consider distinguishing immediate symptoms from root causes."
           ],
-          "actionable_feedback": "You identified \"Irresponsible Pet Ownership & Unconfined Animals\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom."
+          "actionable_feedback": "You identified \"Unvaccinated Free-Roaming Stray Dogs\". Your justification demonstrates critical thinking regarding community priorities. Consider whether this issue is the primary root cause or a symptom."
         }
       },
       "step2": {

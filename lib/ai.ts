@@ -8,8 +8,10 @@ import {
   ImpactAssessmentData,
   AIEvaluationResult,
   CompetencyScores,
+  SIMULATION_PASSING_THRESHOLD,
 } from "./definitions";
 import { getMissionDataForScenario } from "./mission-data";
+import { sanitizeEducationalText } from "./flag-utils";
 
 /**
  * MASTER SYSTEM PROMPT FOR CIVI-TECH AI EVALUATION ENGINE
@@ -19,6 +21,11 @@ export const MASTER_SYSTEM_PROMPT = `
 You are the Civi-Tech Automated Evaluation Engine, a strict, objective civic engagement assessor for Grade 12 Senior High School students in the Philippines. Your job is to evaluate student submissions in an 8-step civic problem-solving simulation.
 
 You must grade with high rigor. Reject generic fluff, vague generalities, unrealistic budgets, and unsupported assertions. Every passing score must be backed by concrete evidence, local community context, and authentic student voice.
+
+### PASSING THRESHOLD
+- The passing threshold for every mission step is 70% (step_score >= 70).
+- If a submission does not meet civic standards, contains structural flaws, or scores below 70, set passed: false. The student will be required to revise and resubmit before they can advance to the next step.
+- Only award passed: true when the step score is 70 or higher and all rubric requirements are satisfied.
 
 ### CORE EVALUATION PRINCIPLES
 
@@ -48,9 +55,9 @@ You must grade with high rigor. Reject generic fluff, vague generalities, unreal
 - Pass Threshold: Top 2 causes address root structural factors rather than superficial symptoms.
 
 #### STEP 3: Evaluate Digital Evidence
-- Requirements: Credibility rating (1-5 stars) + linking evidence to Causes/Solutions/Needs.
-- Criteria: Credibility rating must align with source reliability (e.g., official health report = high, unverified social media post = lower). Links must be logically sound.
-- Pass Threshold: High-credibility sources correctly linked to primary causes.
+- Requirements: You must evaluate all available evidence sources in the evidence library. For each evidence item: assign a credibility rating (1-5 stars), select the appropriate scope tags (Causes/Solutions/Community Needs), and provide a complete 2-3 sentence justification.
+- Criteria: Every single evidence item in the library must be evaluated before proceeding. Credibility ratings must align with source reliability. Justifications must explain credibility and community relevance.
+- Pass Threshold: 100% of evidence sources in the library must be evaluated with reasoned justifications and coherent credibility ratings.
 
 #### STEP 4: Consult Stakeholders
 - Requirements: Interview questions & follow-up selections across local stakeholders.
@@ -87,6 +94,12 @@ You must grade with high rigor. Reject generic fluff, vague generalities, unreal
 4. Intervention Planning: Feasibility, completeness, and budget/timeline realism.
 5. Adaptive Decision-Making: Flexibility and problem-solving under sudden obstacles.
 6. Impact Assessment: Focus on long-term sustainability, ethics, and reach.
+
+---
+
+### CRITICAL TONE & CLARITY RULE
+All student-facing text in "evaluation_summary", "actionable_feedback", "strengths", and "areas_for_improvement" MUST be written in natural, supportive, and professional educational English.
+NEVER output raw variable names, code constants, or internal enum identifiers (such as INSUFFICIENT_STAKEHOLDER_BREADTH, NOTES_STAKEHOLDER_MISMATCH, INCOMPLETE_SCHEMA, etc.) in feedback, strengths, or summaries. Always explain expectations in clear, encouraging student-appropriate language.
 
 ---
 
@@ -579,9 +592,11 @@ export function buildDeterministicEvaluation(
   aiConfidenceScore: number = 0
 ): AIEvaluationResult {
   const normScore = clampScore(score);
+  const meetsThreshold = normScore >= SIMULATION_PASSING_THRESHOLD;
+  const finalPassed = passed && meetsThreshold && !isAiGenerated;
   return {
     step_number: stepNumber,
-    passed,
+    passed: finalPassed,
     step_score: normScore,
     competency_scores: {
       community_investigation: stepNumber === 1 ? normScore : 82,
@@ -602,11 +617,38 @@ export function buildDeterministicEvaluation(
   };
 }
 
-function formatEvaluationResponse(evaluation: AIEvaluationResult) {
+export function sanitizeEvaluationResult(evaluation: AIEvaluationResult): AIEvaluationResult {
   return {
-    passed: evaluation.passed,
-    feedback: evaluation.actionable_feedback,
-    evaluation,
+    ...evaluation,
+    evaluation_summary: sanitizeEducationalText(evaluation.evaluation_summary),
+    actionable_feedback: sanitizeEducationalText(evaluation.actionable_feedback),
+    strengths: Array.isArray(evaluation.strengths)
+      ? evaluation.strengths.map(sanitizeEducationalText)
+      : [],
+    areas_for_improvement: Array.isArray(evaluation.areas_for_improvement)
+      ? evaluation.areas_for_improvement.map(sanitizeEducationalText)
+      : [],
+  };
+}
+
+function formatEvaluationResponse(evaluation: AIEvaluationResult) {
+  const sanitized = sanitizeEvaluationResult(evaluation);
+  const score = sanitized.step_score ?? 0;
+  const isPassing = Boolean(sanitized.passed) && score >= SIMULATION_PASSING_THRESHOLD && !sanitized.is_ai_generated;
+
+  let actionableFeedback = sanitized.actionable_feedback;
+  if (!isPassing && score < SIMULATION_PASSING_THRESHOLD && !actionableFeedback.includes("70%")) {
+    actionableFeedback = `${actionableFeedback} Note: A minimum score of ${SIMULATION_PASSING_THRESHOLD}% is required to continue to the next mission step (Current Score: ${score}%).`;
+  }
+
+  return {
+    passed: isPassing,
+    feedback: actionableFeedback,
+    evaluation: {
+      ...sanitized,
+      passed: isPassing,
+      actionable_feedback: actionableFeedback,
+    },
   };
 }
 
@@ -672,10 +714,14 @@ async function callGeminiVerification(prompt: string, fallback: AIEvaluationResu
     const parsedStepScore = scoreOrFallback(parsed.step_score, fallback.step_score);
     const parsedOverallScore = scoreOrFallback(parsed.overall_civic_score, fallback.overall_civic_score);
 
+    const stepScore = isAi ? 35 : (modelOnlyAiSuspicion ? fallback.step_score : parsedStepScore);
+    const meetsThreshold = stepScore >= SIMULATION_PASSING_THRESHOLD;
+    const isPassed = !isAi && meetsThreshold && (modelOnlyAiSuspicion ? fallback.passed : parsedPassed);
+
     return {
       step_number: Number(parsed.step_number) || fallback.step_number,
-      passed: isAi ? false : (modelOnlyAiSuspicion ? fallback.passed : parsedPassed),
-      step_score: isAi ? 35 : (modelOnlyAiSuspicion ? fallback.step_score : parsedStepScore),
+      passed: isPassed,
+      step_score: stepScore,
       competency_scores: {
         community_investigation: scoreOrFallback(parsed.competency_scores?.community_investigation, fallback.competency_scores.community_investigation),
         evidence_evaluation: scoreOrFallback(parsed.competency_scores?.evidence_evaluation, fallback.competency_scores.evidence_evaluation),
@@ -1001,7 +1047,7 @@ function detectEvidenceRatingMismatch(
   };
 
   for (const ev of evaluatedEvidences) {
-    const rawRating = ev?.credibility ?? ev?.rating ?? ev?.stars;
+    const rawRating = ev?.userCredibility ?? ev?.credibility ?? ev?.rating ?? ev?.stars;
     if (typeof ev?.justification !== "string" || rawRating == null) continue;
     const justLower = (ev.justification as string).toLowerCase();
     const rating = Number(rawRating);
@@ -1230,10 +1276,10 @@ export async function evaluateStep3(
       3,
       false,
       aiCheck.isAi ? 35 : 50,
-      `Incomplete evidence audit (${evaluatedCount}/${totalRequired} sources evaluated).`,
-      `You have evaluated ${evaluatedCount} of ${totalRequired} evidence sources. Please inspect and evaluate all remaining sources before proceeding to Step 4.${authorshipFeedback}`,
-      [`Evaluated ${evaluatedCount} source(s).`],
-      [`Inspect the remaining ${totalRequired - evaluatedCount} source(s).`],
+      `Incomplete evidence audit: all evidence sources must be evaluated (${evaluatedCount}/${totalRequired} evaluated).`,
+      `You need to evaluate all ${totalRequired} evidence sources in the evidence library before proceeding. Currently, you have evaluated ${evaluatedCount} of ${totalRequired}. Please inspect and evaluate all the evidence.${authorshipFeedback}`,
+      [`Evaluated ${evaluatedCount} of ${totalRequired} source(s).`],
+      [`You need to evaluate all the evidence before proceeding. Please inspect and evaluate the remaining ${totalRequired - evaluatedCount} source(s).`],
       mergeAIFlags(["INCOMPLETE_EVIDENCE_AUDIT"]),
       aiCheck.isAi,
       aiCheck.confidence
@@ -1288,7 +1334,7 @@ export async function evaluateStep3(
     aiCheck.isAi
       ? aiCheck.reason || "High-risk authorship signals require manual review."
       : "Excellent evidence evaluation! Inspecting all evidence sources provides a rigorous, corroborated foundation for your civic intervention plan.",
-    ["Thorough source credibility auditing", "Accurate tagging of causes, solutions, and community needs."],
+    ["Thorough source credibility auditing", "Accurate tagging of causes, solutions, community needs, or irrelevance."],
     ["Ensure official government data is cross-referenced with resident surveys."],
     aiFlags,
     aiCheck.isAi,
@@ -1439,7 +1485,13 @@ export async function evaluateStep6(
   const missionData = getMissionDataForScenario(scenario);
 
   let structuralError = null;
-  if (!justification?.trim() || justification.trim().length < 20) {
+  if (!selectedOptionText) {
+    structuralError = {
+      summary: "No adaptive action option selected.",
+      feedback: "Please select an adaptive action option to respond to the scenario event.",
+      flags: ["INCOMPLETE_SELECTION"],
+    };
+  } else if (!justification?.trim() || justification.trim().length < 20) {
     structuralError = {
       summary: "Adaptive justification is incomplete.",
       feedback: "Please provide a complete 2-3 sentence justification explaining how your adaptive decision balances immediate constraints with core project goals.",

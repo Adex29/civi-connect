@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Trash2 } from "lucide-react";
 import { unassignScenarioAction } from "./actions";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,14 +72,14 @@ export function UnassignScenarioButton({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className={buttonVariants({ variant: "destructive" })}
+            className={cn(buttonVariants({ variant: "destructive", size: "sm" }), "gap-1.5 font-bold")}
             disabled={loading}
             onClick={(e) => {
               e.preventDefault();
               handleUnassign();
             }}
           >
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
             Unassign Mission
           </AlertDialogAction>
         </AlertDialogFooter>

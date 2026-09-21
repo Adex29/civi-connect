@@ -179,7 +179,7 @@ export function getGenericFallbackMissionData(scenario: Scenario): MissionData {
     stepTips: {
       1: "Read carefully. Differentiate symptoms from root issues before prioritizing.",
       2: "Analyze cause relationships. Consider which factor triggers the others.",
-      3: "Balance your evidence library. Combine official reports with community experiences.",
+      3: "You need to evaluate all the evidence in your library before proceeding. Combine official reports with community experiences.",
       4: "Gather diverse perspectives. Interview both local leaders and grassroots residents.",
       5: "Ensure your intervention plan is evidence-based, actionable, and sustainable.",
       6: "Anticipate real-world constraints. Adapt your strategy to overcome unexpected obstacles.",

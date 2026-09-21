@@ -41,6 +41,8 @@ import {
   Sparkles,
   RotateCcw,
   GraduationCap,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { toggleClassroomStatusAction } from "./actions";
@@ -52,6 +54,268 @@ interface ClassroomsViewProps {
   scenariosMap: Record<string, Scenario[]>;
   groups?: Group[];
   submissions?: Submission[];
+}
+
+interface ClassroomCardProps {
+  classroom: Classroom;
+  students: Student[];
+  assignedScenarios: Scenario[];
+  allScenarios: Scenario[];
+  groups: Group[];
+  submissions: Submission[];
+  studentCount: number;
+  isCopied: boolean;
+  copyCode: (code: string, id: string) => void;
+  handleToggleStatus: (id: string, currentStatus: "active" | "archived") => void;
+}
+
+function ClassroomCard({
+  classroom,
+  students,
+  assignedScenarios,
+  allScenarios,
+  groups,
+  submissions,
+  studentCount,
+  isCopied,
+  copyCode,
+  handleToggleStatus,
+}: ClassroomCardProps) {
+  const [rosterOpen, setRosterOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  return (
+    <>
+      <Card
+        className={`group flex flex-col justify-between overflow-hidden ${
+          classroom.status === "archived" ? "opacity-80 border-dashed" : ""
+        }`}
+      >
+        <div>
+          {/* Card Header */}
+          <CardHeader className="pb-3 border-b bg-muted/20">
+            <div className="flex justify-between items-start gap-2">
+              <div className="space-y-1 min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge
+                    variant={classroom.status === "active" ? "default" : "secondary"}
+                    className="text-[10px] font-semibold tracking-wider"
+                  >
+                    {classroom.status === "active" ? (
+                      <span className="flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
+                        ACTIVE
+                      </span>
+                    ) : (
+                      "ARCHIVED"
+                    )}
+                  </Badge>
+                  <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {format(new Date(classroom.createdAt), "MMM d, yyyy")}
+                  </span>
+                </div>
+                <CardTitle className="text-xl font-bold tracking-tight pt-1 truncate">
+                  {classroom.name}
+                </CardTitle>
+              </div>
+
+              {/* Dropdown Action Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end" className="w-48 text-xs">
+                  <DropdownMenuItem
+                    onClick={() => setRosterOpen(true)}
+                    className="cursor-pointer gap-2"
+                  >
+                    <Users className="h-3.5 w-3.5 text-primary" />
+                    <span>View Roster & Missions</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={() => copyCode(classroom.code, classroom.id)} className="cursor-pointer gap-2">
+                    <Copy className="h-3.5 w-3.5" />
+                    <span>Copy Join Code</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => setEditOpen(true)}
+                    className="cursor-pointer gap-2"
+                  >
+                    <Edit2 className="h-3.5 w-3.5" />
+                    <span>Edit Classroom</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => handleToggleStatus(classroom.id, classroom.status)}
+                    className="cursor-pointer gap-2"
+                  >
+                    <Archive className="h-3.5 w-3.5" />
+                    <span>{classroom.status === "active" ? "Archive Classroom" : "Reactivate"}</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
+
+                  <DropdownMenuItem
+                    onClick={() => setDeleteOpen(true)}
+                    className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Delete Classroom</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            <CardDescription className="line-clamp-2 text-xs mt-1 leading-relaxed">
+              {classroom.description || "No description provided."}
+            </CardDescription>
+          </CardHeader>
+
+          {/* Card Content */}
+          <CardContent className="pt-4 space-y-4">
+            {/* Join Code Widget */}
+            <div className="flex items-center justify-between p-2.5 px-3 rounded-xl bg-muted/40 border transition-colors group-hover:border-primary/30">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                  Join Code
+                </p>
+                <p className="font-mono text-base font-black text-foreground tracking-widest">
+                  {classroom.code}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => copyCode(classroom.code, classroom.id)}
+                className="h-8 gap-1.5 text-xs font-semibold shadow-2xs"
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-foreground" />
+                    <span>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>Copy Code</span>
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Class Stats Pills */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2.5 rounded-lg border bg-card flex items-center gap-2.5">
+                <div className="p-1.5 rounded-md bg-primary/10 text-primary shrink-0">
+                  <GraduationCap className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-muted-foreground text-[10px] uppercase font-semibold">Students</p>
+                  <p className="font-bold text-foreground text-xs truncate">
+                    {studentCount} Enrolled
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded-lg border bg-card flex items-center gap-2.5">
+                <div className="p-1.5 rounded-md bg-primary/10 text-primary shrink-0">
+                  <BookOpen className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-muted-foreground text-[10px] uppercase font-semibold">Missions</p>
+                  <p className="font-bold text-foreground text-xs truncate">
+                    {assignedScenarios.length} Assigned
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Assigned Scenarios Preview Pill Tags */}
+            {assignedScenarios.length > 0 ? (
+              <div className="space-y-1.5 pt-1">
+                <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 text-primary" /> Active Civic Missions:
+                </div>
+                <div className="flex gap-1.5 flex-wrap">
+                  {assignedScenarios.slice(0, 2).map((sc) => (
+                    <Badge
+                      key={sc.id}
+                      variant="outline"
+                      className="text-[10px] font-medium bg-muted/30 truncate max-w-[200px]"
+                    >
+                      {sc.title}
+                    </Badge>
+                  ))}
+                  {assignedScenarios.length > 2 && (
+                    <Badge variant="secondary" className="text-[10px]">
+                      +{assignedScenarios.length - 2} more
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="text-[11px] text-muted-foreground italic py-1">
+                No missions assigned yet.
+              </div>
+            )}
+          </CardContent>
+        </div>
+
+        {/* Card Footer */}
+        <CardFooter className="pt-2 pb-4 border-t bg-muted/10">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-1.5 font-medium"
+            onClick={() => setRosterOpen(true)}
+          >
+            <Users className="h-4 w-4" />
+            <span>View Roster & Missions</span>
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Controlled Drawers and Dialogs */}
+      <ClassroomRosterDrawer
+        classroom={classroom}
+        students={students}
+        scenarios={assignedScenarios}
+        allScenarios={allScenarios}
+        groups={groups}
+        submissions={submissions}
+        open={rosterOpen}
+        onOpenChange={setRosterOpen}
+        trigger={null}
+      />
+
+      <EditClassroomDialog
+        classroom={classroom}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        trigger={null}
+      />
+
+      <DeleteClassroomDialog
+        classroomId={classroom.id}
+        classroomName={classroom.name}
+        studentCount={studentCount}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        trigger={null}
+      />
+    </>
+  );
 }
 
 export function ClassroomsView({
@@ -310,215 +574,19 @@ export function ClassroomsView({
             const isCopied = copiedId === classroom.id;
 
             return (
-              <Card
+              <ClassroomCard
                 key={classroom.id}
-                className={`group flex flex-col justify-between overflow-hidden ${
-                  classroom.status === "archived" ? "opacity-80 border-dashed" : ""
-                }`}
-              >
-                <div>
-                  {/* Card Header */}
-                  <CardHeader className="pb-3 border-b bg-muted/20">
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge
-                            variant={classroom.status === "active" ? "default" : "secondary"}
-                            className="text-[10px] font-semibold tracking-wider"
-                          >
-                            {classroom.status === "active" ? (
-                              <span className="flex items-center gap-1">
-                                <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground animate-pulse" />
-                                ACTIVE
-                              </span>
-                            ) : (
-                              "ARCHIVED"
-                            )}
-                          </Badge>
-                          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {format(new Date(classroom.createdAt), "MMM d, yyyy")}
-                          </span>
-                        </div>
-                        <CardTitle className="text-xl font-bold tracking-tight pt-1 truncate">
-                          {classroom.name}
-                        </CardTitle>
-                      </div>
-
-                      {/* Dropdown Action Menu */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          }
-                        />
-                        <DropdownMenuContent align="end" className="w-48 text-xs">
-                          <ClassroomRosterDrawer
-                            classroom={classroom}
-                            students={students}
-                            scenarios={assignedScenarios}
-                            allScenarios={allScenarios}
-                            groups={groups}
-                            submissions={submissions}
-                            trigger={
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer gap-2">
-                                <Users className="h-3.5 w-3.5 text-primary" />
-                                <span>View Roster & Missions</span>
-                              </DropdownMenuItem>
-                            }
-                          />
-                          <DropdownMenuItem onClick={() => copyCode(classroom.code, classroom.id)} className="cursor-pointer gap-2">
-                            <Copy className="h-3.5 w-3.5" />
-                            <span>Copy Join Code</span>
-                          </DropdownMenuItem>
-                          <EditClassroomDialog
-                            classroom={classroom}
-                            trigger={
-                              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer gap-2">
-                                <EditClassroomDialog classroom={classroom} />
-                                <span>Edit Classroom</span>
-                              </DropdownMenuItem>
-                            }
-                          />
-                          <DropdownMenuItem
-                            onClick={() => handleToggleStatus(classroom.id, classroom.status)}
-                            className="cursor-pointer gap-2"
-                          >
-                            <Archive className="h-3.5 w-3.5" />
-                            <span>{classroom.status === "active" ? "Archive Classroom" : "Reactivate"}</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DeleteClassroomDialog
-                            classroomId={classroom.id}
-                            classroomName={classroom.name}
-                            studentCount={studentCount}
-                            trigger={
-                              <DropdownMenuItem
-                                onSelect={(e) => e.preventDefault()}
-                                className="cursor-pointer gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
-                              >
-                                <DeleteClassroomDialog classroomId={classroom.id} classroomName={classroom.name} />
-                                <span>Delete Classroom</span>
-                              </DropdownMenuItem>
-                            }
-                          />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    <CardDescription className="line-clamp-2 text-xs mt-1 leading-relaxed">
-                      {classroom.description || "No description provided."}
-                    </CardDescription>
-                  </CardHeader>
-
-                  {/* Card Content */}
-                  <CardContent className="pt-4 space-y-4">
-                    {/* Join Code Widget */}
-                    <div className="flex items-center justify-between p-2.5 px-3 rounded-xl bg-muted/40 border transition-colors group-hover:border-primary/30">
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
-                          Join Code
-                        </p>
-                        <p className="font-mono text-base font-black text-foreground tracking-widest">
-                          {classroom.code}
-                        </p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyCode(classroom.code, classroom.id)}
-                        className="h-8 gap-1.5 text-xs font-semibold shadow-2xs"
-                      >
-                        {isCopied ? (
-                          <>
-                            <Check className="h-3.5 w-3.5 text-foreground" />
-                            <span>Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </Button>
-                    </div>
-
-                    {/* Class Stats Pills */}
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="p-2.5 rounded-lg border bg-card flex items-center gap-2.5">
-                        <div className="p-1.5 rounded-md bg-primary/10 text-primary shrink-0">
-                          <GraduationCap className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-muted-foreground text-[10px] uppercase font-semibold">Students</p>
-                          <p className="font-bold text-foreground text-xs truncate">
-                            {studentCount} Enrolled
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="p-2.5 rounded-lg border bg-card flex items-center gap-2.5">
-                        <div className="p-1.5 rounded-md bg-primary/10 text-primary shrink-0">
-                          <BookOpen className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-muted-foreground text-[10px] uppercase font-semibold">Missions</p>
-                          <p className="font-bold text-foreground text-xs truncate">
-                            {assignedScenarios.length} Assigned
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Assigned Scenarios Preview Pill Tags */}
-                    {assignedScenarios.length > 0 ? (
-                      <div className="space-y-1.5 pt-1">
-                        <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                          <Sparkles className="h-3 w-3 text-primary" /> Active Civic Missions:
-                        </div>
-                        <div className="flex gap-1.5 flex-wrap">
-                          {assignedScenarios.slice(0, 2).map((sc) => (
-                            <Badge
-                              key={sc.id}
-                              variant="outline"
-                              className="text-[10px] font-medium bg-muted/30 truncate max-w-[200px]"
-                            >
-                              {sc.title}
-                            </Badge>
-                          ))}
-                          {assignedScenarios.length > 2 && (
-                            <Badge variant="secondary" className="text-[10px]">
-                              +{assignedScenarios.length - 2} more
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-muted-foreground italic py-1">
-                        No missions assigned yet.
-                      </div>
-                    )}
-                  </CardContent>
-                </div>
-
-                {/* Card Footer */}
-                <CardFooter className="pt-2 pb-4 border-t bg-muted/10">
-                  <ClassroomRosterDrawer
-                    classroom={classroom}
-                    students={students}
-                    scenarios={assignedScenarios}
-                    allScenarios={allScenarios}
-                    groups={groups}
-                    submissions={submissions}
-                  />
-                </CardFooter>
-              </Card>
+                classroom={classroom}
+                students={students}
+                assignedScenarios={assignedScenarios}
+                allScenarios={allScenarios}
+                groups={groups}
+                submissions={submissions}
+                studentCount={studentCount}
+                isCopied={isCopied}
+                copyCode={copyCode}
+                handleToggleStatus={handleToggleStatus}
+              />
             );
           })}
         </div>

@@ -7,6 +7,20 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ## Active Decisions
 
+- [D-20260920-010: Standardizing Mission Steps Delete Buttons with Clean Rest State and Destructive Offset Shadow Hover Effect](#d-20260920-010--standardizing-mission-steps-delete-buttons-with-clean-rest-state-and-destructive-offset-shadow-hover-effect)
+- [D-20260920-009: Unified Design Standard for Delete and Remove Actions](#d-20260920-009--unified-design-standard-for-delete-and-remove-actions)
+- [D-20260920-008: Elimination of Circular Tailwind v4 Spacing Variable and Dialog/Form Action Button Collision](#d-20260920-008--elimination-of-circular-tailwind-v4-spacing-variable-and-dialogform-action-button-collision)
+- [D-20260920-007: Clean Slate Initialization for Admin Mission Authoring](#d-20260920-007--clean-slate-initialization-for-admin-mission-authoring)
+- [D-20260920-006: Controlled Modal State Decoupling for Dropdown Menu Action Items](#d-20260920-006--controlled-modal-state-decoupling-for-dropdown-menu-action-items)
+- [D-20260920-005: Retirement of Legacy "Standard Mission" vs "Civic Mission" Distinction](#d-20260920-005--retirement-of-legacy-standard-mission-vs-civic-mission-distinction)
+- [D-20260920-004: Interactive Limitation & Constraint Suggestions in Admin Scenario Authoring](#d-20260920-004--interactive-limitation--constraint-suggestions-in-admin-scenario-authoring)
+- [D-20260920-003: "Not Related / Irrelevant" Evidence Scope Option for Step 3 Evidence Evaluation](#d-20260920-003--not-related--irrelevant-evidence-scope-option-for-step-3-evidence-evaluation)
+- [D-20260920-002: Visual Highlighting for Mission Context & Statutory Legal Guidance](#d-20260920-002--visual-highlighting-for-mission-context--statutory-legal-guidance)
+- [D-20260920-001: 70% Minimum Passing Threshold for Simulation Step Progression](#d-20260920-001--70-minimum-passing-threshold-for-simulation-step-progression)
+- [D-20260919-004: Modal-Only AI Evaluation Display & Form State Decoupling](#d-20260919-004--modal-only-ai-evaluation-display--form-state-decoupling)
+- [D-20260919-003: Human-Readable Evaluation Flag Mapping & Variable Name Sanitization](#d-20260919-003--human-readable-evaluation-flag-mapping--variable-name-sanitization)
+- [D-20260919-002: AI Evaluation Response Modal and Explicit Submit Response Workflow](#d-20260919-002--ai-evaluation-response-modal-and-explicit-submit-response-workflow)
+- [D-20260919-001: Explicit Unselected Initial State for Student Simulation Decisions](#d-20260919-001--explicit-unselected-initial-state-for-student-simulation-decisions)
 - [D-20260908-001: Living Interactive Vector Mascot Companion ("Civi") for Student Dashboard](#d-20260908-001--living-interactive-vector-mascot-companion-civi-for-student-dashboard)
 - [D-20260906-001: Underline Indicator Line Tabs for Drawer Navigation](#d-20260906-001--underline-indicator-line-tabs-for-drawer-navigation)
 - [D-20260906-002: Dynamic Contrast Pill Badges for Tab Navigation](#d-20260906-002--dynamic-contrast-pill-badges-for-tab-navigation)
@@ -37,6 +51,409 @@ When guidance in other documentation conflicts with an accepted decision recorde
 ## Rejected Alternatives
 
 - [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+
+### D-20260920-010 — Standardizing Mission Steps Delete Buttons with Clean Rest State and Destructive Offset Shadow Hover Effect
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Mission editor steps (`components/admin/mission-editor/*`) and core destructive button variant (`components/ui/button.tsx`)
+- **Supersedes**: Static destructive background/shadow at rest in authoring rows
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-006, F-CIV-007
+- **Related implementation**: `components/ui/button.tsx`, `components/admin/mission-editor/issues-tab.tsx`, `components/admin/mission-editor/causes-tab.tsx`, `components/admin/mission-editor/evidence-tab.tsx`, `components/admin/mission-editor/stakeholders-tab.tsx`, `components/admin/mission-editor/challenge-tab.tsx`
+
+#### Context
+In administrative mission step authoring, displaying permanent solid destructive pink background boxes with static drop shadows across dozens of items in a scenario (issues, causes, evidence documents, stakeholders, follow-up questions, and decision options) creates intense visual clutter. Furthermore, all other interactive buttons in the application (`variant="default"`, `outline`, `secondary`) feature clean rest states and trigger the brutalist offset drop shadow (`hover:shadow-md`) strictly on hover.
+The user clarified that the destructive styling shown in screenshots (soft red background, red border, red icon/text, and 4px offset shadow) is intended as an interactive **hover effect** rather than a static at-rest display.
+
+#### Decision
+1. **Interactive Hover Effect on Mission Steps Delete Controls**:
+   - At rest: Buttons maintain a clean, non-intrusive appearance with transparent background and transparent border (`border border-transparent text-destructive/80`).
+   - On hover: The destructive styling activates smoothly with soft red container background (`hover:bg-destructive/10`), subtle red border (`hover:border-destructive/20`), bold red icon/text (`hover:text-destructive`), and the 4px brutalist offset shadow (`hover:shadow-md`).
+   - On click (active): Applies tactile displacement (`active:translate-x-0.5 active:translate-y-0.5`).
+   - Applied across all 5 authoring steps:
+     - Priority Issues item remove (`issues-tab.tsx`)
+     - Root Causes factor remove (`causes-tab.tsx`)
+     - Evidence Library source document remove (`evidence-tab.tsx`)
+     - Stakeholders primary card remove (`stakeholders-tab.tsx`)
+     - Stakeholders follow-up question remove (`stakeholders-tab.tsx`)
+     - Challenge Event decision option remove (`challenge-tab.tsx`)
+2. **Core Destructive Button Variant in `button.tsx`**:
+   - Removed static `shadow-xs` from `variant="destructive"` at rest.
+   - Restored `hover:shadow-md` and `hover:border-destructive/40` on hover, ensuring all destructive dialog buttons pop with the authentic brutalist shadow only when hovered.
+
+#### Evidence
+Direct user prompts: *"add the same effects tot the mission steps delete button"* and *"ive said to hover effect just like the other buttons"*. Full TypeScript type-checking verified via `npx tsc --noEmit` (`exit code: 0`).
+
+---
+
+### D-20260920-009 — Unified Design Standard for Delete and Remove Actions
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Mission editor tabs, administrative drawers, dialogs, and table views (`components/admin/mission-editor/*`, `app/admin/dashboard/scenarios/*`, `app/admin/dashboard/classrooms/*`)
+- **Supersedes**: Ad-hoc, fragmented button sizes, hover styles, and icon choices for item removal and deletion
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-006, F-CIV-007
+- **Related implementation**: `issues-tab.tsx`, `causes-tab.tsx`, `evidence-tab.tsx`, `stakeholders-tab.tsx`, `challenge-tab.tsx`, `delete-scenario-dialog.tsx`, `delete-classroom-dialog.tsx`, `unassign-scenario-button.tsx`, `scenario-drawer.tsx`, `classroom-roster-drawer.tsx`, `scenarios-view.tsx`
+
+#### Context
+Delete and remove buttons across mission authoring tabs and administrative management modals lacked visual and semantic consistency:
+- Icon-only item remove buttons had differing dimensions (`h-8 w-8` vs `h-7 w-7`), icon scales (`h-4 w-4` vs `h-3.5 w-3.5`), and unhovered color treatments (`text-destructive/80` vs `text-muted-foreground`).
+- Sub-item remove buttons used varying labels ("Remove" vs "Delete Option") and button heights (`h-6` vs `h-7`).
+- Final confirmation destructive buttons in dialogs used inconsistent text ("Delete" vs "Delete Mission" vs "Delete Classroom"), missing loading/trash icons, and differing cancel companion sizing.
+- Table row triggers varied between solid destructive buttons and ghost icon buttons.
+
+#### Decision
+Established a 5-tier unified standard for all delete and remove actions:
+1. **Icon-Only Item Remove Buttons (Card & Row Headers)**:
+   - `variant="ghost" size="icon-sm" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 transition-colors" title="Remove [Item]"`
+   - Icon: `<Trash2 className="h-4 w-4" />`
+   - Applied to `issues-tab.tsx`, `causes-tab.tsx`, `evidence-tab.tsx`, `stakeholders-tab.tsx`, `scenario-drawer.tsx`, and `classroom-roster-drawer.tsx`.
+2. **Sub-Item Text + Icon Remove Buttons (Nested Items)**:
+   - `variant="ghost" size="sm" className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 px-2.5 transition-colors font-medium shrink-0" title="Remove [Item]"`
+   - Icon: `<Trash2 className="h-3.5 w-3.5" />`
+   - Text: `<span>Remove</span>`
+   - Applied to follow-up questions (`stakeholders-tab.tsx`) and decision options (`challenge-tab.tsx`).
+3. **Modal & Dialog Final Destructive Action Buttons**:
+   - `variant="destructive" size="sm" className="gap-1.5 font-bold"`
+   - Icon: `{loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}`
+   - Explicit noun labels: `Delete Mission`, `Delete Classroom`, `Unassign Mission`.
+   - Companion Cancel: `variant="outline" size="sm"` with standard `gap-3 sm:gap-3`.
+4. **Table & Card Standalone Delete Trigger Buttons**:
+   - `variant="ghost" size="icon-sm" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" title="Delete [Entity]"` with `<Trash2 className="h-4 w-4" />`.
+5. **Dropdown Menu Delete Actions**:
+   - `<Trash2 className="h-3.5 w-3.5" />` with explicit noun label (`Delete Mission`, `Delete Classroom`).
+
+---
+
+### D-20260920-008 — Elimination of Circular Tailwind v4 Spacing Variable and Dialog/Form Action Button Collision
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Global styles, mission authoring forms, and administrative dialogs (`app/globals.css`, `app/admin/dashboard/scenarios/scenario-form.tsx`, `components/ui/dialog.tsx`, `components/ui/alert-dialog.tsx`, `app/admin/dashboard/classrooms/edit-classroom-dialog.tsx`, `create-classroom-dialog.tsx`, `delete-scenario-dialog.tsx`)
+- **Supersedes**: Circular `--spacing: var(--spacing);` in `@theme inline` and legacy `sm:gap-0` modal footer classes
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-006, F-CIV-007
+- **Related implementation**: `app/globals.css`, `app/admin/dashboard/scenarios/scenario-form.tsx`, `components/ui/dialog.tsx`, `components/ui/alert-dialog.tsx`, `edit-classroom-dialog.tsx`, `create-classroom-dialog.tsx`, `delete-scenario-dialog.tsx`
+
+#### Context
+In administrative forms and dialogs (e.g. mission authoring in `scenario-form.tsx` and modal footers in `edit-classroom-dialog.tsx`), the "Cancel" and "Save Changes" / action buttons were rendering directly adjacent with 0px gap between them, causing visual collision.
+Investigation identified two contributing causes:
+1. In `app/globals.css`, the `@theme inline` block defined `--spacing: var(--spacing);`. In CSS custom properties specifications, self-referential variable declarations are invalid at computed-value time, causing Tailwind v4 utilities that rely on `calc(var(--spacing) * <n>)` (such as `gap-3`) to evaluate to `unset` (0px).
+2. Several dialog footers explicitly specified `className="gap-2 sm:gap-0"`, which intentionally stripped the button gap on desktop viewports (`sm:` breakpoint and wider).
+
+#### Decision
+1. **Remove Self-Referential Spacing Variable**: Removed `--spacing: var(--spacing);` and `--letter-spacing: var(--letter-spacing);` from `@theme inline` in `app/globals.css`, allowing Tailwind v4's native `0.25rem` spacing baseline to prevail and generate valid `gap` values.
+2. **Harmonize Action Button Spacing**:
+   - Wrapped `Link` elements in `scenario-form.tsx` with `inline-flex` within the `gap-3` flex container to preserve proper flex item boundaries.
+   - Replaced all legacy `sm:gap-0` instances with `gap-3 sm:gap-3` across `edit-classroom-dialog.tsx`, `create-classroom-dialog.tsx`, and `delete-scenario-dialog.tsx`.
+   - Updated default `DialogFooter` (`components/ui/dialog.tsx`) and `AlertDialogFooter` (`components/ui/alert-dialog.tsx`) to guarantee `gap-3 sm:gap-3` across all screen sizes.
+
+---
+
+### D-20260920-007 — Clean Slate Initialization for Admin Mission Authoring
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Admin mission creation and editing (`app/admin/dashboard/scenarios/scenario-form.tsx`, `components/admin/mission-editor/index.tsx`, `components/admin/mission-editor/*`)
+- **Supersedes**: Hardcoded default waste disposal dummy data in `MissionEditorTabs`
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-001, F-CIV-005, F-CIV-006
+- **Related implementation**: `components/admin/mission-editor/index.tsx`, `issues-tab.tsx`, `causes-tab.tsx`, `evidence-tab.tsx`, `stakeholders-tab.tsx`, `challenge-tab.tsx`, `tips-tab.tsx`
+
+#### Context
+When an administrator navigated to "Create Mission" (`/admin/dashboard/scenarios/new`), the form was supposed to be a blank canvas for authoring custom scenarios. While the basic fields (title, description, constraints) started blank, the 6 simulation configuration tabs (Priority Issues, Root Causes, Evidence Library, Stakeholders, Challenge Event, and Step Guidance) were hardcoded to pre-populate mock data from a solid waste management scenario ("Improper Waste Disposal", "Weak Regulatory Enforcement", "Official Barangay Environmental Report", "Hon. Manuel Cruz", etc.). This forced teachers and admins to manually clear out or overwrite unwanted text when authoring unrelated missions.
+
+#### Decision
+1. **Zero Pre-Inputted Data on New Mission Creation**:
+   - In `MissionEditorTabs`, when `initialConfig` is undefined (or when fields are empty):
+     - `issuesText`: Starts as an empty string `""` (`0 items`).
+     - `causes`: Starts as an empty array `[]` (`0 factors`).
+     - `evidence`: Starts as an empty array `[]` (`0 sources`).
+     - `stakeholders`: Starts as an empty array `[]` (`0 figures`).
+     - `unexpectedEvent`: Starts with blank title `""`, blank description `""`, and empty options `[]` (`0 choices`).
+     - `stepTips`: Starts as an empty object `{}` (`0 tips`).
+2. **Complete Removal of Input Placeholders**:
+   - Removed all `placeholder="..."` attributes across all mission authoring inputs and textareas:
+     - `scenario-form.tsx`: Title, description, and constraints.
+     - `issues-tab.tsx`: Raw textarea and problem statement input cards.
+     - `causes-tab.tsx`: Cause title and description context.
+     - `evidence-tab.tsx`: Evidence title, snippet preview, full document body, and image URL.
+     - `stakeholders-tab.tsx`: Stakeholder name, role, initial statement, student question, and stakeholder answer.
+     - `challenge-tab.tsx`: Event title, event description, option action text, and outcome feedback.
+     - `tips-tab.tsx`: Step tips textareas across all 8 simulation steps.
+   - All fields present a 100% clean, distraction-free blank input surface without grayed-out ghost text.
+3. **Empty States with Direct Call-to-Action**:
+   - Retained and enhanced clean dashed empty-state containers across all tabs, featuring prominent "Add First Issue/Cause/Evidence/Stakeholder/Option" buttons.
+4. **Clean Propagation to Server**:
+   - Empty or unedited guidance tabs are sanitized on change, preventing the database from storing empty string arrays or blank objects.
+
+#### Evidence
+User prompts: *"when adding a mission, it should be clean and no pre inputted"* and *"remove also the placeholder"*. Verified with `npx tsc --noEmit` (`exit code: 0`).
+
+---
+
+### D-20260920-006 — Controlled Modal State Decoupling for Dropdown Menu Action Items
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Admin mission and classroom views, dialogs, and drawers (`app/admin/dashboard/scenarios/scenarios-view.tsx`, `app/admin/dashboard/scenarios/scenario-drawer.tsx`, `app/admin/dashboard/scenarios/assign-scenario-dialog.tsx`, `app/admin/dashboard/scenarios/delete-scenario-dialog.tsx`, `app/admin/dashboard/classrooms/classrooms-view.tsx`, `app/admin/dashboard/classrooms/classroom-roster-drawer.tsx`, `app/admin/dashboard/classrooms/edit-classroom-dialog.tsx`, `app/admin/dashboard/classrooms/delete-classroom-dialog.tsx`)
+- **Supersedes**: Direct nesting of Dialog/Drawer component trees inside `<DropdownMenuContent>`
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-006, F-CIV-007
+- **Related implementation**: `scenarios-view.tsx`, `scenario-drawer.tsx`, `assign-scenario-dialog.tsx`, `delete-scenario-dialog.tsx`, `classrooms-view.tsx`, `classroom-roster-drawer.tsx`, `edit-classroom-dialog.tsx`, `delete-classroom-dialog.tsx`
+
+#### Context
+In administrative card and table views (`scenarios-view.tsx` and `classrooms-view.tsx`), action dropdown menus included items for opening modal drawers and dialogs (e.g., "Inspect & Submissions", "Assign to Class", "Delete Mission", "View Roster & Missions", "Edit Classroom", "Delete Classroom").
+These components were directly nested inside `<DropdownMenuContent>`. When a user clicked a `<DropdownMenuItem>`, Base UI's `@base-ui/react/menu` item selection closed the dropdown popup, immediately unmounting all nested dialog and drawer components along with their internal React state. Consequently, only route navigation links (such as "Edit Mission") functioned, while all dialog and drawer triggers failed to open.
+
+#### Decision
+1. **Support Controlled/Uncontrolled Modal State**:
+   - Extended `ScenarioDrawer`, `AssignScenarioDialog`, `DeleteScenarioDialog`, `ClassroomRosterDrawer`, `EditClassroomDialog`, and `DeleteClassroomDialog` to accept optional `open?: boolean` and `onOpenChange?: (open: boolean) => void` props, allowing them to function seamlessly both as standalone trigger buttons and as externally-controlled modals.
+   - Suppressed `<DrawerTrigger>` and `<DialogTrigger>` when controlled with `trigger={null}`.
+2. **Decouple Modals from Dropdown Menus**:
+   - Extracted `ScenarioCard` and `ScenarioTableRow` in `scenarios-view.tsx`, and `ClassroomCard` in `classrooms-view.tsx`.
+   - Each card/row maintains local boolean state (`drawerOpen`, `assignOpen`, `deleteOpen`).
+   - Dropdown menu items execute clean click callbacks (e.g., `onClick={() => setDrawerOpen(true)}`), allowing the dropdown to close cleanly without interfering with the target dialog or drawer.
+   - Rendered the dialog and drawer components at the card/row level **outside** the `<DropdownMenuContent>` container.
+
+#### Evidence
+Direct user report and screenshot: *"these buttons are not working except in the edit mission"*. Full TypeScript type-checking verified via `npx tsc --noEmit` (`exit code: 0`).
+
+---
+
+### D-20260920-005 — Retirement of Legacy "Standard Mission" vs "Civic Mission" Distinction
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Scenario card headers, scenario table rows, and scenario drawer details (`app/admin/dashboard/scenarios/scenarios-view.tsx`, `app/admin/dashboard/scenarios/scenario-drawer.tsx`, `app/admin/dashboard/classrooms/classroom-roster-drawer.tsx`)
+- **Supersedes**: Conditional badge rendering based on `scenario.missionData` presence
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-001, F-CIV-005, F-CIV-006
+- **Related implementation**: `app/admin/dashboard/scenarios/scenarios-view.tsx`, `app/admin/dashboard/scenarios/scenario-drawer.tsx`, `app/admin/dashboard/classrooms/classroom-roster-drawer.tsx`
+
+#### Context
+In early prototyping phases, `Scenario` was a flat entity (`title`, `description`, `context`, `constraints`). When the 8-step simulation architecture was introduced, `missionData?: MissionDataConfig` was added as an optional field. A UI badge was added that displayed `"Civic Mission"` (with a sparkles icon) if `scenario.missionData` was present, and `"Standard Mission"` if `scenario.missionData` was absent.
+However, in CiviConnect all missions are civic inquiry simulations, and the concept of an alternate "Standard Mission" mode does not exist in the curriculum. The badge created user confusion as to why some missions were labeled "Standard" and others "Civic".
+
+#### Decision
+1. **Remove "Civic Mission" / "Standard Mission" Badges**:
+   - Removed the conditional badge `{scenario.missionData ? <Badge>Civic Mission</Badge> : <Badge>Standard Mission</Badge>}` from scenario card headers in `scenarios-view.tsx`.
+   - Removed the redundant "Type" column from the administrative table view in `scenarios-view.tsx`.
+   - Removed the redundant badge from the scenario drawer header in `scenario-drawer.tsx` and the classroom roster drawer in `classroom-roster-drawer.tsx`.
+2. **Clarify Empty State Messaging**:
+   - Replaced the confusing "Standard Mission" label in the Mission Structure tab of `scenario-drawer.tsx` with "Custom Structure Not Configured" and an explanatory subtext explaining that default simulation criteria are used until custom evidence banks, root causes, or stakeholders are authored.
+
+#### Evidence
+Direct user instruction: *"remove this badge and why there is a standard mission here"*. Verified with `npx tsc --noEmit` (`exit code: 0`).
+
+---
+
+### D-20260920-004 — Interactive Limitation & Constraint Suggestions in Admin Scenario Authoring
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Admin mission authoring form (`app/admin/dashboard/scenarios/scenario-form.tsx`)
+- **Supersedes**: Unassisted manual text entry for mission constraints and limitations
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-001, F-CIV-005, F-CIV-006
+- **Related implementation**: `app/admin/dashboard/scenarios/scenario-form.tsx`
+
+#### Context
+When teachers or administrators author civic inquiry missions, defining authentic, educationally sound limitations (e.g., budget ceiling, timeline windows, SK youth leadership coordination, statutory compliance, and resident consultation) was previously unassisted, requiring admins to formulate all rules manually without reference suggestions.
+
+#### Decision
+1. **"Suggest Limitations" Action Control**: Added a dedicated `Suggest Limitations` button with a `Sparkles` icon adjacent to the Constraints & Limitations label in `scenario-form.tsx`.
+2. **Categorized Limitation Directory**: Structured curated DepEd Senior High School civic limitations into 5 categories:
+   - Budget & Resources (₱)
+   - Timeline & Scheduling (⏱)
+   - Governance & SK (👥)
+   - Legal & Statutory (⚖)
+   - Community & Impact (🌱)
+3. **Interactive Multi-Insert & Toggle**: Clicking any suggestion adds it to the textarea on a new line (or removes it if already present), with a visual `Added` badge state and notification toast.
+4. **"Add Standard 3" Quick Action**: Added a single-click batch insert for the foundational DepEd triad (Budget ≤ ₱15k, SK coordination, resident consultation).
+
+---
+
+### D-20260920-003 — "Not Related / Irrelevant" Evidence Scope Option for Step 3 Evidence Evaluation
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Step 3 evidence evaluation component (`components/simulation/evidence-library.tsx`), type definitions (`lib/definitions.ts`), and AI evaluation engine (`lib/ai.ts`)
+- **Supersedes**: Positive-only evidence scope options ("Cause", "Solution", "Community Need")
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-002, F-CIV-003, F-CIV-004
+- **Related implementation**: `components/simulation/evidence-library.tsx`, `lib/definitions.ts`, `lib/ai.ts`
+
+#### Context
+In Step 3 (Evaluate Digital Evidence), students inspect and assess sources from the scenario's evidence library. Previously, the "Does it support the following?" checklist only provided positive association options: "Cause", "Solution", and "Community Need". When an evidence source was a distractor, irrelevant, or not directly applicable to the identified community issue, students had no dedicated option to indicate that the evidence was not related.
+
+#### Decision
+1. **Schema & Interface Extension (`not_related`)**: Added `"not_related"` to the `selectedSupports` union type in `lib/definitions.ts` and `EvaluatedEvidence` in `components/simulation/evidence-library.tsx`.
+2. **Mutually Exclusive Interaction**: Selecting "Not Related / Irrelevant" automatically unselects "Cause", "Solution", and "Community Need", and vice-versa, preventing contradictory evidence classifications.
+3. **Visual Distinction**: Tagged evaluated cards with a subtle amber badge when classified as "Not Related", allowing students to easily review which sources were categorized as non-applicable.
+4. **Evaluation Engine Compatibility**: Updated `detectEvidenceRatingMismatch` and `evaluateStep3` in `lib/ai.ts` to recognize `userCredibility` and valid justifications noting irrelevance without triggering false contradiction penalties.
+
+---
+
+### D-20260920-002 — Visual Highlighting for Mission Context & Statutory Legal Guidance
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Student simulation form interface (`app/dashboard/activity/[scenarioId]/activity-form.tsx`)
+- **Supersedes**: Neutral/unaccented `border-border bg-card` styling for the legal reference card
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-001, F-CIV-002, F-CIV-005
+- **Related implementation**: `app/dashboard/activity/[scenarioId]/activity-form.tsx`
+
+#### Context
+Following the relocation of "Mission Context & Legal Guidance" from the left sidebar to the right panel underneath "Mission Tips", the card used neutral card tokens (`border-border bg-card shadow-xs`). Consequently, it blended into surrounding panels and failed to stand out as the authoritative legal and statutory reference container that students must consult when constructing their civic intervention.
+
+#### Decision
+1. **Clean Civic Accent Surface**: Applied a cohesive pine-green card border and background tint (`border border-primary/30 bg-primary/5 shadow-xs`) that uniformly styles the container without disjointed internal header boxes or top margin gaps.
+2. **Unified Icon & Title Header**: Styled the title directly via `CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary"` with `<Scale className="h-4 w-4 shrink-0" />`, harmonizing seamlessly with the "Step 0X Mission Tips" card directly above it and eliminating visual clutter/extraneous badge elements.
+3. **Integrated Legal Framework Inset**: Formatted `scenario.context` within a clean border-t divider (`border-t border-primary/20 text-muted-foreground italic`) anchored with a `<BookOpen className="h-3.5 w-3.5 shrink-0" /> Legal & Statutory Framework:` label.
+
+---
+
+### D-20260920-001 — 70% Minimum Passing Threshold for Simulation Step Progression
+
+- **Status**: Accepted
+- **Date**: 2026-09-20
+- **Decision owner**: User prompt
+- **Scope**: Evaluation engine (`lib/ai.ts`), server actions (`app/dashboard/activity/[scenarioId]/actions.ts`), definitions (`lib/definitions.ts`), and student activity form (`app/dashboard/activity/[scenarioId]/activity-form.tsx`)
+- **Supersedes**: Implicit or qualitative-only step pass conditions without score thresholds
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-002, F-CIV-003, F-CIV-007
+- **Related implementation**: `lib/definitions.ts`, `lib/ai.ts`, `actions.ts`, `activity-form.tsx`
+
+#### Context
+Previously, passing a step in the civic inquiry simulation relied on qualitative rubric criteria and deterministic checks. However, there was no enforced minimum numeric score threshold (70%) required to unlock progression to the next mission step. Students who scored below 70% could theoretically still advance if the AI or deterministic check marked `passed: true`.
+
+#### Decision
+1. **Single Source of Truth (`SIMULATION_PASSING_THRESHOLD`)**: Defined `SIMULATION_PASSING_THRESHOLD = 70` in `lib/definitions.ts`.
+2. **AI Rubric & Prompt Enforcement (`lib/ai.ts`)**:
+   - Explicitly instructed the master evaluation system prompt that students must achieve a minimum step score of 70% to pass and advance.
+   - In `callGeminiVerification`, `buildDeterministicEvaluation`, and `formatEvaluationResponse`, enforced that `passed` is strictly `false` if `step_score < 70`.
+   - Appended clear instructional guidance to feedback if a score is below 70% explaining the requirement.
+3. **Server Progression Gate (`actions.ts`)**: In `processSimulationStepAction` and `submitReflectionAction`, `state.currentStep` only increments to the next step when `evalResult.passed && step_score >= 70`.
+4. **Modal & Client UI Enforcement (`activity-form.tsx`)**:
+   - The Evaluation Modal displays whether the 70% threshold was met (e.g. `Score: XX% | Threshold: ≥70%`).
+   - If the score is below 70%, the modal displays a clear "Revision Required" status with the exact score shortfall, and disables the "Continue Mission" button.
+   - The student must click "Revise" to refine their response until reaching the 70% standard.
+
+---
+
+### D-20260919-004 — Modal-Only AI Evaluation Display & Form State Decoupling
+
+- **Status**: Accepted
+- **Date**: 2026-09-19
+- **Decision owner**: User prompt
+- **Scope**: Student simulation form components (`app/dashboard/activity/[scenarioId]/activity-form.tsx`)
+- **Supersedes**: Inline AI evaluation alert banners embedded within the active form card
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-002, F-CIV-003, F-CIV-007
+- **Related implementation**: `activity-form.tsx`
+
+#### Context
+Following the introduction of the dedicated AI Evaluation Response Modal (D-20260919-002), the student form retained a legacy inline feedback alert box displaying scores, strengths, areas for improvement, and AI validation status directly inside `CardContent`. This created visual redundancy on the page and cluttered the form controls when students revised their input.
+
+#### Decision
+1. **Modal-Only AI Verification**: AI verification evaluation details (step score, validation status, strengths, areas for improvement, AI voice alerts, and civic flags) are strictly displayed within the Base UI `Dialog` modal.
+2. **Decoupled Local Validation State (`formError`)**: Separated client-side input validation errors (e.g. unselected issue, unevaluated evidence items, missing plan fields) and server execution errors from AI evaluation responses. Local checks populate a compact, standard destructive alert (`formError`) to guide students before network calls, while successful AI evaluations route solely to `evaluationModalData`.
+3. **Clean Workspace on Revision**: Closing or revising from the evaluation modal leaves the form card uncluttered, free of duplicate alerts and badges, maintaining focus on the civic task.
+
+---
+
+### D-20260919-003 — Human-Readable Evaluation Flag Mapping & Variable Name Sanitization
+
+- **Status**: Accepted
+- **Date**: 2026-09-19
+- **Decision owner**: User prompt
+- **Scope**: AI evaluation engine (`lib/ai.ts`, `lib/flag-utils.ts`), student simulation view (`activity-form.tsx`), admin submission drawer (`submission-drawer.tsx`)
+- **Supersedes**: Raw monospace CONSTANT_CASE badge rendering of evaluation flags
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-002, F-CIV-003, F-CIV-007
+- **Related implementation**: `lib/flag-utils.ts`, `lib/ai.ts`, `activity-form.tsx`, `submission-drawer.tsx`
+
+#### Context
+Internal rubric checks generated raw CONSTANT_CASE codes (such as `INSUFFICIENT_STAKEHOLDER_BREADTH`, `NOTES_STAKEHOLDER_MISMATCH`, `INCOMPLETE_SCHEMA`, etc.). In previous iterations, the UI directly rendered these internal flag strings in monospace badges (`<Badge variant="outline" className="font-mono">{flag}</Badge>`), causing internal variable and constant names to leak into student and teacher interfaces.
+
+#### Decision
+1. **Centralized Flag Mapping (`lib/flag-utils.ts`)**: Created a dedicated mapping module (`FLAG_LABELS` and `formatFlagLabel`) converting all internal rubric flag constants to natural, educational labels (e.g. `INSUFFICIENT_STAKEHOLDER_BREADTH` -> `"Stakeholder Diversity Needed"`).
+2. **Text Sanitization (`sanitizeEducationalText`)**: Implemented recursive text sanitization in `lib/ai.ts` across `evaluation_summary`, `actionable_feedback`, `strengths`, and `areas_for_improvement` to replace any raw SCREAMING_SNAKE_CASE tokens with plain English.
+3. **UI Polish (`activity-form.tsx` & `submission-drawer.tsx`)**:
+   - Replaced raw `{flag}` rendering with `{formatFlagLabel(flag)}`.
+   - Changed badge typography from raw `font-mono` to `font-medium`.
+   - Filtered out redundant internal AI control flags from the badge list when the dedicated `ShieldAlert` AI content banner is active.
+4. **Prompt Guardrail**: Added strict instructions to `MASTER_SYSTEM_PROMPT` forbidding the evaluation engine from outputting raw variable names or enum identifiers in student-facing prose.
+
+---
+
+### D-20260919-002 — AI Evaluation Response Modal and Explicit Submit Response Workflow
+
+- **Status**: Accepted
+- **Date**: 2026-09-19
+- **Decision owner**: User prompt
+- **Scope**: Student simulation form components (`app/dashboard/activity/[scenarioId]/activity-form.tsx`)
+- **Supersedes**: Auto-advancing step transitions and Step 1-only inline revision prompts
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-002, F-CIV-003, F-CIV-007
+- **Related implementation**: `activity-form.tsx`, `actions.ts`
+
+#### Context
+Prior implementations utilized a generic "Continue Mission" button in the form footer. When clicked, the submission was sent to the server and, upon success, the interface immediately advanced to the next step (or displayed a bespoke inline alert on Step 1 only). Students did not receive an explicit review of the AI's rubric feedback, strengths, and areas for improvement before transitioning, nor did they have a unified opportunity to revise their work across all steps.
+
+#### Decision
+1. **Button Label**: Updated the primary action button on the student simulation form footer from `"Continue Mission"` to `"Submit Response"` (retaining `"Next Step"` for read-only / completed navigation).
+2. **AI Evaluation Response Modal**: Created a dedicated Base UI `Dialog` modal that pops up upon receiving the AI evaluation result for any step:
+   - Displays clear validation status (Validated with green checkmark vs. Revision Required with amber warning).
+   - Shows rubric step score percentage, evaluator feedback message, AI-generated content warnings, and any civic flags.
+   - Highlights specific Strengths and Areas for Improvement in structured bullet points.
+3. **Modal Actions**:
+   - `"Revise"`: Closes the modal and leaves the student on the current step with all form inputs preserved, allowing iterative refinement.
+   - `"Continue Mission"`: Advances the student to the next step once validation is satisfied (`res.success === true`). Disabled when revision is required.
+4. **Unified Progression**: Eliminated the Step 1-only inline revision prompt (`showStep1RevisionPrompt`), unifying Steps 1 through 8 under the standardized modal review flow.
+
+---
+
+### D-20260919-001 — Explicit Unselected Initial State for Student Simulation Decisions
+
+- **Status**: Accepted
+- **Date**: 2026-09-19
+- **Decision owner**: User prompt
+- **Scope**: Student simulation form components (`app/dashboard/activity/[scenarioId]/activity-form.tsx`, `components/simulation/evidence-library.tsx`, `lib/ai.ts`)
+- **Supersedes**: None
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-002, F-CIV-003
+- **Related implementation**: `activity-form.tsx`, `evidence-library.tsx`, `lib/ai.ts`
+
+#### Context
+Prior implementations pre-selected the first option or default values across multiple student activity steps:
+1. In Step 1 (Priority Community Concerns), `selectedIssue` defaulted to `missionData.issues[0]`.
+2. In Step 3 (Digital Evidence Library), credibility inspection defaulted to `item.defaultCredibility || 3` stars.
+3. In Step 5 (Intervention Plan), `projectTitle` was pre-filled with `Community Action Plan: ${scenario.title}`.
+4. In Step 6 (Adaptive Challenge Simulation), `selectedChallengeOptId` defaulted to `missionData.unexpectedEvent.options[0]?.id`.
+
+This undermined authentic student decision-making, as students could proceed without deliberately evaluating choices.
+
+#### Decision
+1. All student decision inputs start in an explicit unselected state (`""` or `0`).
+2. Client-side validation blocks step submission with clear instructional feedback if an option has not been chosen.
+3. In Step 3, evidence credibility rating stars start at 0 ("Select a rating (1-5 stars)") and saving is disabled until the student explicitly assigns a star rating.
+4. Step 5 & Step 7 project title fields start blank with helpful placeholder text (`e.g. Community Action Plan: ...`).
+5. Server-side evaluation in `lib/ai.ts` returns an explicit `INCOMPLETE_SELECTION` structural error if `selectedOptionText` or `selectedIssue` is missing.
+6. In Step 3, both client-side validation and server AI verification require evaluating all evidence items in the library (`evaluatedCount === totalRequired`), explicitly instructing the student that all evidence sources must be evaluated before proceeding.
 
 ---
 

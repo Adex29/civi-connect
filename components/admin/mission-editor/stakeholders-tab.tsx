@@ -30,12 +30,10 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
       ...stakeholders,
       {
         id,
-        name: "New Stakeholder",
-        role: "Community Representative",
-        initialStatement: "Initial statement during the civic investigation...",
-        followUps: [
-          { question: "What is your primary concern regarding this project?", answer: "We want clear guidelines and community involvement." },
-        ],
+        name: "",
+        role: "",
+        initialStatement: "",
+        followUps: [],
       },
     ]);
     setExpandedIds((prev) => ({ ...prev, [id]: true }));
@@ -58,7 +56,7 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
       ...next[stIdx],
       followUps: [
         ...followUps,
-        { question: "New Follow-up Question", answer: "Answer from stakeholder..." },
+        { question: "", answer: "" },
       ],
     };
     onChange(next);
@@ -155,12 +153,12 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="icon-sm"
                         onClick={() => removeStakeholder(i)}
-                        title="Delete stakeholder"
-                        className="text-destructive/80 hover:text-destructive hover:bg-destructive/10 shrink-0 h-7 w-7 transition-colors"
+                        title="Remove stakeholder"
+                        className="h-8 w-8 shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
 
@@ -173,7 +171,6 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
                             <Input
                               value={s.name}
                               onChange={(e) => updateStakeholder(i, "name", e.target.value)}
-                              placeholder="e.g. Hon. Manuel Cruz"
                               className="text-xs"
                             />
                           </div>
@@ -182,7 +179,6 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
                             <Input
                               value={s.role}
                               onChange={(e) => updateStakeholder(i, "role", e.target.value)}
-                              placeholder="e.g. Barangay Chairman, Resident, SK Leader"
                               className="text-xs"
                             />
                           </div>
@@ -193,7 +189,6 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
                           <Textarea
                             value={s.initialStatement}
                             onChange={(e) => updateStakeholder(i, "initialStatement", e.target.value)}
-                            placeholder="Initial opening statement when students interview this stakeholder..."
                             className="text-xs leading-relaxed"
                             rows={2}
                           />
@@ -237,23 +232,21 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => removeFollowUp(i, fIdx)}
-                                      title="Delete follow-up question"
-                                      className="h-6 text-[11px] gap-1 text-destructive/80 hover:text-destructive hover:bg-destructive/10 px-2 transition-colors"
+                                      title="Remove follow-up question"
+                                      className="h-7 text-xs gap-1.5 px-2.5 font-bold shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
                                     >
-                                      <Trash2 className="h-3 w-3" />
+                                      <Trash2 className="h-3.5 w-3.5" />
                                       <span>Remove</span>
                                     </Button>
                                   </div>
                                   <Input
                                     value={fq.question}
                                     onChange={(e) => updateFollowUp(i, fIdx, "question", e.target.value)}
-                                    placeholder="Student's Question..."
                                     className="text-xs bg-background h-8"
                                   />
                                   <Textarea
                                     value={fq.answer}
                                     onChange={(e) => updateFollowUp(i, fIdx, "answer", e.target.value)}
-                                    placeholder="Stakeholder's Answer..."
                                     className="text-xs bg-background leading-relaxed"
                                     rows={2}
                                   />
