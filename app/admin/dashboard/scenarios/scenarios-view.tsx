@@ -20,7 +20,9 @@ import { AssignScenarioDialog } from "./assign-scenario-dialog";
 import { DeleteScenarioDialog } from "./delete-scenario-dialog";
 import { ScenarioDrawer } from "./scenario-drawer";
 import { UnassignScenarioButton } from "./unassign-scenario-button";
+import { toggleScenarioStatusAction } from "./actions";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import {
   BookOpen,
   School,
@@ -35,6 +37,8 @@ import {
   Trash2,
   Calendar,
   ListChecks,
+  Archive,
+  Loader2,
 } from "lucide-react";
 
 interface ScenariosViewProps {
@@ -76,16 +80,43 @@ function ScenarioCard({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+
+  const handleToggleArchive = async () => {
+    setArchiveLoading(true);
+    const newStatus = scenario.status === "archived" ? "active" : "archived";
+    const res = await toggleScenarioStatusAction(scenario.id, newStatus);
+    setArchiveLoading(false);
+    if (res.error) {
+      toast.error(res.error);
+    } else {
+      toast.success(
+        newStatus === "archived"
+          ? `Mission "${scenario.title}" moved to archive.`
+          : `Mission "${scenario.title}" reactivated.`
+      );
+    }
+  };
 
   return (
     <>
-      <Card className="group flex min-h-[440px] flex-col gap-0 overflow-hidden p-0">
+      <Card
+        className={`group flex min-h-[440px] flex-col gap-0 overflow-hidden p-0 ${
+          scenario.status === "archived" ? "opacity-80 border-dashed" : ""
+        }`}
+      >
         <div className="flex flex-1 flex-col">
           {/* Card Header */}
           <CardHeader className="border-b border-primary/20 p-5 pb-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant={scenario.status === "archived" ? "secondary" : "default"}
+                    className="text-[10px] font-mono shrink-0"
+                  >
+                    {scenario.status === "archived" ? "ARCHIVED" : "ACTIVE"}
+                  </Badge>
                   <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
                     <Calendar className="h-3 w-3" />
                     {format(new Date(scenario.createdAt), "MMM d, yyyy")}
@@ -129,6 +160,17 @@ function ScenarioCard({
                       <span>Edit Mission</span>
                     </DropdownMenuItem>
                   </Link>
+
+                  <DropdownMenuItem
+                    onClick={handleToggleArchive}
+                    disabled={archiveLoading}
+                    className="cursor-pointer gap-2"
+                  >
+                    <Archive className="h-3.5 w-3.5" />
+                    <span>
+                      {scenario.status === "archived" ? "Reactivate Mission" : "Archive Mission"}
+                    </span>
+                  </DropdownMenuItem>
 
                   <DropdownMenuSeparator />
 
@@ -289,12 +331,41 @@ function ScenarioTableRow({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+
+  const handleToggleArchive = async () => {
+    setArchiveLoading(true);
+    const newStatus = scenario.status === "archived" ? "active" : "archived";
+    const res = await toggleScenarioStatusAction(scenario.id, newStatus);
+    setArchiveLoading(false);
+    if (res.error) {
+      toast.error(res.error);
+    } else {
+      toast.success(
+        newStatus === "archived"
+          ? `Mission "${scenario.title}" moved to archive.`
+          : `Mission "${scenario.title}" reactivated.`
+      );
+    }
+  };
 
   return (
-    <tr className="hover:bg-muted/30 transition-colors">
+    <tr
+      className={`hover:bg-muted/30 transition-colors ${
+        scenario.status === "archived" ? "opacity-80" : ""
+      }`}
+    >
       {/* Title & Description */}
       <td className="py-3 px-4 font-semibold text-foreground max-w-[260px]">
-        <div className="truncate text-sm">{scenario.title}</div>
+        <div className="flex items-center gap-2">
+          <div className="truncate text-sm">{scenario.title}</div>
+          <Badge
+            variant={scenario.status === "archived" ? "secondary" : "default"}
+            className="text-[10px] font-mono shrink-0"
+          >
+            {scenario.status === "archived" ? "ARCHIVED" : "ACTIVE"}
+          </Badge>
+        </div>
         <div className="text-[11px] font-normal text-muted-foreground line-clamp-1">
           {scenario.description || "No description."}
         </div>
@@ -370,6 +441,16 @@ function ScenarioTableRow({
                   <span>Edit</span>
                 </DropdownMenuItem>
               </Link>
+              <DropdownMenuItem
+                onClick={handleToggleArchive}
+                disabled={archiveLoading}
+                className="cursor-pointer gap-2"
+              >
+                <Archive className="h-3.5 w-3.5" />
+                <span>
+                  {scenario.status === "archived" ? "Reactivate" : "Archive"}
+                </span>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => setDeleteOpen(true)}
@@ -424,7 +505,7 @@ export function ScenariosView({
   students,
 }: ScenariosViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "assigned" | "unassigned">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "archived" | "assigned" | "unassigned">("all");
   const [sortBy, setSortBy] = useState<"newest" | "title" | "most-classrooms" | "most-constraints">("newest");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
@@ -444,6 +525,8 @@ export function ScenariosView({
   // Overall statistics
   const stats = useMemo(() => {
     const total = scenarios.length;
+    const active = scenarios.filter((s) => (s.status || "active") === "active").length;
+    const archived = scenarios.filter((s) => s.status === "archived").length;
     const customMissions = scenarios.filter((s) => !!s.missionData).length;
     const assignedScenarios = scenarios.filter((s) => (scenarioClassroomsMap[s.id] || []).length > 0).length;
     const unassignedScenarios = total - assignedScenarios;
@@ -459,6 +542,8 @@ export function ScenariosView({
 
     return {
       total,
+      active,
+      archived,
       customMissions,
       assignedScenarios,
       unassignedScenarios,
@@ -475,8 +560,11 @@ export function ScenariosView({
       .filter((sc) => {
         const assigned = scenarioClassroomsMap[sc.id] || [];
         const isAssigned = assigned.length > 0;
+        const isArchived = sc.status === "archived";
 
         // Status Filter
+        if (statusFilter === "active" && isArchived) return false;
+        if (statusFilter === "archived" && !isArchived) return false;
         if (statusFilter === "assigned" && !isAssigned) return false;
         if (statusFilter === "unassigned" && isAssigned) return false;
 
@@ -557,7 +645,7 @@ export function ScenariosView({
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="toolbar-control-group grid grid-cols-3 gap-1 rounded-lg p-1 sm:flex sm:shrink-0 sm:items-center">
+        <div className="toolbar-control-group grid grid-cols-2 gap-1 rounded-lg p-1 sm:flex sm:shrink-0 sm:items-center">
           <button
             data-selected={statusFilter === "all"}
             onClick={() => setStatusFilter("all")}
@@ -566,18 +654,25 @@ export function ScenariosView({
             All ({stats.total})
           </button>
           <button
+            data-selected={statusFilter === "active"}
+            onClick={() => setStatusFilter("active")}
+            className="toolbar-toggle h-8 w-full rounded-md px-2 text-[11px] sm:w-auto sm:px-3 sm:text-xs"
+          >
+            Active ({stats.active})
+          </button>
+          <button
+            data-selected={statusFilter === "archived"}
+            onClick={() => setStatusFilter("archived")}
+            className="toolbar-toggle h-8 w-full rounded-md px-2 text-[11px] sm:w-auto sm:px-3 sm:text-xs"
+          >
+            Archived ({stats.archived})
+          </button>
+          <button
             data-selected={statusFilter === "assigned"}
             onClick={() => setStatusFilter("assigned")}
             className="toolbar-toggle h-8 w-full rounded-md px-2 text-[11px] sm:w-auto sm:px-3 sm:text-xs"
           >
             Assigned ({stats.assignedScenarios})
-          </button>
-          <button
-            data-selected={statusFilter === "unassigned"}
-            onClick={() => setStatusFilter("unassigned")}
-            className="toolbar-toggle h-8 w-full rounded-md px-2 text-[11px] sm:w-auto sm:px-3 sm:text-xs"
-          >
-            Unassigned ({stats.unassignedScenarios})
           </button>
         </div>
 

@@ -48,7 +48,7 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
         snippet: "",
         fullText: "",
         defaultCredibility: 3,
-        supports: [],
+        supports: ["cause"],
       },
     ]);
     setExpandedIds((prev) => ({ ...prev, [id]: true }));
@@ -64,7 +64,7 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
     onChange(next);
   };
 
-  const itemsWithId = evidence.map((ev, i) => ({
+  const itemsWithId: (EvidenceItem & { id: string })[] = evidence.map((ev, i) => ({
     ...ev,
     id: ev.id || `evidence-${i}`,
   }));
@@ -98,61 +98,68 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
               <FileText className="h-8 w-8 mx-auto text-muted-foreground/60" />
               <p className="text-xs text-muted-foreground font-medium">No evidence items added yet.</p>
               <Button type="button" size="sm" variant="outline" onClick={addEvidence} className="text-xs gap-1">
-                <Plus className="h-3.5 w-3.5" /> Add First Evidence
+                <Plus className="h-3.5 w-3.5" /> Add First Evidence Source
               </Button>
             </div>
           ) : (
             <Sortable
               items={itemsWithId}
-              onValueChange={(nextItems) => onChange(nextItems)}
-              renderItem={(ev, i) => {
-                const isExpanded = expandedIds[ev.id] !== false; // expanded by default
+              onValueChange={(newItems) => onChange(newItems)}
+              renderItem={(ev: EvidenceItem & { id: string }, i) => {
+                const isExpanded = expandedIds[ev.id] ?? false;
 
                 return (
-                  <div className="border border-border rounded-lg bg-card shadow-xs overflow-hidden transition-all">
-                    {/* Header Row */}
-                    <div className="flex items-center gap-2.5 px-3 py-2.5 bg-muted/30 border-b border-border">
-                      <SortableDragHandle />
-                      <Badge variant="outline" className="text-[10px] font-mono shrink-0 bg-background">
-                        EV{i + 1}
-                      </Badge>
-                      <div
-                        onClick={() => toggleExpand(ev.id)}
-                        className="flex-1 cursor-pointer flex items-center justify-between min-w-0"
-                      >
-                        <div className="flex items-center gap-2 truncate">
-                          <span className="font-semibold text-xs truncate">
-                            {ev.title || "Untitled Evidence"}
+                  <div
+                    key={ev.id}
+                    className="border border-border rounded-lg overflow-hidden bg-card transition-all shadow-xs"
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-3.5 bg-muted/30 border-b border-border/60 gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <SortableDragHandle className="cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-foreground shrink-0" />
+                        <span className="text-xs font-mono font-bold text-primary shrink-0">
+                          #{i + 1}
+                        </span>
+                        <span className="text-xs font-bold truncate text-foreground">
+                          {ev.title || `Untitled Document ${i + 1}`}
+                        </span>
+                        <Badge variant="outline" className="text-[10px] shrink-0 font-normal">
+                          {ev.type || "Document"}
+                        </Badge>
+                        <div className="hidden sm:flex items-center gap-0.5 text-amber-500 shrink-0">
+                          <Star className="h-3 w-3 fill-amber-500" />
+                          <span className="text-[10px] font-mono font-bold">
+                            {ev.defaultCredibility || 3}/5
                           </span>
-                          <Badge variant="secondary" className="text-[10px] shrink-0 font-normal">
-                            {ev.type}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-3 shrink-0 text-muted-foreground hover:text-foreground">
-                          {/* Star Rating Indicator */}
-                          <div className="flex items-center gap-0.5">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`h-3 w-3 ${
-                                  star <= (ev.defaultCredibility || 3) ? "fill-primary text-primary" : "text-muted-foreground/30"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                         </div>
                       </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => removeEvidence(i)}
-                        title="Remove evidence document"
-                        className="h-8 w-8 shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => toggleExpand(ev.id)}
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          title={isExpanded ? "Collapse" : "Expand"}
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => removeEvidence(i)}
+                          title="Remove evidence document"
+                          className="h-8 w-8 shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Form Body */}
@@ -211,6 +218,48 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                             <span className="text-xs font-bold text-primary ml-1 min-w-[20px]">
                               {ev.defaultCredibility || 3}/5
                             </span>
+                          </div>
+                        </div>
+
+                        {/* Evidence Supports Category Configuration */}
+                        <div className="space-y-1.5 p-2.5 rounded-lg border border-border bg-muted/20">
+                          <div className="space-y-0.5">
+                            <Label className="text-xs font-semibold">Evidence Scope & Supported Categories</Label>
+                            <p className="text-[10px] text-muted-foreground">
+                              Tag what this evidence validates (used as ground truth for student analysis in Step 3).
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {[
+                              { tag: "cause", label: "Root Cause / Problem" },
+                              { tag: "solution", label: "Intervention / Solution" },
+                              { tag: "need", label: "Community Need / Hardship" },
+                            ].map(({ tag, label }) => {
+                              const isSelected = (ev.supports || []).includes(tag as any);
+                              return (
+                                <button
+                                  key={tag}
+                                  type="button"
+                                  onClick={() => {
+                                    const current = ev.supports || [];
+                                    const nextSupports = isSelected
+                                      ? current.filter((t: string) => t !== tag)
+                                      : [...current, tag as "cause" | "solution" | "need"];
+                                    updateEvidence(i, "supports", nextSupports);
+                                  }}
+                                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                                    isSelected
+                                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                                      : "bg-card text-muted-foreground border-border hover:bg-muted"
+                                  }`}
+                                >
+                                  <span className={`text-[10px] font-bold ${isSelected ? "text-primary-foreground" : "text-primary"}`}>
+                                    {isSelected ? "✓" : "+"}
+                                  </span>
+                                  <span>{label}</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
 

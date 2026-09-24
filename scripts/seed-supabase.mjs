@@ -135,7 +135,7 @@ async function seed() {
       is_active: cs.isActive ?? true,
       assigned_at: cs.assignedAt,
     }));
-    const { error } = await supabase.from("classroom_scenarios").upsert(formattedCS, { onConflict: "id" });
+    const { error } = await supabase.from("classroom_scenarios").upsert(formattedCS, { onConflict: "classroom_id,scenario_id" });
     if (error) console.error("Error seeding classroom scenarios:", error.message);
     else console.log(`✓ Seeded ${classroomScenarios.length} classroom scenario assignment(s)`);
   }
@@ -183,6 +183,7 @@ async function seed() {
       content: sub.content || "",
       feedback: sub.feedback || "",
       score: sub.score ?? null,
+      simulation_state: sub.simulationState || null,
       submitted_at: sub.submittedAt,
     }));
     const { error } = await supabase.from("submissions").upsert(formattedSubmissions, { onConflict: "id" });

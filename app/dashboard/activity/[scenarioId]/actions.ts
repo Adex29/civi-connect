@@ -28,6 +28,7 @@ export async function processSimulationStepAction(
 
   const scenario = await findScenarioById(scenarioId);
   if (!scenario) return { error: "Scenario not found" };
+  if (scenario.status === "archived") return { error: "This civic mission has been archived. Submissions are disabled." };
 
   // Validate classroom status and classroom-scenario mapping
   const classrooms = await getAllClassrooms();
@@ -49,6 +50,10 @@ export async function processSimulationStepAction(
       s.scenarioId === scenarioId &&
       (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
   );
+
+  if (submission && submission.status === "completed") {
+    return { error: "This mission has already been completed and cannot be modified." };
+  }
 
   // Initialize submission if missing
   if (!submission) {
@@ -176,6 +181,14 @@ export async function processSimulationStepAction(
 
   submission.simulationState = state;
   submission.stepProgress = state.currentStep;
+  if (evalResult.feedback) {
+    submission.feedback = evalResult.feedback;
+  }
+  if (state.step5?.plan?.projectTitle) {
+    submission.content = `Plan: "${state.step5.plan.projectTitle}" (Goal: ${state.step5.plan.goal || "In progress"})`;
+  } else if (state.step1?.selectedIssue) {
+    submission.content = `Priority Issue: "${state.step1.selectedIssue}" — ${state.step1.justification || ""}`;
+  }
   await updateSubmission(submission);
 
   revalidatePath(`/dashboard/activity/${scenarioId}`);
@@ -196,6 +209,7 @@ export async function submitReflectionAction(scenarioId: string, answer: string)
 
   const scenario = await findScenarioById(scenarioId);
   if (!scenario) return { error: "Scenario not found" };
+  if (scenario.status === "archived") return { error: "This civic mission has been archived. Submissions are disabled." };
 
   // Validate classroom status and classroom-scenario mapping
   const classrooms = await getAllClassrooms();
@@ -219,6 +233,7 @@ export async function submitReflectionAction(scenarioId: string, answer: string)
   );
 
   if (!submission) return { error: "Submission not found" };
+  if (submission.status === "completed") return { error: "This mission has already been completed and cannot be modified." };
 
   const evalResult = await evaluateReflection(scenario, answer);
 

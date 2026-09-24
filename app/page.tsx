@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  CivicCommunityActionHeroGraphic,
+  EvidenceResearchStoryGraphic,
+  StakeholderConsultationStoryGraphic,
+} from "@/components/landing-graphics";
 import { Parallax } from "@/components/parallax";
-// import { InteractiveFloatingCanvas } from "@/components/interactive-floating-canvas";
 import {
   ArrowRight,
   CheckCircle2,
@@ -229,16 +232,13 @@ function HeroNatureBackdrop() {
         className="absolute bottom-0 left-0 w-full h-[400px] lg:h-[520px] object-cover opacity-35"
         preserveAspectRatio="none"
       >
-        {/* Distant soft background hill curve */}
         <path
           d="M0 500 C360 420, 720 520, 1080 440 C1250 400, 1370 430, 1440 440 L1440 680 L0 680 Z"
           fill="color-mix(in oklch, var(--secondary), transparent 84%)"
         />
-        {/* Distant soft foliage tree silhouettes */}
         <circle cx="140" cy="460" r="85" fill="color-mix(in oklch, var(--primary), transparent 90%)" />
         <circle cx="250" cy="480" r="65" fill="color-mix(in oklch, var(--primary), transparent 92%)" />
         <circle cx="80" cy="490" r="55" fill="color-mix(in oklch, var(--primary), transparent 93%)" />
-        {/* Foreground curved landscape bank anchoring the scene */}
         <path
           d="M0 580 C420 560, 780 610, 1100 550 C1280 515, 1380 535, 1440 540 L1440 680 L0 680 Z"
           fill="color-mix(in oklch, var(--primary), transparent 95%)"
@@ -276,9 +276,6 @@ export default function LandingPage() {
           {/* Nature Landscape Backdrop: Soft hills & foliage silhouettes */}
           <HeroNatureBackdrop />
 
-          {/* Interactive Floating Particle System (Random on load, Hover Repel, Click Shockwaves & Bursts, Scroll Wind) */}
-          {/* <InteractiveFloatingCanvas count={24} interactive={true} /> */}
-
           {/* Subtle civic grid and background parallax rings */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="landing-grid absolute inset-0 opacity-25" />
@@ -295,7 +292,6 @@ export default function LandingPage() {
           </div>
 
           {/* Atmospheric Floating Wind-Blown Elements (Parallax + Multi-Plane Drift) */}
-          {/* Group 1: Floating Leaves */}
           <Parallax strength={-0.05} className="pointer-events-none absolute top-20 left-12 z-20 hidden md:block">
             <FloatingLeaf size={24} color="#65a30d" animClass="leaf-anim-1" />
           </Parallax>
@@ -315,7 +311,7 @@ export default function LandingPage() {
             <FloatingLeaf size={19} color="#0f766e" animClass="leaf-anim-3" />
           </Parallax>
 
-          {/* Group 2: Civic Inspiration Sparkles (✦) */}
+          {/* Inspiring Sparkles */}
           <Parallax strength={-0.07} className="pointer-events-none absolute top-14 left-1/3 z-20 hidden sm:block">
             <FloatingSparkle size={18} color="#f59e0b" animClass="sparkle-pulse" />
           </Parallax>
@@ -326,7 +322,7 @@ export default function LandingPage() {
             <FloatingSparkle size={15} color="#fbbf24" animClass="sparkle-pulse" />
           </Parallax>
 
-          {/* Group 3: Young Seedlings & Sprouts (🌱) */}
+          {/* Seedlings & Sprouts */}
           <Parallax strength={0.08} className="pointer-events-none absolute bottom-20 left-1/3 z-20 hidden md:block">
             <FloatingSprout size={22} color="#65a30d" animClass="leaf-anim-2" />
           </Parallax>
@@ -334,7 +330,7 @@ export default function LandingPage() {
             <FloatingSprout size={20} color="#84cc16" animClass="leaf-anim-1" />
           </Parallax>
 
-          {/* Group 4: Wind Streamline Swirls (〰️) */}
+          {/* Wind Streamline Swirls */}
           <Parallax strength={-0.03} className="pointer-events-none absolute top-1/2 left-8 z-20 hidden lg:block">
             <FloatingBreeze width={48} height={14} color="#0f766e" animClass="float-gentle" />
           </Parallax>
@@ -342,7 +338,7 @@ export default function LandingPage() {
             <FloatingBreeze width={52} height={16} color="#65a30d" animClass="float-gentle" />
           </Parallax>
 
-          {/* Group 5: Winged Maple Seed & Dew Droplets (🍂💧) */}
+          {/* Winged Seed & Dew Droplets */}
           <Parallax strength={0.1} className="pointer-events-none absolute top-24 right-1/2 z-20 hidden sm:block">
             <FloatingSeed size={22} color="#d97706" animClass="seed-spin" />
           </Parallax>
@@ -352,7 +348,6 @@ export default function LandingPage() {
           <Parallax strength={0.05} className="pointer-events-none absolute top-40 right-28 z-20 hidden lg:block">
             <FloatingDewDrop size={14} color="#0284c7" animClass="leaf-anim-1" />
           </Parallax>
-
 
           <div className="relative mx-auto w-full max-w-7xl">
             <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
@@ -397,24 +392,24 @@ export default function LandingPage() {
 
                 {/* Trust / Feature Chips */}
                 <div className="mt-10 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold text-muted-foreground lg:justify-start">
-                  <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5">
+                  <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg">
                     <CheckCircle2 className="size-3.5 text-primary" />
                     8 Simulation Stages
                   </span>
-                  <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5">
+                  <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg">
                     <ShieldCheck className="size-3.5 text-secondary" />
                     Evidence-Based Solutions
                   </span>
-                  <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5">
+                  <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg">
                     <Users className="size-3.5 text-primary" />
                     Simulated Stakeholders
                   </span>
                 </div>
               </div>
 
-              {/* Right Column: Multi-Plane Parallax Scene (Seamlessly Embedded, Flat Shapes) */}
+              {/* Right Column: Multi-Plane Parallax Scene with Flat Vector Community Action Graphic */}
               <div className="relative flex min-h-[460px] items-center justify-center lg:col-span-6 lg:min-h-[580px]">
-                {/* Layer 1: Ambient Background Halo (Deep Parallax) */}
+                {/* Layer 1: Ambient Background Halo */}
                 <Parallax strength={-0.04} className="pointer-events-none absolute inset-0 flex items-center justify-center">
                   <div
                     style={{
@@ -425,36 +420,24 @@ export default function LandingPage() {
                   />
                 </Parallax>
 
-                {/* Layer 2: Main Community Environmental Scene (HD Flat Vector, Midground Parallax) */}
-                <Parallax strength={0.06} className="relative z-10 w-full max-w-xl">
-                  <div
-                    style={{
-                      transform: `translate3d(${mouseOffset.x * 12}px, ${mouseOffset.y * 12}px, 0)`,
-                      transition: "transform 220ms cubic-bezier(0.16, 1, 0.3, 1)",
-                    }}
-                    className="relative"
-                  >
-                    <Image
-                      src="/images/hero-cleanup-v2.png"
-                      alt="High school youth volunteers engaged in community environmental cleanup, raking leaves, tree conservation, and recycling"
-                      width={1376}
-                      height={768}
-                      priority
-                      className="h-auto w-full object-contain select-none drop-shadow-md transition-transform duration-700 hover:scale-[1.01]"
-                    />
-                  </div>
-                </Parallax>
+                {/* Layer 2: Main Flat Vector Community Action Graphic with Seamless Blended Canvas */}
+                <div className="relative z-10 w-full flex items-center justify-center">
+                  <CivicCommunityActionHeroGraphic mouseOffset={mouseOffset} />
+                </div>
 
-                {/* Layer 4: Floating Parallax Badges (Opposing Parallax) */}
+                {/* Layer 3: Floating Parallax Badges */}
                 <Parallax strength={-0.08} className="pointer-events-none absolute top-4 right-2 z-20 sm:top-8 sm:right-6">
                   <div
                     style={{
                       transform: `translate3d(${mouseOffset.x * -18}px, ${mouseOffset.y * -18}px, 0)`,
                       transition: "transform 240ms cubic-bezier(0.16, 1, 0.3, 1)",
                     }}
-                    className="flex items-center gap-2 border border-primary/30 bg-card/90 px-3.5 py-1.5 shadow-sm backdrop-blur-md"
+                    className="flex items-center gap-2 rounded-lg border border-primary/30 bg-card/90 px-3.5 py-1.5 shadow-sm backdrop-blur-md"
                   >
-                    {/* <span className="size-2 rounded-full bg-emerald-500 animate-ping" /> */}
+                    <span className="relative flex size-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                    </span>
                     <span className="text-xs font-bold text-foreground">Community Problem-Solving</span>
                   </div>
                 </Parallax>
@@ -469,7 +452,6 @@ export default function LandingPage() {
         <section className="relative border-b border-border/70 overflow-hidden bg-background px-5 py-24 sm:px-8 lg:py-32">
           {/* Environmental Landscape Backdrop Waves */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden select-none -z-0">
-            {/* Distant soft rolling hill wave */}
             <svg
               className="absolute bottom-0 left-0 w-full h-[320px] text-primary/[0.04]"
               preserveAspectRatio="none"
@@ -478,7 +460,6 @@ export default function LandingPage() {
             >
               <path d="M0,192L48,197.3C96,203,192,213,288,202.7C384,192,480,160,576,165.3C672,171,768,213,864,224C960,235,1056,213,1152,192C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" />
             </svg>
-            {/* Midground rolling hill wave */}
             <svg
               className="absolute bottom-0 left-0 w-full h-[200px] text-secondary/[0.07]"
               preserveAspectRatio="none"
@@ -489,7 +470,7 @@ export default function LandingPage() {
             </svg>
           </div>
 
-          {/* Environmental floating leaves drifting across the landscape */}
+          {/* Environmental floating leaves */}
           <Parallax strength={0.07} className="pointer-events-none absolute top-12 left-8 z-10 hidden sm:block">
             <FloatingLeaf size={22} color="#65a30d" animClass="leaf-anim-1" />
           </Parallax>
@@ -522,22 +503,12 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Two Side-by-Side Seamless Visual Story Blocks (100% Zero Cards, Pure Canvas Embedding) */}
+            {/* Two Side-by-Side Visual Story Blocks with Matching Flat Color Community Illustrations */}
             <div className="mt-16 grid gap-12 md:grid-cols-2 lg:gap-20">
-              {/* Story 1: Evidence & Data Investigation */}
+              {/* Story 1: Evidence & Data Investigation (Matching Flat Vector Graphic with Seamless Blended Edges) */}
               <div className="group relative flex flex-col items-center text-center lg:items-start lg:text-left">
-                {/* Ambient Soft Glow Aura (No card border or box) */}
                 <div className="relative flex min-h-[320px] w-full items-center justify-center p-2">
-                  <div className="pointer-events-none absolute size-80 rounded-full bg-gradient-to-tr from-primary/20 via-primary/10 to-transparent blur-3xl opacity-70 transition-opacity group-hover:opacity-100" />
-                  <Parallax strength={0.06} className="relative z-10 w-full max-w-lg">
-                    <Image
-                      src="/images/civic-research-v4.png"
-                      alt="Students investigating community data trends and drafting an intervention plan"
-                      width={1024}
-                      height={571}
-                      className="h-auto w-full object-contain select-none drop-shadow-md transition-transform duration-500 group-hover:scale-[1.03]"
-                    />
-                  </Parallax>
+                  <EvidenceResearchStoryGraphic />
                 </div>
                 <div className="mt-6 w-full pt-2">
                   <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary">
@@ -552,20 +523,10 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Story 2: Stakeholder Dialogue & Community Action */}
+              {/* Story 2: Stakeholder Dialogue & Community Action (Matching Flat Vector Graphic with Seamless Blended Edges) */}
               <div className="group relative flex flex-col items-center text-center lg:items-start lg:text-left">
-                {/* Ambient Soft Glow Aura (No card border or box) */}
                 <div className="relative flex min-h-[320px] w-full items-center justify-center p-2">
-                  <div className="pointer-events-none absolute size-80 rounded-full bg-gradient-to-tr from-secondary/25 via-secondary/15 to-transparent blur-3xl opacity-70 transition-opacity group-hover:opacity-100" />
-                  <Parallax strength={-0.06} className="relative z-10 w-full max-w-lg">
-                    <Image
-                      src="/images/civic-stakeholders-v3.png"
-                      alt="Students and barangay community members collaborating around a community map"
-                      width={1200}
-                      height={896}
-                      className="h-auto w-full object-contain select-none drop-shadow-md transition-transform duration-500 group-hover:scale-[1.03]"
-                    />
-                  </Parallax>
+                  <StakeholderConsultationStoryGraphic />
                 </div>
                 <div className="mt-6 w-full pt-2">
                   <div className="inline-flex items-center gap-2 rounded-full border border-secondary/35 bg-secondary/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-secondary-foreground">
@@ -595,28 +556,48 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="mt-14 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {steps.map((step) => {
                 const Icon = step.icon;
                 return (
-                  <article key={step.num} className="surface-panel surface-interactive group relative z-10 min-h-[272px] rounded-none p-7 sm:p-8">
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="font-mono text-2xl font-bold text-primary/55 transition-colors group-hover:text-primary">{step.num}</span>
-                      <span className="status-label px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em]">{step.badge}</span>
-                    </div>
-                    <div className="mt-8 flex items-start gap-3">
-                      <Icon className="mt-0.5 size-5 shrink-0 text-primary" />
-                      <div>
-                        <h3 className="text-lg font-bold leading-6">{step.name}</h3>
-                        <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">{step.desc}</p>
+                  <article
+                    key={step.num}
+                    className="surface-panel surface-interactive group relative z-10 flex flex-col justify-between overflow-hidden rounded-2xl border border-border/80 bg-card p-6 shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-2xl font-black text-primary/40 transition-colors group-hover:text-primary">
+                          {step.num}
+                        </span>
+                        <span className="status-label rounded-md px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider">
+                          {step.badge}
+                        </span>
                       </div>
+
+                      <div className="mt-6 flex items-center gap-3">
+                        <div className="flex size-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10 text-primary transition-all duration-300 group-hover:border-primary/40 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-sm">
+                          <Icon className="size-5" />
+                        </div>
+                        <h3 className="text-base font-extrabold leading-snug text-foreground">
+                          {step.name}
+                        </h3>
+                      </div>
+
+                      <p className="mt-3.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                        {step.desc}
+                      </p>
+                    </div>
+
+                    <div className="mt-6 flex items-center justify-between border-t border-border/60 pt-3 text-[10px] font-mono font-bold text-muted-foreground group-hover:text-primary transition-colors">
+                      <span>Phase {step.num}</span>
+                      <span className="text-muted-foreground/60">Stage {step.num} / 08</span>
                     </div>
                   </article>
                 );
               })}
             </div>
 
-            {/* Breathing Button: Start Simulation (with cheerful youth runner encouragement) */}
+            {/* Breathing Button: Start Simulation */}
             <div className="mt-16 flex flex-col items-center justify-center gap-4 text-center">
               <div className="flex items-center gap-3">
                 <Link

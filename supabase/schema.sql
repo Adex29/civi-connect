@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS submissions (
   content TEXT NOT NULL DEFAULT '',
   feedback TEXT DEFAULT '',
   score INT,
+  simulation_state JSONB DEFAULT '{}'::jsonb,
   submitted_at TIMESTAMPTZ DEFAULT NOW()
 );
 

@@ -439,7 +439,7 @@ export async function createClassroomScenario(assignment: ClassroomScenario): Pr
           is_active: assignment.isActive,
           assigned_at: assignment.assignedAt,
         },
-        { onConflict: "id" }
+        { onConflict: "classroom_id,scenario_id" }
       );
     } catch (err) {
       // Ignored

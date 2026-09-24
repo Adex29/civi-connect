@@ -150,6 +150,11 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
       return;
     }
 
+    if (missionData?.stakeholders && missionData.stakeholders.length > 0 && missionData.stakeholders.length < 2) {
+      toast.error("Please configure at least 2 stakeholders to allow student dialogue comparison.");
+      return;
+    }
+
     setLoading(true);
     let result;
 

@@ -20,14 +20,25 @@ export function getMissionDataForScenario(scenario: Scenario): MissionData {
   // If scenario has custom database-stored missionData, return it directly
   if (scenario.missionData) {
     const baseFallback = getGenericFallbackMissionData(scenario);
+    const hasCustomEvent =
+      Boolean(scenario.missionData.unexpectedEvent?.title?.trim()) ||
+      (scenario.missionData.unexpectedEvent?.options &&
+        scenario.missionData.unexpectedEvent.options.length > 0);
+
+    const hasCustomTips =
+      scenario.missionData.stepTips &&
+      Object.values(scenario.missionData.stepTips).some(
+        (t) => typeof t === "string" && t.trim().length > 0
+      );
+
     return {
       scenarioId: scenario.id,
       issues: scenario.missionData.issues?.length ? scenario.missionData.issues : baseFallback.issues,
       causes: scenario.missionData.causes?.length ? scenario.missionData.causes : baseFallback.causes,
       evidenceLibrary: scenario.missionData.evidenceLibrary?.length ? scenario.missionData.evidenceLibrary : baseFallback.evidenceLibrary,
       stakeholders: scenario.missionData.stakeholders?.length ? scenario.missionData.stakeholders : baseFallback.stakeholders,
-      unexpectedEvent: scenario.missionData.unexpectedEvent || baseFallback.unexpectedEvent,
-      stepTips: scenario.missionData.stepTips || baseFallback.stepTips,
+      unexpectedEvent: hasCustomEvent && scenario.missionData.unexpectedEvent ? scenario.missionData.unexpectedEvent : baseFallback.unexpectedEvent,
+      stepTips: hasCustomTips && scenario.missionData.stepTips ? scenario.missionData.stepTips : baseFallback.stepTips,
     };
   }
 

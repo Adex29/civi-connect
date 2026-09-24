@@ -238,7 +238,11 @@ export function ActivityForm({
       if (step < 8) {
         setStep(step + 1);
       } else if (step === 8) {
-        setStep(9);
+        if (simState.scores) {
+          setStep(9);
+        } else {
+          setFormError("This mission was archived before Step 8 was completed. Simulation scorecard is unavailable.");
+        }
       }
       return;
     }
@@ -345,7 +349,11 @@ export function ActivityForm({
 
   const handleFinalReflectionSubmit = async () => {
     if (isReadOnly) {
-      setStep(10);
+      if (existingSubmission?.status === "completed") {
+        setStep(10);
+      } else {
+        setFormError("This mission was archived before completion. The completion certificate is only issued for finished missions.");
+      }
       return;
     }
 
@@ -377,23 +385,40 @@ export function ActivityForm({
         studentName={studentName}
         currentStep={step}
         isCompleted={existingSubmission?.status === "completed"}
+        isArchived={isArchived}
         onStart={() => setShowBriefing(false)}
       />
     );
   }
 
   // --- Step 9: Performance Report View ---
-  if (step === 9 && simState.scores) {
+  if (step === 9) {
+    if (simState.scores) {
+      return (
+        <div className="max-w-4xl mx-auto space-y-8">
+          <PerformanceReport
+            scores={simState.scores}
+            studentName={studentName}
+            onContinueToReflection={() => {
+              setStep(9.5); // 9.5 = Final Reflection Form
+            }}
+            onBack={() => setStep(8)}
+          />
+        </div>
+      );
+    }
     return (
-      <div className="max-w-4xl mx-auto space-y-8">
-        <PerformanceReport
-          scores={simState.scores}
-          studentName={studentName}
-          onContinueToReflection={() => {
-            setStep(9.5); // 9.5 = Final Reflection Form
-          }}
-          onBack={() => setStep(8)}
-        />
+      <div className="max-w-2xl mx-auto space-y-6 text-center animate-fade-in-up">
+        <Card className="border p-8 space-y-4">
+          <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto" />
+          <h2 className="text-xl font-bold">Performance Report Unavailable</h2>
+          <p className="text-sm text-muted-foreground">
+            This mission was archived before all simulation steps were evaluated.
+          </p>
+          <Button onClick={() => setStep(8)} variant="outline">
+            Back to Step 08
+          </Button>
+        </Card>
       </div>
     );
   }
@@ -467,7 +492,7 @@ export function ActivityForm({
                     {feedback.evaluation?.is_ai_generated && (
                       <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-rose-500/15 border border-rose-500/30 text-rose-900 dark:text-rose-200 text-xs font-semibold">
                         <ShieldAlert className="h-4 w-4 text-rose-600 shrink-0" />
-                        <span>AI-Generated Content Flagged: Please rewrite using your own authentic student voice.</span>
+                        <span>AI-Generated Content Flagged: Please rewrite using your own authentic voice.</span>
                       </div>
                     )}
 
@@ -501,9 +526,16 @@ export function ActivityForm({
             <Button variant="outline" onClick={() => setStep(9)} disabled={loading}>
               Back to Scorecard
             </Button>
-            <Button onClick={handleFinalReflectionSubmit} disabled={loading || (!isReadOnly && !reflectionAnswer.trim())}>
+            <Button
+              onClick={handleFinalReflectionSubmit}
+              disabled={loading || (!isReadOnly && !reflectionAnswer.trim()) || (isReadOnly && existingSubmission?.status !== "completed")}
+            >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isReadOnly ? "View Certificate" : "Submit Reflection & Complete Mission"}
+              {isReadOnly
+                ? existingSubmission?.status === "completed"
+                  ? "View Certificate"
+                  : "Mission Incomplete"
+                : "Submit Reflection & Complete Mission"}
             </Button>
           </CardFooter>
         </Card>
@@ -513,6 +545,29 @@ export function ActivityForm({
 
   // --- Step 10: Completion Certificate View ---
   if (step === 10) {
+    if (existingSubmission?.status !== "completed") {
+      return (
+        <div className="max-w-3xl mx-auto space-y-8 text-center animate-fade-in-up">
+          <Card className="border-2 border-amber-500/30 shadow-xl bg-card p-8 space-y-6">
+            <div className="mx-auto h-20 w-20 rounded-full bg-amber-500/10 flex items-center justify-center">
+              <AlertTriangle className="h-12 w-12 text-amber-600" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="page-title text-3xl">Mission Incomplete</h1>
+              <p className="text-muted-foreground text-sm max-w-lg mx-auto leading-relaxed">
+                This mission was archived or unassigned before all steps and final reflections were completed. A completion certificate was not issued.
+              </p>
+            </div>
+            <div className="flex justify-center pt-2">
+              <Button onClick={() => router.push("/dashboard")} className="gap-2">
+                Return to Dashboard <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
     return (
       <div className="max-w-3xl mx-auto space-y-8 text-center animate-fade-in-up">
         <Card className="border-2 border-primary/20 shadow-xl bg-card p-8 space-y-6">
@@ -573,7 +628,7 @@ export function ActivityForm({
             </AlertTitle>
             <AlertDescription className="text-xs text-slate-600 dark:text-slate-400 mt-1">
               {isArchived
-                ? "This classroom is archived. You are viewing this mission in read-only mode and cannot submit or modify answers."
+                ? "This mission or classroom is archived. You are viewing this mission in read-only mode and cannot submit or modify answers."
                 : "You have completed this mission. You can browse your submitted answers and AI feedback in read-only mode."}
             </AlertDescription>
           </Alert>
@@ -616,18 +671,15 @@ export function ActivityForm({
           <div className="xl:col-span-8 space-y-6">
             <Card className="border shadow-sm">
               <CardHeader className="border-b bg-muted/20 pb-4">
-                <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <CurrentStepIcon className="h-4 w-4 text-primary shrink-0" />
-                  <span>
-                    {step === 1 && "Which community issue should be prioritized?"}
-                    {step === 2 && "Arrange the causes (Most Significant → Least Significant)"}
-                    {step === 3 && "Evidence Library Inspection"}
-                    {step === 4 && "Stakeholder Consultation"}
-                    {step === 5 && "Intervention Plan Builder"}
-                    {step === 6 && missionData.unexpectedEvent.title}
-                    {step === 7 && "Adaptive Plan Revision (Post-Challenge)"}
-                    {step === 8 && "Community Impact Assessment"}
-                  </span>
+                <CardTitle className="text-base font-bold">
+                  {step === 1 && "Which community issue should be prioritized?"}
+                  {step === 2 && "Arrange the causes (Most Significant → Least Significant)"}
+                  {step === 3 && "Evidence Library Inspection"}
+                  {step === 4 && "Stakeholder Consultation"}
+                  {step === 5 && "Intervention Plan Builder"}
+                  {step === 6 && missionData.unexpectedEvent.title}
+                  {step === 7 && "Adaptive Plan Revision (Post-Challenge)"}
+                  {step === 8 && "Community Impact Assessment"}
                 </CardTitle>
               </CardHeader>
 
@@ -1292,9 +1344,20 @@ export function ActivityForm({
                   <div />
                 )}
 
-                <Button onClick={handleNextStep} disabled={loading} className="gap-2 font-bold px-6 w-full sm:w-auto">
+                <Button
+                  onClick={handleNextStep}
+                  disabled={loading || (isReadOnly && step === 8 && !simState.scores)}
+                  className="gap-2 font-bold px-6 w-full sm:w-auto"
+                >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {isReadOnly ? "Next Step" : "Submit Response"} <ArrowRight className="h-4 w-4" />
+                  {isReadOnly
+                    ? step === 8
+                      ? simState.scores
+                        ? "View Scorecard"
+                        : "Simulation Incomplete"
+                      : "Next Step"
+                    : "Submit Response"}{" "}
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </CardFooter>
             </Card>
@@ -1305,7 +1368,7 @@ export function ActivityForm({
             <Card className="border border-amber-500/20 bg-amber-500/5 shadow-xs">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                  <CurrentStepIcon className="h-4 w-4 shrink-0" /> Step 0{step} Mission Tips
+                  <Lightbulb className="h-4 w-4 shrink-0" /> Step 0{step} Mission Tips
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xs text-amber-900/80 dark:text-amber-200/80 leading-relaxed space-y-2">
@@ -1415,7 +1478,7 @@ export function ActivityForm({
             {evaluationModalData?.evaluation?.is_ai_generated && (
               <div className="flex items-center gap-2 p-3 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-900 dark:text-rose-200 text-xs font-semibold">
                 <ShieldAlert className="h-4 w-4 text-rose-600 shrink-0" />
-                <span>AI-Generated Content Flagged: Please rewrite using your own authentic student voice.</span>
+                <span>AI-Generated Content Flagged: Please rewrite using your own authentic voice.</span>
               </div>
             )}
 

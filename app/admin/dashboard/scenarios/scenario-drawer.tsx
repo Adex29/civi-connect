@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AssignScenarioDialog } from "./assign-scenario-dialog";
-import { unassignScenarioAction } from "./actions";
+import { unassignScenarioAction, toggleScenarioStatusAction } from "./actions";
 import { format } from "date-fns";
 import {
   BookOpen,
@@ -30,6 +30,8 @@ import {
   AlertCircle,
   HelpCircle,
   Award,
+  Archive,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -81,12 +83,30 @@ export function ScenarioDrawer({
       return { sub, student, classroom };
     });
 
+  const [archiveLoading, setArchiveLoading] = useState(false);
+
   const handleUnassign = async (classroomId: string, classroomName: string) => {
     const res = await unassignScenarioAction(scenario.id, classroomId);
     if (res && "error" in res && res.error) {
       toast.error(res.error);
     } else {
       toast.success(`Unassigned from ${classroomName}`);
+    }
+  };
+
+  const handleToggleArchive = async () => {
+    setArchiveLoading(true);
+    const newStatus = scenario.status === "archived" ? "active" : "archived";
+    const res = await toggleScenarioStatusAction(scenario.id, newStatus);
+    setArchiveLoading(false);
+    if (res.error) {
+      toast.error(res.error);
+    } else {
+      toast.success(
+        newStatus === "archived"
+          ? `Mission "${scenario.title}" moved to archive.`
+          : `Mission "${scenario.title}" reactivated.`
+      );
     }
   };
 
@@ -114,6 +134,12 @@ export function ScenarioDrawer({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
+                <Badge
+                  variant={scenario.status === "archived" ? "secondary" : "default"}
+                  className="text-[10px] font-mono shrink-0"
+                >
+                  {scenario.status === "archived" ? "ARCHIVED" : "ACTIVE"}
+                </Badge>
                 <span className="text-xs text-muted-foreground">
                   Created {format(new Date(scenario.createdAt), "MMM d, yyyy")}
                 </span>
@@ -124,6 +150,20 @@ export function ScenarioDrawer({
             </div>
 
             <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                disabled={archiveLoading}
+                onClick={handleToggleArchive}
+              >
+                {archiveLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Archive className="h-3.5 w-3.5" />
+                )}
+                <span>{scenario.status === "archived" ? "Reactivate" : "Archive"}</span>
+              </Button>
               <Link href={`/admin/dashboard/scenarios/${scenario.id}/edit`}>
                 <Button size="sm" variant="outline" className="gap-1.5 text-xs">
                   <Edit className="h-3.5 w-3.5" />

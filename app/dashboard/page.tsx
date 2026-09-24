@@ -41,13 +41,14 @@ export default async function StudentDashboard() {
 
   const allScenarios = await getAllScenarios();
 
-  // Get scenarios assigned to this student's classroom
+  // Get scenarios assigned to this student's classroom (excluding archived scenarios)
   const assignedScenarios = classroomScenarios
     .map((cs) => {
       const scenario = allScenarios.find((s) => s.id === cs.scenarioId);
+      if (!scenario) return null;
       return { ...scenario, active: cs.isActive };
     })
-    .filter((s) => s && s.active);
+    .filter((s): s is NonNullable<typeof s> => Boolean(s && s.id && s.active && s.status !== "archived"));
 
   const allSubmissions = await getAllSubmissions();
   const submissions = allSubmissions.filter(
@@ -429,6 +430,7 @@ export default async function StudentDashboard() {
               const scenario = allScenarios.find((s) => s.id === sub.scenarioId);
               const score = sub.score || sub.simulationState?.scores?.overallScore;
               const isCompleted = sub.status === "completed";
+              const isMissionArchived = scenario?.status === "archived" || isArchived;
 
               return (
                 <Card
@@ -451,9 +453,16 @@ export default async function StudentDashboard() {
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-foreground">
-                          {scenario?.title || "Civic Mission"}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-foreground">
+                            {scenario?.title || "Civic Mission"}
+                          </p>
+                          {isMissionArchived && (
+                            <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 text-[10px] font-bold px-1.5 py-0 h-4">
+                              Archived
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground">
                           Status:{" "}
                           <span className="font-medium capitalize text-foreground">

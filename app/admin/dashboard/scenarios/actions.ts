@@ -98,6 +98,47 @@ export async function deleteScenarioAction(scenarioId: string): Promise<{ succes
   return { success: true };
 }
 
+export async function archiveScenarioAction(scenarioId: string): Promise<{ success: boolean; error?: string }> {
+  await requireRole("admin");
+
+  const existing = await findScenarioById(scenarioId);
+  if (!existing) {
+    return { success: false, error: "Scenario not found" };
+  }
+
+  await updateScenario({
+    ...existing,
+    status: "archived",
+  });
+
+  revalidatePath("/admin/dashboard/scenarios");
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/activity/${scenarioId}`);
+  return { success: true };
+}
+
+export async function toggleScenarioStatusAction(
+  scenarioId: string,
+  newStatus: "active" | "archived"
+): Promise<{ success: boolean; status?: "active" | "archived"; error?: string }> {
+  await requireRole("admin");
+
+  const existing = await findScenarioById(scenarioId);
+  if (!existing) {
+    return { success: false, error: "Scenario not found" };
+  }
+
+  await updateScenario({
+    ...existing,
+    status: newStatus,
+  });
+
+  revalidatePath("/admin/dashboard/scenarios");
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/activity/${scenarioId}`);
+  return { success: true, status: newStatus };
+}
+
 export async function unassignScenarioAction(scenarioId: string, classroomId: string): Promise<{ success: boolean; error?: string }> {
   await requireRole("admin");
 

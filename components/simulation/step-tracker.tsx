@@ -76,7 +76,6 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
                     : "bg-muted text-muted-foreground opacity-60"
                 }`}
               >
-                <StepIcon className="h-3.5 w-3.5 shrink-0" />
                 <span>{s.name}</span>
                 {isDone && <CheckCircle2 className="h-3 w-3 shrink-0" />}
               </div>
@@ -102,7 +101,6 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
               const isDone = completedSteps.includes(s.step) || currentStep > s.step;
               const isClickable = onSelectStep !== undefined && (isDone || isCurrent);
               const status = isDone ? "completed" : isCurrent ? "current" : "upcoming";
-              const StepIcon = s.icon;
 
               return (
                 <TimelineItem
@@ -115,8 +113,6 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
                   <TimelineDot status={status}>
                     {isDone ? (
                       <CheckCircle2 className="h-3.5 w-3.5" />
-                    ) : isCurrent ? (
-                      <StepIcon className="h-3.5 w-3.5 text-primary-foreground" />
                     ) : (
                       <span className="text-[11px] font-mono">{s.step}</span>
                     )}
@@ -124,8 +120,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
                   <TimelineConnector />
                   <TimelineContent>
                     <TimelineHeader>
-                      <TimelineTitle className={`flex items-center gap-1.5 ${isCurrent ? "text-primary font-extrabold" : ""}`}>
-                        <StepIcon className={`h-3.5 w-3.5 shrink-0 ${isCurrent ? "text-primary" : "text-muted-foreground/70"}`} />
+                      <TimelineTitle className={isCurrent ? "text-primary font-extrabold" : ""}>
                         <span>{s.name}</span>
                       </TimelineTitle>
                     </TimelineHeader>

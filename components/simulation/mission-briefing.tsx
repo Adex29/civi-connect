@@ -14,6 +14,7 @@ export interface MissionBriefingProps {
   studentName?: string;
   currentStep: number;
   isCompleted?: boolean;
+  isArchived?: boolean;
   onStart: () => void;
 }
 
@@ -22,6 +23,7 @@ export function MissionBriefing({
   studentName = "Student",
   currentStep,
   isCompleted = false,
+  isArchived = false,
   onStart,
 }: MissionBriefingProps) {
   const [stage, setStage] = useState<"welcome" | "overview">("welcome");
@@ -42,8 +44,15 @@ export function MissionBriefing({
         <Card className="border border-border shadow-xl bg-card overflow-hidden">
           <CardContent className="p-8 sm:p-14 text-center space-y-8 flex flex-col items-center justify-center min-h-[440px]">
             {/* Top Greeting Badge */}
-            <div className="text-xs sm:text-sm font-mono font-semibold text-primary tracking-wide">
-              [{studentName}, here is your mission:]
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <div className="text-xs sm:text-sm font-mono font-semibold text-primary tracking-wide">
+                [{studentName}, here is your mission:]
+              </div>
+              {isArchived && (
+                <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 font-mono text-[10px] font-bold">
+                  Archived (Read-Only)
+                </Badge>
+              )}
             </div>
 
             {/* Main Mission Title */}
@@ -75,7 +84,11 @@ export function MissionBriefing({
                 onClick={() => setStage("overview")}
                 className="w-full sm:w-auto px-8 py-3 text-sm font-bold gap-2 shadow-md"
               >
-                {isCompleted
+                {isArchived
+                  ? isCompleted
+                    ? "Review Completed Mission"
+                    : "Review Progress (Read-Only)"
+                  : isCompleted
                   ? "Review Mission"
                   : isResuming
                   ? "Continue Mission"
@@ -99,6 +112,11 @@ export function MissionBriefing({
             <Badge className="bg-primary text-primary-foreground font-mono text-[10px]">
               Civic Mission Briefing
             </Badge>
+            {isArchived && (
+              <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 font-mono text-[10px] font-bold">
+                Archived (Read-Only)
+              </Badge>
+            )}
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground uppercase">
             MISSION: {scenario.title}
@@ -166,7 +184,11 @@ export function MissionBriefing({
               onClick={onStart}
               className="w-full sm:w-auto px-6 text-xs sm:text-sm font-bold gap-2 shadow-md"
             >
-              {isCompleted
+              {isArchived
+                ? isCompleted
+                  ? "View Earned Scorecard & Steps"
+                  : "View Simulation Progress"
+                : isCompleted
                 ? "View Simulation Steps"
                 : isResuming
                 ? "Continue Investigation"

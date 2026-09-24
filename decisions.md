@@ -7,6 +7,12 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ## Active Decisions
 
+- [D-20260923-006: Flat Color Vector Community Graphics and Open-Canvas Fluid Blob Blending](#d-20260923-006--flat-color-vector-community-graphics-and-open-canvas-fluid-blob-blending)
+- [D-20260923-005: Comprehensive AI Evaluation Response Capture and Admin Audit Review](#d-20260923-005--comprehensive-ai-evaluation-response-capture-and-admin-audit-review)
+- [D-20260923-004: Consolidation of Mission Step Iconography to Step Header Banner](#d-20260923-004--consolidation-of-mission-step-iconography-to-step-header-banner)
+- [D-20260923-003: Multi-Tier AI Content Detection and Authentic Student Voice Enforcement](#d-20260923-003--multi-tier-ai-content-detection-and-authentic-student-voice-enforcement)
+- [D-20260923-002: Dual-Mode AI Provider Architecture for Google Cloud Vertex AI and Gemini Studio](#d-20260923-002--dual-mode-ai-provider-architecture-for-google-cloud-vertex-ai-and-gemini-studio)
+- [D-20260923-001: Mission Archiving Lifecycle, Read-Only State Hardening, and Completed Work Preservation](#d-20260923-001--mission-archiving-lifecycle-read-only-state-hardening-and-completed-work-preservation)
 - [D-20260920-010: Standardizing Mission Steps Delete Buttons with Clean Rest State and Destructive Offset Shadow Hover Effect](#d-20260920-010--standardizing-mission-steps-delete-buttons-with-clean-rest-state-and-destructive-offset-shadow-hover-effect)
 - [D-20260920-009: Unified Design Standard for Delete and Remove Actions](#d-20260920-009--unified-design-standard-for-delete-and-remove-actions)
 - [D-20260920-008: Elimination of Circular Tailwind v4 Spacing Variable and Dialog/Form Action Button Collision](#d-20260920-008--elimination-of-circular-tailwind-v4-spacing-variable-and-dialogform-action-button-collision)
@@ -51,6 +57,219 @@ When guidance in other documentation conflicts with an accepted decision recorde
 ## Rejected Alternatives
 
 - [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+
+### D-20260923-006 — Flat Color Vector Community Graphics and Open-Canvas Fluid Blob Blending
+
+- **Status**: Accepted
+- **Date**: 2026-09-23
+- **Decision owner**: User steering
+- **Scope**: Home landing page graphics, visual hierarchy, and artwork blending (`app/page.tsx`, `components/landing-graphics.tsx`)
+- **Supersedes**: Rectangular boxed image containers, raster images with dark borders, and transparent PNG cutouts with boxy/jagged edges
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-001, F-CIV-003
+- **Related implementation**: `app/page.tsx`, `components/landing-graphics.tsx`
+
+#### Context
+1. **Boxed Image Container Rejection**: Enclosing community artwork inside dark rounded rectangular boxes (`border border-emerald-500/30 bg-[#121c21] rounded-[2rem]`) created an artificial "card" aesthetic with harsh rectangular framing that detracted from the landing page.
+2. **Cutout Artifacts & "Shapy" Polygon Pitfalls**:
+   - Converting raster JPGs into transparent PNGs caused pixelation and flat horizontal bottom cutoffs ("boxy edges like png images with transparent background").
+   - Attempting to hand-code complex community scenes using primitive SVG circles, rectangles, and path polygons resulted in an awkward, crude "shapy" appearance with geometric polygons that lacked organic character fidelity.
+3. **Client Desired Visual Standard**: The user explicitly requested high-fidelity flat colors, organic human character illustration, rich trees and park features, and seamless open-canvas blending without boxy card borders or crude geometric polygons.
+
+#### Decision
+1. **High-Fidelity Flat Vector Illustration System (`components/landing-graphics.tsx`)**:
+   - `CivicCommunityActionHeroGraphic`: Full community action park scene featuring volunteers kneeling and planting a sapling, a volunteer in a yellow safety cap raking, a volunteer collecting leaves into a golden sack, a volunteer watering trees, and a mentor in a safety vest guiding a student, framed by a soft organic fluid pastel blob and blooming daisies on a clean light background.
+   - `EvidenceResearchStoryGraphic`: Senior high school researchers inspecting field soil/water evidence with a magnifying glass and cross-referencing barangay survey charts on a research easel with a verified badge.
+   - `StakeholderConsultationStoryGraphic`: Diverse community stakeholders (barangay official, student leader with proposal sheet, citizen partner) around a round table with blueprint map and speech bubbles.
+2. **Seamless Border-Fade Blending (Zero Boxy Edges & Zero "Shapy" Polygons)**:
+   - Generated high-resolution flat vector illustrations on a light seamless background (`#f4f9fd` / `#f8fafc`).
+   - Applied smooth 15% edge border-fade so the illustration dissolves 100% seamlessly into the landing page canvas without any visible rectangular borders or harsh polygon cutoffs.
+   - Sits directly on the page background with ZERO card containers, ZERO rectangular borders, and ZERO drop-shadow boxes.
+3. **Content Preservation**:
+   - Preserved 100% of all landing page text copy, titles, descriptions, badges, 8 simulation steps, and buttons.
+
+#### Evidence
+- `npx tsc --noEmit` verified with 0 errors.
+- Dev server live on `http://localhost:3000`.
+
+---
+
+### D-20260923-005 — Comprehensive AI Evaluation Response Capture and Admin Audit Review
+
+- **Status**: Accepted
+- **Date**: 2026-09-23
+- **Decision owner**: User prompt
+- **Scope**: Submission storage, step evaluation action pipeline, administrative submissions overview, and submission audit drawer (`app/dashboard/activity/[scenarioId]/actions.ts`, `lib/flag-utils.ts`, `app/admin/dashboard/submissions/submissions-view.tsx`, `app/admin/dashboard/submissions/submission-drawer.tsx`)
+- **Supersedes**: Blank top-level feedback during steps 1–8, raw JSON student content dumps, missing steps (2, 3, 4) in the admin audit drawer, and absence of administrative AI detection review
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-005, F-CIV-006, F-CIV-007
+- **Related implementation**: `app/dashboard/activity/[scenarioId]/actions.ts`, `lib/flag-utils.ts`, `app/admin/dashboard/submissions/submissions-view.tsx`, `app/admin/dashboard/submissions/submission-drawer.tsx`
+
+#### Context
+1. **Uncaptured Step Feedback**: During simulation execution (Steps 1 through 8), the AI evaluation engine generated detailed rubrics (`score`, `passed`, `evaluation_summary`, `feedback`, `strengths`, `areas_for_improvement`, `ai_detected`, `ai_confidence`, and flags) which were persisted into `submission.simulationState[stepKey].evaluation`. However, top-level `submission.feedback` remained completely empty until the student finalized Step 9/10 (reflection), and `submission.content` was left empty until a raw JSON dump at Step 10.
+2. **Missing Admin Audit Visibility**: Teachers and administrators inspecting student work on `/admin/dashboard/submissions`:
+   - Had no way to see whether student work contained AI-generated or copied responses.
+   - Could not preview the latest AI feedback or rubric score without opening a drawer.
+   - Could not easily filter submissions that raised academic integrity flags (`ai_detected`).
+   - When opening the detail drawer, Steps 2 (Cause Hierarchy), Step 3 (Evidence Audit), and Step 4 (Stakeholder Consultation) were omitted from the audit timeline entirely, and other steps only rendered unformatted text without the AI's diagnostic evaluation.
+
+#### Decision
+1. **Continuous Step Evaluation Capture**:
+   - In `processSimulationStepAction` (`app/dashboard/activity/[scenarioId]/actions.ts`), whenever a step is evaluated, the top-level `submission.feedback` is continuously updated with the latest AI feedback (`evalResult.feedback` / `evalResult.evaluation_summary`), ensuring that teachers see current AI feedback at every stage of progression.
+   - `submission.content` is continuously populated with a clean, readable overview of the student's civic work (e.g. priority issue, cause analysis, intervention title, rationale summary).
+2. **Submission AI Analysis Utility (`lib/flag-utils.ts`)**:
+   - Created `extractSubmissionAiAnalysis(submission: Submission)` returning:
+     - `hasAiFlag: boolean` (whether any step was flagged for AI content).
+     - `flaggedSteps: number[]` (list of step numbers where AI content was detected).
+     - `latestStepEvaluated?: number` and `totalEvaluatedSteps: number`.
+     - `latestScore?: number` and `latestFeedback?: string`.
+3. **Admin Submissions Overview (`submissions-view.tsx`)**:
+   - Added AI Verification Badges to submission cards:
+     - Destructive badge: `AI Content Flagged (Step X)` with `ShieldAlert`.
+     - Primary badge: `Verified Voice` with `Sparkles`.
+     - Muted badge: `In Progress (X Steps Evaluated)`.
+   - Added a dedicated AI quick filter bar: `All Submissions`, `AI Content Flagged` (with dynamic counter), `Verified Authentic Voice`, `Completed`, and `In Progress`.
+   - Replaced raw JSON preview with a structured "Student Work Overview" and a highlighted "Latest AI Response" callout showing the step score and feedback excerpt.
+4. **Complete 8-Step + Reflection Diagnostic Drawer (`submission-drawer.tsx`)**:
+   - Displays a prominent red warning banner if any step triggered an academic integrity flag, listing the exact steps flagged.
+   - Full timeline coverage: Added Step 2 (Direct & Root Causes), Step 3 (Evidence Evaluation & Credibility), and Step 4 (Stakeholder Perspectives & Notes).
+   - Created `StepAiEvaluationBox`: A comprehensive audit panel per step rendering:
+     - Score badge and Authentic Voice vs. AI Content Flagged badge (with confidence percentage).
+     - Human-readable rubric tags (`formatFlagLabel`).
+     - Evaluation summary and actionable AI feedback.
+     - Specific Strengths and Areas for Growth.
+
+#### Evidence
+Verified via `npx tsc --noEmit` (`exit code: 0`). Automated checks confirm zero type errors across all modified components.
+
+---
+
+### D-20260923-004 — Consolidation of Mission Step Iconography to Step Header Banner
+
+- **Status**: Accepted
+- **Date**: 2026-09-23
+- **Decision owner**: User prompt
+- **Scope**: Student simulation interface (`app/dashboard/activity/[scenarioId]/activity-form.tsx`, `components/simulation/step-tracker.tsx`)
+- **Supersedes**: Triplicated step icon placement across mission timeline, step banner, and card headers
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-002, F-CIV-006
+- **Related implementation**: `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `components/simulation/step-tracker.tsx`
+
+#### Context
+1. **Redundant Iconography Clutter**: The per-step icons (e.g. `Target`, `GitBranch`, `FileSearch`, etc.) were displayed simultaneously in 3 adjoining places within the simulation interface:
+   - Inside the Mission Timeline next to every step title (and inside current timeline dots).
+   - In the Step Header Banner (`MISSION STEP 0X OF 08`).
+   - Inside the main interactive activity Card Title (e.g. `◎ Which community issue should be prioritized?`).
+2. This repetition added unnecessary visual noise without providing instructional value.
+
+#### Decision
+1. **Header-Only Step Icon**: The step icon is retained exclusively in the main step banner header (`MISSION STEP 0X OF 08`) within the prominent rounded-xl primary badge.
+2. **Timeline Cleaning**: Removed per-step icons from timeline titles in both desktop and mobile step trackers. Timeline dots display standard status checks when completed and clean step numbers (`{s.step}`) when current/upcoming.
+3. **Card Title Simplification**: Removed the duplicate step icon from the main interactive card title. Replaced the step icon in the tips card with a contextual `Lightbulb` icon.
+
+---
+
+### D-20260923-003 — Multi-Tier AI Content Detection and Authentic Student Voice Enforcement
+
+- **Status**: Accepted
+- **Date**: 2026-09-23
+- **Decision owner**: User prompt
+- **Scope**: AI Evaluation & Verification Engine (`lib/ai.ts`, evaluation prompts, detection heuristics)
+- **Supersedes**: Over-restrictive word-count gates, LLM prompt silencing of AI detection, and discarded Gemini AI flags
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-005, F-CIV-007
+- **Related implementation**: `lib/ai.ts`
+
+#### Context
+1. **AI Work Detection Failure**: Submissions generated by AI (e.g., copied from ChatGPT, Claude, or Gemini) were passing civic evaluations without triggering the AI flag.
+2. **Compounding Root Causes**:
+   - `wordCount < 60` gate in `detectAIGeneratedText` bypassed detection for typical student responses (25–50 words).
+   - `MASTER_SYSTEM_PROMPT` instructed Gemini that AI detection was handled externally and ordered it not to flag AI text.
+   - `callGeminiVerification` discarded `parsed.is_ai_generated`, only preserving fallback flags.
+   - High threshold (riskScore >= 65) prevented standard cliché-laden AI responses (scoring ~30–45) from triggering.
+
+#### Decision
+1. **Dual Deterministic + LLM Detection**:
+   - Lowered heuristic word count threshold to 15 words.
+   - Triggers `isAi: true` if assistant scaffolding is detected, if 2+ independent signal groups are present with `riskScore >= 28`, or if `riskScore >= 45`.
+   - Updated `callGeminiVerification` to enforce `const isAi = Boolean(fallback.is_ai_generated || parsed.is_ai_generated)`. If either deterministic screening or the LLM flags AI content, the submission is rejected.
+2. **Strict Enforcement & Actionable Remediation**:
+   - When AI-generated text is detected: `passed` is set to `false`, `step_score` is capped at `35%`, `flags` includes `"AI_GENERATED_CONTENT"`, and `actionable_feedback` instructs the student that AI-generated content was detected and requires them to rewrite in authentic student voice with local community evidence.
+3. **Preservation of Authentic Student Voice**:
+   - Authentic student submissions with local barangay context, numbers, and community observations pass without false positives.
+
+---
+
+### D-20260923-002 — Dual-Mode AI Provider Architecture for Google Cloud Vertex AI and Gemini Studio
+
+- **Status**: Accepted
+- **Date**: 2026-09-23
+- **Decision owner**: User prompt
+- **Scope**: AI Evaluation & Verification Engine (`lib/ai.ts`, `.env.local`, `.gitignore`)
+- **Supersedes**: Single-provider `@google/generative-ai` AI Studio client
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-005, F-CIV-007
+- **Related implementation**: `lib/ai.ts`, `.env.local`, `.gitignore`
+
+#### Context
+1. **Promotional Credit Billing Discrepancy**: Google Cloud Developer / Subscriber $10 monthly credits (from Google AI Pro/Ultra benefits) apply exclusively to Google Cloud Platform SKUs (Vertex AI), not consumer Google AI Studio API Keys (`generativelanguage.googleapis.com`). Users attempting to use AI Studio keys with promotional credits were unexpectedly billed to their personal credit cards.
+2. **SDK Modernization**: CiviConnect previously used the legacy `@google/generative-ai` SDK, which only supported Google AI Studio. The new unified `@google/genai` SDK natively supports both Google Cloud Vertex AI (`aiplatform.googleapis.com`) and Gemini Developer API.
+
+#### Decision
+1. **Modernized SDK**: Replaced `@google/generative-ai` with `@google/genai`.
+2. **Dual-Mode Dynamic AI Resolver**:
+   - **Primary (GCP Vertex AI)**: Activated when `GCP_PROJECT_ID` or `GOOGLE_CLOUD_PROJECT` is set. Authenticates using Google Application Default Credentials, a service account JSON file (`GOOGLE_APPLICATION_CREDENTIALS`), or inline service account variables (`GCP_CLIENT_EMAIL` / `GCP_PRIVATE_KEY`). Calls `aiplatform.googleapis.com`, successfully burning the user's $10 monthly Google Cloud credit.
+   - **Fallback (Google AI Studio)**: Activated if GCP project credentials are absent or if a Vertex AI request fails at runtime (e.g., quota or configuration error). Uses `GEMINI_API_KEY` (Gemini 3.7/3.6 Flash).
+   - **Deterministic Fallback**: If network or credentials are unavailable, gracefully falls back to the deterministic 4-pillar DepEd rubric engine without crashing student simulations.
+3. **Credential Protection**: Added `*service-account*.json`, `*.key.json`, and `gcp-*.json` patterns to `.gitignore` to prevent credential leakage.
+
+---
+
+### D-20260923-001 — Mission Archiving Lifecycle, Read-Only State Hardening, and Completed Work Preservation
+
+
+- **Status**: Accepted
+- **Date**: 2026-09-23
+- **Decision owner**: User prompt
+- **Scope**: Scenario management (`app/admin/dashboard/scenarios/*`), student dashboard (`app/dashboard/page.tsx`), activity execution and review (`app/dashboard/activity/[scenarioId]/*`), and authoring data fallbacks (`lib/mission-data.ts`, `components/admin/mission-editor/*`)
+- **Supersedes**: Loose scenario status filtering, unrestricted action execution in archived contexts, and student lockout from completed work when missions are unassigned
+- **Superseded by**: None
+- **Related foundation sections**: F-CIV-002, F-CIV-006, F-CIV-007
+- **Related implementation**: `app/admin/dashboard/scenarios/actions.ts`, `app/admin/dashboard/scenarios/scenarios-view.tsx`, `app/admin/dashboard/scenarios/scenario-drawer.tsx`, `app/admin/dashboard/scenarios/scenario-form.tsx`, `app/dashboard/page.tsx`, `app/dashboard/activity/[scenarioId]/page.tsx`, `app/dashboard/activity/[scenarioId]/actions.ts`, `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `components/simulation/mission-briefing.tsx`, `components/admin/mission-editor/evidence-tab.tsx`, `lib/mission-data.ts`
+
+#### Context
+An audit of mission workflows across admin and student roles revealed critical inconsistencies:
+1. **Archive Leakage**: Admins had no UI or dedicated server actions to archive or unarchive scenarios (only classrooms had archive toggles). Even if a scenario had `status: "archived"`, students could still open it directly and submit responses via server actions.
+2. **Completed Work Lockout**: If an admin unassigned a mission or archived a classroom, students who had already completed the simulation were redirected to `/dashboard`, losing access to their earned certificate and 7-dimension performance scorecard.
+3. **Read-Only Mode Navigation Breakdown**: When viewing an incomplete archived mission in read-only mode, advancing past Step 8 triggered Step 9 without calculated scores, rendering an empty, unstyled card. Advancing past Step 9.5 granted an unearned completion certificate (Step 10) for unfinished work.
+4. **Mission Authoring Inconsistencies**:
+   - Empty challenge event objects (`{ title: "", options: [] }`) evaluated as truthy, preventing fallback to base challenge data and softlocking student Step 6 simulations.
+   - Authoring evidence documents lacked UI for toggling `supports` tags (`cause`, `solution`, `need`).
+   - Defining a single stakeholder created a softlock in student Step 4 (which requires selecting and comparing at least 2 stakeholders).
+
+#### Decision
+1. **Full Scenario Archiving Lifecycle**:
+   - Added `archiveScenarioAction` and `toggleScenarioStatusAction` with path revalidation across admin and student dashboards.
+   - Added visual archive badges, card styling, and active/archived tabs to the admin scenario table and card grid views.
+   - Added direct "Archive" / "Reactivate" actions in the scenario inspection drawer.
+2. **Server Action & Route Submission Lockdown**:
+   - `processSimulationStepAction` and `submitReflectionAction` verify `scenario.status !== "archived"` and `submission.status !== "completed"`.
+   - Incomplete simulations for archived missions render an explicit "Mission Archived by Instructor" banner preventing input.
+3. **Preservation of Completed Student Work**:
+   - Students who completed a mission retain permanent read-only access to their earned certificate, reflection, and performance scorecard, even if the classroom is archived or the mission is unassigned.
+4. **Hardened Read-Only Navigation**:
+   - In read-only mode, Step 8 only advances to the scorecard if overall scores exist; otherwise, an informative "Performance Report Unavailable" state is shown.
+   - Step 9.5 and Step 10 strictly require `submission.status === "completed"` before rendering the completion certificate.
+   - `MissionBriefing` receives `isArchived` and displays an "Archived (Read-Only)" badge.
+5. **Authoring Consistency & Validation**:
+   - `getMissionDataForScenario` validates that `unexpectedEvent.title` and `options.length > 0` before treating custom challenge events as valid, falling back to base challenge scenarios when incomplete.
+   - `scenario-form.tsx` enforces at least 2 stakeholders if custom stakeholders are defined.
+   - `evidence-tab.tsx` includes interactive toggles for `supports: ("cause" | "solution" | "need")[]`.
+
+#### Evidence
+Verified via `npx tsc --noEmit` (`exit code: 0`). Automated checks confirm zero type errors across all 11 modified files.
+
+---
 
 ### D-20260920-010 — Standardizing Mission Steps Delete Buttons with Clean Rest State and Destructive Offset Shadow Hover Effect
 

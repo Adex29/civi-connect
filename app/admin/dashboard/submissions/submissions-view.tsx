@@ -8,7 +8,19 @@ import { Input } from "@/components/ui/input";
 import { MultiSelectCombobox, ComboboxOption } from "@/components/ui/combobox";
 import { SubmissionDrawer } from "./submission-drawer";
 import { format } from "date-fns";
-import { CheckCircle, Clock, Search, School, LayoutGrid, List } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  Search,
+  School,
+  LayoutGrid,
+  List,
+  ShieldAlert,
+  CheckCircle2,
+  Sparkles,
+  AlertTriangle,
+} from "lucide-react";
+import { extractSubmissionAiAnalysis } from "@/lib/flag-utils";
 
 interface SubmissionsViewProps {
   submissions: Submission[];
@@ -25,6 +37,7 @@ interface GroupSection {
     student: Student | undefined;
     scenario: Scenario | undefined;
     classroom: Classroom | undefined;
+    aiAnalysis: ReturnType<typeof extractSubmissionAiAnalysis>;
   }>;
 }
 
@@ -37,12 +50,12 @@ export function SubmissionsView({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClassrooms, setSelectedClassrooms] = useState<string[]>([]);
   const [selectedScenarios, setSelectedScenarios] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "draft">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "completed" | "in_progress" | "ai_flagged" | "verified">("all");
   const [groupBy, setGroupBy] = useState<"flat" | "classroom" | "scenario">("flat");
 
   // Combobox options
   const classroomOptions = useMemo<ComboboxOption[]>(() => {
-    return classrooms.map(c => ({
+    return classrooms.map((c) => ({
       value: c.id,
       label: c.name,
       sublabel: `Code: ${c.code}`,
@@ -50,33 +63,40 @@ export function SubmissionsView({
   }, [classrooms]);
 
   const scenarioOptions = useMemo<ComboboxOption[]>(() => {
-    return scenarios.map(s => ({
+    return scenarios.map((s) => ({
       value: s.id,
       label: s.title,
     }));
   }, [scenarios]);
 
-  // Enriched items mapping
+  // Enriched items mapping with AI analysis
   const enrichedSubmissions = useMemo(() => {
-    return submissions.map(sub => {
-      const student = students.find(s => s.id === sub.studentId);
-      const scenario = scenarios.find(s => s.id === sub.scenarioId);
-      const classroom = classrooms.find(c => c.id === student?.classroomId);
-      return { sub, student, scenario, classroom };
-    }).filter(item => item.student && item.scenario);
+    return submissions
+      .map((sub) => {
+        const student = students.find((s) => s.id === sub.studentId);
+        const scenario = scenarios.find((s) => s.id === sub.scenarioId);
+        const classroom = classrooms.find((c) => c.id === student?.classroomId);
+        const aiAnalysis = extractSubmissionAiAnalysis(sub);
+        return { sub, student, scenario, classroom, aiAnalysis };
+      })
+      .filter((item) => item.student && item.scenario);
   }, [submissions, students, scenarios, classrooms]);
 
   // Statistics calculation
   const stats = useMemo(() => {
     const total = enrichedSubmissions.length;
-    const completed = enrichedSubmissions.filter(item => item.sub.status === "completed").length;
+    const completed = enrichedSubmissions.filter((item) => item.sub.status === "completed").length;
     const inProgress = total - completed;
-    return { total, completed, inProgress };
+    const aiFlagged = enrichedSubmissions.filter((item) => item.aiAnalysis.hasAiFlag).length;
+    const verified = enrichedSubmissions.filter(
+      (item) => !item.aiAnalysis.hasAiFlag && item.aiAnalysis.totalEvaluatedSteps > 0
+    ).length;
+    return { total, completed, inProgress, aiFlagged, verified };
   }, [enrichedSubmissions]);
 
   // Filtered submissions
   const filteredSubmissions = useMemo(() => {
-    return enrichedSubmissions.filter(({ sub, student, scenario, classroom }) => {
+    return enrichedSubmissions.filter(({ sub, student, scenario, classroom, aiAnalysis }) => {
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const matchesName = student?.fullName.toLowerCase().includes(query);
@@ -94,7 +114,9 @@ export function SubmissionsView({
       }
 
       if (statusFilter === "completed" && sub.status !== "completed") return false;
-      if (statusFilter === "draft" && sub.status === "completed") return false;
+      if (statusFilter === "in_progress" && sub.status === "completed") return false;
+      if (statusFilter === "ai_flagged" && !aiAnalysis.hasAiFlag) return false;
+      if (statusFilter === "verified" && (aiAnalysis.hasAiFlag || aiAnalysis.totalEvaluatedSteps === 0)) return false;
 
       return true;
     });
@@ -104,7 +126,7 @@ export function SubmissionsView({
   const groupedData = useMemo<Array<[string, GroupSection]>>(() => {
     if (groupBy === "classroom") {
       const groups: Record<string, GroupSection> = {};
-      filteredSubmissions.forEach(item => {
+      filteredSubmissions.forEach((item) => {
         const key = item.classroom?.id || "unassigned";
         const label = item.classroom?.name || "Unassigned Classroom";
         const code = item.classroom?.code;
@@ -116,7 +138,7 @@ export function SubmissionsView({
 
     if (groupBy === "scenario") {
       const groups: Record<string, GroupSection> = {};
-      filteredSubmissions.forEach(item => {
+      filteredSubmissions.forEach((item) => {
         const key = item.scenario?.id || "unknown";
         const label = item.scenario?.title || "Unknown Mission";
         if (!groups[key]) groups[key] = { label, items: [] };
@@ -129,31 +151,59 @@ export function SubmissionsView({
   }, [filteredSubmissions, groupBy]);
 
   const renderCard = (item: typeof enrichedSubmissions[0]) => {
-    const { sub, student, scenario, classroom } = item;
+    const { sub, student, scenario, classroom, aiAnalysis } = item;
     if (!student || !scenario) return null;
 
+    const studentWorkPreview = sub.simulationState?.step5?.plan?.projectTitle
+      ? `Intervention Plan: "${sub.simulationState.step5.plan.projectTitle}" (Goal: ${sub.simulationState.step5.plan.goal || "In progress"})`
+      : sub.simulationState?.step1?.selectedIssue
+      ? `Priority Issue: "${sub.simulationState.step1.selectedIssue}" — ${sub.simulationState.step1.justification || ""}`
+      : sub.content && !sub.content.startsWith("{")
+      ? sub.content
+      : "Simulation in progress...";
+
     return (
-      <Card key={sub.id} className="overflow-hidden">
+      <Card key={sub.id} className="overflow-hidden border shadow-xs hover:border-primary/40 transition-all">
         <CardHeader className="bg-muted/40 pb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div className="min-w-0 flex-1 space-y-1.5">
               <CardTitle className="text-lg sm:text-xl flex items-start gap-2 leading-snug break-words">
-                {sub.status === 'completed' ? (
-                  <CheckCircle className="h-5 w-5 text-foreground shrink-0 mt-0.5" />
+                {sub.status === "completed" ? (
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 ) : (
                   <Clock className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                 )}
                 <span className="font-semibold text-foreground">{scenario.title}</span>
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm font-medium text-foreground/80 flex flex-wrap items-center gap-1.5">
-                <span>Submitted by <strong>{student.fullName}</strong></span>
+                <span>
+                  Submitted by <strong>{student.fullName}</strong>
+                </span>
                 <span className="text-muted-foreground font-mono">({student.lrn})</span>
                 {student.groupId && <Badge variant="outline" className="text-xs">Group {student.groupId}</Badge>}
                 {classroom && <Badge variant="secondary" className="text-xs">{classroom.name}</Badge>}
               </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2 shrink-0 w-full sm:w-auto justify-between sm:justify-end">
-              <Badge variant={sub.status === 'completed' ? 'default' : 'secondary'}>
+              {/* AI Verification Badge */}
+              {aiAnalysis.hasAiFlag ? (
+                <Badge variant="destructive" className="gap-1 font-bold text-xs">
+                  <ShieldAlert className="h-3.5 w-3.5" /> AI Flagged (Step {aiAnalysis.flaggedSteps.join(", ")})
+                </Badge>
+              ) : sub.status === "completed" ? (
+                <Badge
+                  variant="outline"
+                  className="gap-1 font-semibold text-xs text-emerald-700 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Verified Voice
+                </Badge>
+              ) : aiAnalysis.totalEvaluatedSteps > 0 ? (
+                <Badge variant="outline" className="gap-1 text-xs text-primary border-primary/30">
+                  <Sparkles className="h-3.5 w-3.5" /> {aiAnalysis.totalEvaluatedSteps} Steps Evaluated
+                </Badge>
+              ) : null}
+
+              <Badge variant={sub.status === "completed" ? "default" : "secondary"}>
                 {sub.status.toUpperCase()}
               </Badge>
               <SubmissionDrawer
@@ -166,22 +216,68 @@ export function SubmissionsView({
           </div>
         </CardHeader>
 
-        <CardContent className="pt-4 pb-3">
-          <div className="space-y-1.5">
+        <CardContent className="pt-4 pb-3 space-y-3">
+          {/* Student Work Preview */}
+          <div className="space-y-1">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Submitted Plan Preview
+              Student Work Preview
             </h4>
-            <div className="text-xs text-muted-foreground bg-muted/30 px-3 py-2 rounded-md border flex items-center gap-2 overflow-hidden">
-              <span className="truncate flex-1 font-mono">
-                {sub.content ? sub.content.replace(/\s+/g, " ").trim() : "No content submitted yet."}
+            <div className="text-xs text-foreground bg-muted/30 px-3 py-2 rounded-md border flex items-center gap-2 overflow-hidden">
+              <span className="truncate flex-1 font-medium font-mono text-[11px]">
+                {studentWorkPreview}
               </span>
             </div>
           </div>
+
+          {/* Captured AI Evaluation & Feedback Response */}
+          {aiAnalysis.latestFeedback && (
+            <div
+              className={`p-3 rounded-lg border text-xs space-y-1.5 ${
+                aiAnalysis.hasAiFlag
+                  ? "bg-rose-500/10 border-rose-500/35 text-rose-950 dark:text-rose-200"
+                  : "bg-primary/5 border-primary/20 text-foreground"
+              }`}
+            >
+              <div className="flex items-center justify-between font-bold text-[11px]">
+                <span className="flex items-center gap-1.5">
+                  {aiAnalysis.hasAiFlag ? (
+                    <ShieldAlert className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                  ) : (
+                    <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                  )}
+                  Latest AI Evaluation Response {aiAnalysis.latestStepEvaluated ? `(Step 0${aiAnalysis.latestStepEvaluated})` : ""}
+                </span>
+                {aiAnalysis.latestScore !== undefined && (
+                  <span
+                    className={`font-mono px-1.5 py-0.5 rounded text-[10px] ${
+                      aiAnalysis.latestScore >= 70
+                        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold"
+                        : "bg-rose-500/15 text-rose-700 dark:text-rose-300 font-bold"
+                    }`}
+                  >
+                    Step Score: {aiAnalysis.latestScore}%
+                  </span>
+                )}
+              </div>
+              <p className="line-clamp-2 text-muted-foreground italic leading-relaxed">
+                &ldquo;{aiAnalysis.latestFeedback}&rdquo;
+              </p>
+            </div>
+          )}
         </CardContent>
 
         <CardFooter className="bg-muted/40 py-3 text-xs text-muted-foreground flex flex-wrap justify-between items-center gap-2 border-t">
           <span>Last active: {format(new Date(sub.submittedAt), "MMMM d, yyyy h:mm a")}</span>
-          {sub.score && <span className="font-bold text-foreground">Score: {sub.score}</span>}
+          <div className="flex items-center gap-3">
+            {sub.stepProgress && sub.status !== "completed" && (
+              <span className="font-medium text-muted-foreground">Progress: Step {sub.stepProgress}/8</span>
+            )}
+            {sub.score !== null && sub.score !== undefined && (
+              <span className="font-bold text-foreground bg-primary/10 px-2 py-0.5 rounded">
+                Overall Civic Score: {sub.score}%
+              </span>
+            )}
+          </div>
         </CardFooter>
       </Card>
     );
@@ -194,9 +290,73 @@ export function SubmissionsView({
         <div>
           <h2 className="page-title text-4xl">Submissions Viewer</h2>
           <p className="text-muted-foreground mt-1">
-            Review student civic action plans and inspect detailed AI evaluation results.
+            Review student civic action plans and inspect detailed AI evaluation results, scoring diagnostics, and authenticity logs.
           </p>
         </div>
+      </div>
+
+      {/* Filter Tabs / Quick Stats Bar */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        <button
+          onClick={() => setStatusFilter("all")}
+          className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+            statusFilter === "all"
+              ? "bg-primary text-primary-foreground font-bold shadow-xs"
+              : "bg-muted/50 hover:bg-muted text-muted-foreground"
+          }`}
+        >
+          All Submissions <Badge variant="secondary" className="text-[10px] px-1 py-0">{stats.total}</Badge>
+        </button>
+        <button
+          onClick={() => setStatusFilter("ai_flagged")}
+          className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+            statusFilter === "ai_flagged"
+              ? "bg-rose-600 text-white font-bold shadow-xs"
+              : stats.aiFlagged > 0
+              ? "bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/30 hover:bg-rose-500/20"
+              : "bg-muted/50 hover:bg-muted text-muted-foreground"
+          }`}
+        >
+          <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
+          AI Content Flagged
+          <Badge
+            variant={statusFilter === "ai_flagged" ? "outline" : "destructive"}
+            className="text-[10px] px-1.5 py-0 font-mono"
+          >
+            {stats.aiFlagged}
+          </Badge>
+        </button>
+        <button
+          onClick={() => setStatusFilter("verified")}
+          className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+            statusFilter === "verified"
+              ? "bg-emerald-600 text-white font-bold shadow-xs"
+              : "bg-muted/50 hover:bg-muted text-muted-foreground"
+          }`}
+        >
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+          Verified Voice <Badge variant="secondary" className="text-[10px] px-1 py-0">{stats.verified}</Badge>
+        </button>
+        <button
+          onClick={() => setStatusFilter("completed")}
+          className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+            statusFilter === "completed"
+              ? "bg-primary text-primary-foreground font-bold shadow-xs"
+              : "bg-muted/50 hover:bg-muted text-muted-foreground"
+          }`}
+        >
+          Completed <Badge variant="secondary" className="text-[10px] px-1 py-0">{stats.completed}</Badge>
+        </button>
+        <button
+          onClick={() => setStatusFilter("in_progress")}
+          className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 shrink-0 ${
+            statusFilter === "in_progress"
+              ? "bg-primary text-primary-foreground font-bold shadow-xs"
+              : "bg-muted/50 hover:bg-muted text-muted-foreground"
+          }`}
+        >
+          In Progress <Badge variant="secondary" className="text-[10px] px-1 py-0">{stats.inProgress}</Badge>
+        </button>
       </div>
 
       {/* Clean toolbar */}
@@ -269,7 +429,7 @@ export function SubmissionsView({
       {/* Content */}
       {groupBy === "flat" ? (
         <div className="grid gap-6">
-          {filteredSubmissions.map(item => renderCard(item))}
+          {filteredSubmissions.map((item) => renderCard(item))}
 
           {filteredSubmissions.length === 0 && (
             <div className="py-12 text-center border rounded-lg border-dashed">
@@ -286,12 +446,14 @@ export function SubmissionsView({
                 <div className="flex items-center gap-2">
                   <h3 className="text-xl font-bold tracking-tight">{label}</h3>
                   {code && <Badge variant="outline" className="font-mono text-xs">Code: {code}</Badge>}
-                  <Badge variant="secondary" className="text-xs">{items.length} {items.length === 1 ? 'submission' : 'submissions'}</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    {items.length} {items.length === 1 ? "submission" : "submissions"}
+                  </Badge>
                 </div>
               </div>
 
               <div className="grid gap-4">
-                {items.map(item => renderCard(item))}
+                {items.map((item) => renderCard(item))}
               </div>
             </div>
           ))}

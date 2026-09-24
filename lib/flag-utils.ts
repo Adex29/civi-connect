@@ -1,3 +1,5 @@
+import type { Submission, AIEvaluationResult } from "./definitions";
+
 /**
  * Human-readable mappings for internal rubric and evaluation flags.
  * Ensures students and teachers never see raw code constants or variable names.
@@ -102,4 +104,73 @@ export function sanitizeEducationalText(text: string): string {
   });
 
   return cleaned;
+}
+
+export interface SubmissionAiAnalysis {
+  hasAiFlag: boolean;
+  flaggedSteps: number[];
+  latestStepEvaluated?: number;
+  latestFeedback?: string;
+  latestScore?: number;
+  totalEvaluatedSteps: number;
+}
+
+/**
+ * Inspects a student's submission and extracts a comprehensive diagnostic
+ * summary of AI evaluations, flags, and actionable feedback across all simulation steps.
+ */
+export function extractSubmissionAiAnalysis(submission: Submission): SubmissionAiAnalysis {
+  const state = submission.simulationState;
+  if (!state) {
+    return {
+      hasAiFlag: false,
+      flaggedSteps: [],
+      latestFeedback: submission.feedback || undefined,
+      latestScore: submission.score ?? undefined,
+      totalEvaluatedSteps: 0,
+    };
+  }
+
+  const steps: Array<{ step: number; evaluation?: AIEvaluationResult; feedback?: string }> = [
+    { step: 1, evaluation: state.step1?.evaluation, feedback: state.step1?.feedback },
+    { step: 2, evaluation: state.step2?.evaluation, feedback: state.step2?.feedback },
+    { step: 3, evaluation: state.step3?.evaluation, feedback: state.step3?.feedback },
+    { step: 4, evaluation: state.step4?.evaluation, feedback: state.step4?.feedback },
+    { step: 5, evaluation: state.step5?.evaluation, feedback: state.step5?.feedback },
+    { step: 6, evaluation: state.step6?.evaluation, feedback: state.step6?.feedback },
+    { step: 7, evaluation: state.step7?.evaluation, feedback: state.step7?.feedback },
+    { step: 8, evaluation: state.step8?.evaluation, feedback: state.step8?.feedback },
+    { step: 9, evaluation: state.reflection?.evaluation, feedback: state.reflection?.feedback },
+  ];
+
+  const flaggedSteps: number[] = [];
+  let latestStepEvaluated: number | undefined = undefined;
+  let latestFeedback: string | undefined = submission.feedback || undefined;
+  let latestScore: number | undefined = submission.score ?? undefined;
+  let totalEvaluatedSteps = 0;
+
+  for (const s of steps) {
+    if (s.evaluation || s.feedback) {
+      totalEvaluatedSteps++;
+      latestStepEvaluated = s.step;
+      if (s.feedback) latestFeedback = s.feedback;
+      if (s.evaluation?.step_score !== undefined) latestScore = s.evaluation.step_score;
+    }
+    const isAi = Boolean(
+      s.evaluation?.is_ai_generated ||
+      s.evaluation?.flags?.some((f) => f === "AI_GENERATED_CONTENT" || f === "AI_REVIEW_REQUIRED")
+    );
+    if (isAi) {
+      flaggedSteps.push(s.step);
+    }
+  }
+
+  return {
+    hasAiFlag: flaggedSteps.length > 0,
+    flaggedSteps,
+    latestStepEvaluated,
+    latestFeedback,
+    latestScore,
+    totalEvaluatedSteps,
+  };
 }

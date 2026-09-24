@@ -35,6 +35,33 @@ export default async function ActivityPage({
     );
   }
 
+  const submissions = await getAllSubmissions();
+  const submission = submissions.find(
+    (s) => s.scenarioId === scenarioId && (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
+  );
+  const isCompleted = submission?.status === "completed";
+
+  // Check if scenario itself is archived
+  const isScenarioArchived = scenario.status === "archived";
+
+  // If scenario is archived and not completed by student, block with helpful banner
+  if (isScenarioArchived && !isCompleted) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
+        <Link href="/dashboard" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Dashboard
+        </Link>
+        <div className="p-12 text-center border border-dashed rounded-lg bg-muted/40">
+          <h2 className="text-xl font-bold">Mission Archived</h2>
+          <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+            This civic mission has been archived by the administrator. Unfinished simulations and new submissions are no longer accepted.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Load classroom and classroom-scenario mapping
   const classrooms = await getAllClassrooms();
   const classroom = classrooms.find((c) => c.id === student.classroomId);
@@ -44,17 +71,14 @@ export default async function ActivityPage({
     (cs) => cs.classroomId === student.classroomId && cs.scenarioId === scenarioId
   );
 
-  // If no classroom, or scenario is not assigned/inactive, block page access
+  // If unassigned or classroom missing: allow read-only access if student completed it, otherwise redirect
   if (!classroom || !assignment || !assignment.isActive) {
-    redirect("/dashboard");
+    if (!isCompleted) {
+      redirect("/dashboard");
+    }
   }
 
-  const isArchived = classroom.status === "archived";
-
-  const submissions = await getAllSubmissions();
-  const submission = submissions.find(
-    (s) => s.scenarioId === scenarioId && (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
-  );
+  const isArchived = (classroom ? classroom.status === "archived" : true) || isScenarioArchived || !assignment?.isActive;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
