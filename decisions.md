@@ -7,6 +7,12 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ## Active Decisions
 
+- [D-20260926-004: Elimination of Text Truncation and Ellipsis in Step 2 Cause Ranking and Step 4 Stakeholder Directory](#d-20260926-004--elimination-of-text-truncation-and-ellipsis-in-step-2-cause-ranking-and-step-4-stakeholder-directory)
+- [D-20260926-003: Dual-Theme Contrast Engineering and Alpha Cleanup for Section 2 Artwork (Light & Dark Mode Parity)](#d-20260926-003--dual-theme-contrast-engineering-and-alpha-cleanup-for-section-2-artwork-light--dark-mode-parity)
+- [D-20260926-002: Immersive 3D Tilt, Specular Sheen, and Multi-Plane Scroll Parallax for Section 2 Showcase Cards](#d-20260926-002--immersive-3d-tilt-specular-sheen-and-multi-plane-scroll-parallax-for-section-2-showcase-cards)
+- [D-20260926-001: Original Community Artwork Assets with Feathered Alpha Transparency and Atmospheric Section 2 Page Background](#d-20260926-001--original-community-artwork-assets-with-feathered-alpha-transparency-and-atmospheric-section-2-page-background)
+- [D-20260925-025: Immersive 3D Camera Depth Parallax and Scroll-Linked Transition Architecture for Landing Page Hero](#d-20260925-025--immersive-3d-camera-depth-parallax-and-scroll-linked-transition-architecture-for-landing-page-hero)
+- [D-20260925-024: Landing Page Hero Background with Community Solidarity SVG and Centered Harmonious Layout](#d-20260925-024--landing-page-hero-background-with-community-solidarity-svg-and-centered-harmonious-layout)
 - [D-20260925-023: Global Branding and Entity Alignment from CiviConnect to Civi-Tech](#d-20260925-023--global-branding-and-entity-alignment-from-civiconnect-to-civi-tech)
 - [D-20260925-022: Reset of User Accounts, Classrooms, and Simulation Submissions (Preserving Canonical Mission and Administrator)](#d-20260925-022--reset-of-user-accounts-classrooms-and-simulation-submissions-preserving-canonical-mission-and-administrator)
 - [D-20260925-021: Elimination of Extraneous Route Top-Loader and 'Loading...' Pill in Favor of Clean Pencil Preloader](#d-20260925-021--elimination-of-extraneous-route-top-loader-and-loading-pill-in-favor-of-clean-pencil-preloader)
@@ -77,9 +83,209 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ---
 
-## Rejected Alternatives
+### D-20260926-004 — Elimination of Text Truncation and Ellipsis in Step 2 Cause Ranking and Step 4 Stakeholder Directory
 
-- [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+- **Status**: Accepted
+- **Date**: 2026-09-26
+- **Decision owner**: User defect report (*"i need you to fix this where the info is not visible and gets cut by the .... This is in the student side"*)
+- **Scope**: Student simulation Step 2 Cause Ranking (`components/simulation/cause-ranker.tsx`) and Step 4 Stakeholder Directory (`components/simulation/stakeholder-chat.tsx`) text formatting and visibility
+- **Supersedes**: Single-line text truncation (`truncate`, `line-clamp-1`) in cause ranking and stakeholder cards
+- **Superseded by**: None
+- **Related implementation**: `components/simulation/cause-ranker.tsx`, `components/simulation/stakeholder-chat.tsx`
+
+#### Context
+1. In Step 2 (Analyze Causes), students are tasked with ranking 4 causal factors in order of significance from #1 (Primary Root Cause) down to least significant contributing factor or symptom.
+2. The user submitted a screenshot demonstrating that cause titles were truncated with an ellipsis (`...`), e.g.:
+   - *"Improper disposal or temporary placement of ho..."*
+   - *"Lack of regular community cleaning and monitori..."*
+   - *"Accumulation of leaves, plastic, and other debris i..."*
+   And descriptions were clamped to 1 line with ellipsis (`line-clamp-1`), e.g.:
+   - *"Without a shared maintenance practice, the canal can..."*
+   - *"Increased rainwater can worsen the effects of an already..."*
+3. Truncating causal factors severely damaged the educational experience because students could not read the full statement to determine root cause vs secondary symptom without critical information being hidden.
+
+#### Decision
+1. **Cause Ranking Cards Full Text Display (`cause-ranker.tsx`)**:
+   - Removed `truncate` from the title heading (`<h4>`).
+   - Removed `line-clamp-1` from the description paragraph (`<p>`).
+   - Applied `leading-snug break-words` to titles and `mt-1 text-xs text-muted-foreground leading-relaxed break-words` to descriptions.
+   - Preserved card vertical centering and flex alignment (`flex items-center gap-3`) so drag handles, numbered circle badges (`#1`, `#2`, `#3`, `#4`), and up/down movement buttons remain balanced regardless of text line count.
+2. **Stakeholder Directory Full Text Display (`stakeholder-chat.tsx`)**:
+   - Removed `truncate` from stakeholder names (`<h5>`) and role descriptions (`<p>`), applying `leading-snug break-words` and `leading-normal break-words` to ensure complete role titles are always visible.
+
+---
+
+### D-20260926-003 — Dual-Theme Contrast Engineering and Alpha Cleanup for Section 2 Artwork (Light & Dark Mode Parity)
+
+- **Status**: Accepted
+- **Date**: 2026-09-26
+- **Decision owner**: User steering & QA inquiry (*"did you also check the dark mode on how it will look?"*)
+- **Scope**: Section 2 artwork assets (`public/2.png`, `public/o.png`, `public/3.png`), alpha channel transparency, dark mode card illumination, and contrast engineering across light and dark modes (`app/page.tsx`, `components/mode-toggle.tsx`)
+- **Supersedes**: Raw white-vignette asset exports
+- **Superseded by**: None
+- **Related implementation**: `public/2.png`, `public/o.png`, `public/3.png`, `app/page.tsx`
+
+#### Context
+1. The user explicitly asked: *"did you also check the dark mode on how it will look?"*
+2. Inspection and simulated dark-mode rendering (`#172422` obsidian-pine) of raw original assets revealed that while the illustrations looked seamless against pure white card surfaces in Light Mode (`oklch(0.998 0.004 95)`), they contained subtle white-background relics:
+   - In `2.png`: An irregular white cloud lobe in the upper-left, white vignette fog around chair bases, and a sharp diagonal sidewalk edge on the left and right.
+   - In `o.png`: A white sky cutout with clouds and city skyline silhouette between tree canopies, and white curved vignette paths cutting across the bottom grass and side edges.
+3. On dark mode cards, these opaque white elements created glaring, boxy, clip-art-style white halos and milky smudges.
+
+#### Decision
+1. **Targeted Vectorized Alpha Extraction & Feathering**:
+   - Developed a dedicated image engineering pipeline (`scratch/finalize_public_assets.py`) using vectorized NumPy and PIL.
+   - **`public/2.png`**:
+     - Converted the upper-left neutral white/grey background (`X < 0.32*w, Y < 0.44*h, min_rgb > 140`) to pure alpha transparency, preserving the rich green trees and houses while eliminating the cloud cutout.
+     - Converted the bottom white fog (`Y > 0.68*h, min_rgb > 150`) into smooth alpha transparency, eliminating the white haze around chair legs.
+     - Applied smoothstep feathering to the sidewalk perimeters on the far left and right.
+   - **`public/o.png`**:
+     - Converted the neutral white sky and skyline behind tree canopies (`Y < 0.45*h, min_rgb > 185`) to true transparency, allowing the dark obsidian website background to show behind the trees and flying birds.
+     - Converted the bottom grass white vignette (`Y > 0.72*h`) into transparent alpha, allowing the grass to curve smoothly into the dark card without any milky film.
+     - Feathered the side road exits on the left and right.
+2. **Dual-Theme Visual Parity**:
+   - Both assets were verified in simulation over Light Mode (`#fcfcfb`) and Dark Mode (`#172422`), demonstrating clean, vibrant, and halo-free contrast in both themes.
+3. **Card Presentation Stage Lighting**:
+   - Enhanced `<ImmersiveShowcaseCard />` with `dark:bg-radial dark:from-white/[0.04] dark:to-transparent` and increased ambient backlight contrast (`dark:bg-primary/30`, `dark:bg-secondary/35`) to provide soft, warm civic illumination behind the characters in dark mode.
+
+---
+
+### D-20260926-002 — Immersive 3D Tilt, Specular Sheen, and Multi-Plane Scroll Parallax for Section 2 Showcase Cards
+
+- **Status**: Accepted
+- **Date**: 2026-09-26
+- **Decision owner**: User steering (*"can you make it look immersive also"*)
+- **Scope**: Section 2 ("Community Partnerships & Civic Solutions") card interaction physics, 3D cursor tilt, dynamic specular lighting, and scroll parallax orchestration (`app/page.tsx`)
+- **Supersedes**: Static grid cards in Section 2
+- **Superseded by**: None
+- **Related implementation**: `app/page.tsx`
+
+#### Context
+1. Following the complete removal of requested text/badge/chip clutter from Section 2, the user instructed: *"can you make it look immersive also"*.
+2. Interactive digital educational products should feel tactile and alive without visual clutter, employing subtle depth physics that respond to the user's cursor and scroll progression.
+
+#### Decision
+1. **Interactive 3D Perspective Tilt**:
+   - Encapsulated Section 2 cards into `<ImmersiveShowcaseCard />` with a `perspective(1200px)` viewport.
+   - On cursor movement, computes smooth proportional 3D rotations (maximum +/-4 degrees on X/Y axes) with spring-like easing.
+2. **Dynamic Cursor-Tracking Specular Sheen**:
+   - Rendered an interactive radial spotlight sheen (`radial-gradient(450px circle at mouseX mouseY)`) that follows the user's pointer with translucent civic hues (teal for deliberation, emerald for action), creating a physical glass luster.
+3. **Z-Depth Layering Pop**:
+   - On card focus/hover, the illustration canvas elevates in 3D space (`translateZ(28px)`), while the typography lifts at `translateZ(16px)`, producing real stereoscopic depth separation.
+4. **Staggered Multi-Plane Scroll Parallax**:
+   - Assigned independent scroll parallax offsets to the left card (`-0.035x`) and right card (`-0.06x`), environmental landscape waves (`0.04x` and `0.07x`), and floating background silhouettes (`0.08x` and `0.12x`), creating rich cinematic depth during user exploration.
+
+---
+
+### D-20260926-001 — Original Community Artwork Assets with Feathered Alpha Transparency and Atmospheric Section 2 Page Background
+
+- **Status**: Accepted
+- **Date**: 2026-09-26
+- **Decision owner**: User steering
+- **Scope**: Section 2 ("Community Partnerships & Civic Solutions") visual presentation, asset sourcing, edge blending, and background atmospheric integration (`app/page.tsx`, `public/2.png`, `public/o.png`)
+- **Supersedes**: AI-generated flat vector cartoon placeholders
+- **Superseded by**: None
+- **Related implementation**: `app/page.tsx`, `public/2.png`, `public/o.png`
+
+#### Context
+1. The user rejected synthetic/AI-generated flat cartoon illustrations as visually inferior (*"the result of your modification is ugly"*) and explicitly directed the use of their high-fidelity original artwork: `D:\Admin\Downloads\2.png` (simulated stakeholder table deliberation) and `D:\Admin\Downloads\o.png` (community park tree-planting and cleanup action).
+2. The user requested: *"can you make the images for second page same styling and same colors blending to the page"* and suggested: *"and maybe use these as a background for the second page"*.
+3. Inspection revealed that while the original images featured high aesthetic fidelity and natural transparent perimeters, raw `2.png` had a sharp vertical right-side crop boundary, and both images previously looked boxed-in due to inner card frame containers (`rounded-2xl bg-gradient-to-b ... p-4`).
+
+#### Decision
+1. **Asset Sourcing & Alpha Feathering**:
+   - Deployed original high-resolution assets `original_2.png` to `public/2.png` and `original_o.png` to `public/o.png`.
+   - Applied smoothstep cubic alpha feathering to the right edge and bottom of `public/2.png` and `public/o.png` to eliminate any crop lines or harsh perimeter transitions.
+2. **Seamless Card Integration**:
+   - Completely eliminated nested inner frame boxes (`bg-gradient-to-b from-primary/[0.04] p-4`).
+   - Integrated images into spacious, unconstrained visual stages (`min-h-[300px] sm:min-h-[340px] md:min-h-[380px]`) within frosted glass cards (`bg-card/85 backdrop-blur-xl border border-border/70`).
+   - Applied CSS `mask-image: linear-gradient(to bottom, black 80%, transparent 100%)` to both image elements so that their bases dissolve seamlessly into the card background with zero visible demarcation.
+   - Added subtle atmospheric radial glows matching the core palette (warm teal `bg-primary/15` for deliberation, fresh emerald `bg-secondary/20` for community action).
+3. **Atmospheric Section 2 Page Background**:
+   - Implemented an atmospheric scenic background panorama directly in Section 2 behind the cards, featuring soft blurred projections of `2.png` (left) and `o.png` (right) with radial masks (`opacity-25 filter blur-[2px] mask-image: radial-gradient(...)`), creating deep environmental context that blends across the entire section.
+
+---
+
+### D-20260925-025 — Immersive 3D Camera Depth Parallax and Scroll-Linked Transition Architecture for Landing Page Hero
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Home landing page scroll mechanics, 3D camera depth, and focal transition effects (`app/page.tsx`)
+- **Supersedes**: Static hero section scroll behavior
+- **Superseded by**: None
+- **Related implementation**: `app/page.tsx`
+
+#### Context
+1. The user requested: *"can you add a effect like it is immersive when scrolling"*.
+2. With the community solidarity youth artwork (`1.svg`) established on Page One, scrolling previously scrolled the page linearly with flat viewport movement.
+3. An immersive digital experience requires multi-plane camera depth where foreground educational information smoothly recedes and defocuses while the background artwork gives a perspective "camera push-in" sensation as the user explores downward into the community.
+
+#### Decision
+1. **Multi-Plane Scroll Parallax & Camera Depth**:
+   - **Foreground Content Stack** (Headline, subtitle, action buttons, trust chips — with "Civic Engagement Simulation" pill badge explicitly removed per user direction):
+     - Accelerates upward: `translate3d(0, -scrollY * 0.28px, 0)`.
+     - Recedes into the distance: `scale(max(0.92, 1 - scrollY * 0.00035))`.
+     - Dissolves with cinematic focal blur: `filter: blur(min(6, ((scrollY - 20) / 420) * 6)px)` and `opacity: max(0, 1 - scrollY / 440)`.
+     - Interactive pointer events are automatically disabled when elements are faded (`scrollY > 380`).
+   - **Community Solidarity Background (`1.svg`)**:
+     - Performs a camera push-in zoom: `scale(1 + min(0.14, scrollY * 0.00035))` anchored from `transformOrigin: "bottom center"`.
+     - Tracks with grounded, slower parallax speed: `translate3d(..., scrollY * 0.16px, 0)`.
+   - **Atmospheric Lighting & Rings**:
+     - Ambient radial glow expands (`scale(1 + min(0.25, scrollY * 0.0004))`) and softens.
+     - Top ambient mist smoothly clarifies (`opacity: max(0.35, 1 - scrollY / 700 * 0.65)`).
+     - Subtle civic grid and background orbital rings translate at 0.06x, 0.18x, and 0.08x speeds.
+2. **Interactive Scroll Prompt Indicator**:
+   - A modern animated scroll prompt with bouncing pill indicator and "Scroll to explore" cue is anchored at the bottom center.
+   - Automatically and gracefully dissolves within the first 90px of scrolling (`opacity: max(0, 1 - scrollY / 90)`).
+3. **Performance & Motion Safety**:
+   - Throttled with `window.requestAnimationFrame` to ensure zero layout thrashing and maintain 60–120fps.
+   - Explicit `will-change: transform, opacity, filter` applied for GPU compositing.
+   - Fully honors `(prefers-reduced-motion: reduce)` to disable transformations for sensitive users.
+
+#### Evidence
+- `npx tsc --noEmit` verified with 0 errors.
+- Verified live server response on `http://localhost:3000/` with HTTP 200.
+- Inspected code diff and confirmed zero floating particles remain on Page One while scroll transforms operate seamlessly.
+
+---
+
+### D-20260925-024 — Landing Page Hero Background with Community Solidarity SVG and Centered Harmonious Layout
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Home landing page visual design, hero background artwork, and responsive element composition (`app/page.tsx`, `public/1.svg`, `public/hero-bg.svg`)
+- **Supersedes**: Generic nature hills backdrop (`HeroNatureBackdrop`), split two-column hero with placeholder tree-planting illustration (`CivicCommunityActionHeroGraphic`)
+- **Superseded by**: None
+- **Related implementation**: `app/page.tsx`, `public/1.svg`, `public/hero-bg.svg`
+
+#### Context
+1. The user supplied custom artwork (`D:\Admin\Downloads\1.svg`) featuring a cohesive group of 7 diverse youth/students standing with arms linked from behind, looking forward towards the horizon.
+2. The user instructed: *"use this as the background for the page one of my home page"* followed by *"remove this graphics, and rearange the elements to blend with the backgrounf"* targeting the prior placeholder tree-planting graphic.
+3. In the previous two-column split layout, placing `1.svg` across the background caused direct visual collisions between the background characters and the foreground text/placeholder tree-planting graphic.
+
+#### Decision
+1. **Asset Deployment**:
+   - Deployed the canonical SVG asset to `public/1.svg` (with `public/hero-bg.svg` alias).
+2. **Complete Removal of Placeholder Graphic & Floating Particles**:
+   - Completely removed `CivicCommunityActionHeroGraphic` (the tree-planting illustration) from Page One of the landing page.
+   - Removed all floating leaves, water droplets, sprouts, sparkles, seeds, and wind streamlines from the hero fold for an uncluttered, modern presentation.
+3. **Centered Hero Composition & Harmonious Layout**:
+   - Rearranged Page One into a centered, balanced layout:
+     - Top: Civic engagement simulation pill badge with pulsing emerald beacon.
+     - Headline: Large, clean "Welcome to Civi-Tech!" in bold brand typography.
+     - Subtitle: Clear civic mission statement.
+     - Interactive CTAs: Centered "Log In" and "Register" buttons.
+     - Trust Chips: Centered "8 Simulation Stages", "Evidence-Based Solutions", and "Simulated Stakeholders".
+   - Bottom: The 7 community youth figures from `1.svg` stand boldly across the lower stage looking out at the platform, with comfortable breathing room below the chips and zero text overlap.
+   - Background: Soft top gradient wash and ambient radial glow for 100% contrast, coupled with a smooth bottom fade into Section 2.
+
+#### Evidence
+- Live browser validation confirmed zero text overlap, pristine typography, and seamless visual harmony without distracting floating elements.
+- `npx tsc --noEmit` verified with 0 errors.
+
+---
 
 ### D-20260925-023 — Global Branding and Entity Alignment from CiviConnect to Civi-Tech
 

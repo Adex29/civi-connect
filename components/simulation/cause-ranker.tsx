@@ -66,9 +66,11 @@ export function CauseRanker({ initialCauses, onOrderChange, disabled }: CauseRan
                 #{index + 1}
               </div>
 
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-semibold text-foreground truncate">{cause.title}</h4>
-                <p className="text-xs text-muted-foreground line-clamp-1">{cause.description}</p>
+              <div className="flex-1 min-w-0 py-0.5">
+                <h4 className="text-sm font-semibold text-foreground leading-snug break-words">{cause.title}</h4>
+                {cause.description && (
+                  <p className="text-xs text-muted-foreground leading-relaxed mt-1 break-words">{cause.description}</p>
+                )}
               </div>
 
               {!disabled && (

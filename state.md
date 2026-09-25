@@ -10,7 +10,36 @@
 
 ## Completed
 
-1. **Global Branding and Entity Alignment from CiviConnect to Civi-Tech**:
+1. **Elimination of Text Truncation and Ellipsis in Step 2 Cause Ranking & Step 4 Stakeholders**:
+   - `[Verified]` Diagnosis: Identified that [`components/simulation/cause-ranker.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/cause-ranker.tsx) had `truncate` on `<h4>` and `line-clamp-1` on `<p>`, which forcefully truncated cause titles and descriptions with `...` (e.g. *"Improper disposal or temporary placement of ho..."*, *"Without a shared maintenance practice, the canal can..."*).
+   - `[Verified]` Full Text Visibility: Removed `truncate` and `line-clamp-1`, applying `leading-snug break-words` to titles and `mt-1 text-xs text-muted-foreground leading-relaxed break-words` to descriptions so all causal text wraps naturally and is 100% visible.
+   - `[Verified]` Stakeholder Directory Hardening: In [`components/simulation/stakeholder-chat.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/stakeholder-chat.tsx), replaced `truncate` with `break-words` on stakeholder names and roles to ensure full title visibility across all viewports.
+   - `[Verified]` TypeScript Validation: Verified via `npx tsc --noEmit` with 0 errors.
+
+2. **Section 2 Dual-Theme Contrast Engineering, Dark Mode Parity & 3D Immersive Showcase**:
+   - `[Verified]` Dark Mode Simulation & Issue Diagnosis: Conducted pixel-level simulated render on `#172422` (obsidian-pine dark card surface) and `#fcfcfb` (light mode card surface). Diagnosed that raw artwork contained white cloud lobes, bottom white fog, and opaque sky cutouts that appeared as glaring white halos/boxes in dark mode.
+   - `[Verified]` Vectorized Alpha Extraction & Edge Feathering: Built and executed `scratch/finalize_public_assets.py` using vectorized NumPy and PIL to convert neutral white sky/cloud regions and white bottom fog to transparent alpha, while preserving all rich foreground character colors, trees, houses, and tools.
+   - `[Verified]` Dual-Theme Visual Parity: Generated and verified test renders in both Light Mode (`scratch/sim_perfect_light_2.png`, `scratch/sim_perfect_light_o.png`) and Dark Mode (`scratch/sim_perfect_dark_2.png`, `scratch/sim_perfect_dark_o.png`). Both images melt seamlessly into cards with 0 white boxes, 0 harsh crop edges, and vibrant contrast.
+   - `[Verified]` Asset Ingestion & Deployment: Deployed perfected dual-theme images to `public/2.png`, `public/o.png`, and `public/3.png`.
+   - `[Verified]` Immersive 3D Tilt & Specular Physics: Created `<ImmersiveShowcaseCard />` with 3D perspective mouse tilt (`perspective(1200px)`), dynamic cursor-tracking specular lighting sheen, 3D z-depth pop (`translateZ(28px)`), and dark-mode ambient stage lighting (`dark:bg-radial dark:from-white/[0.04]`, `dark:bg-primary/30`, `dark:bg-secondary/35`).
+   - `[Verified]` Multi-Plane Scroll Parallax: Orchestrated independent scroll offsets for left card (`-0.035x`), right card (`-0.06x`), environmental landscape waves, and floating atmospheric background silhouettes.
+   - `[Verified]` Text Clutter & Badge Removal: Removed the "Community Partnerships" section label, the intro paragraph, stage badges ("Stages 01–04", "Stages 05–08"), and all context chips ("Multi-Perspective Dialogue", "Source Reliability Checks", "Action Plan Execution", "Measurable Civic Impact") per explicit user direction, producing a minimalist, artwork-centric presentation.
+   - `[Verified]` Compilation & Live Testing: Verified via `npx tsc --noEmit` (0 errors) and confirmed server rendering with HTTP 200.
+
+2. **Landing Page Hero Background & Immersive 3D Scroll Parallax Architecture**:
+   - `[Verified]` Asset Ingestion: Ingested `1.svg` (and alias `hero-bg.svg`) to `public/` featuring 7 diverse senior high school youth standing united with linked arms, facing forward.
+   - `[Verified]` Removal of Placeholder Artwork & Floating Particles: Completely eliminated the previous tree-planting/cleanup illustration (`CivicCommunityActionHeroGraphic`) as well as all floating leaves, water droplets, sparkles, and wind streamlines from the hero fold for an uncluttered, modern presentation.
+   - `[Verified]` Harmonious Centered Composition: Re-architected Page One into a balanced centered layout where the headline, subtitle, action buttons, and trust chips are elevated in the upper half with pristine readability and ambient lighting, while the 7 youth figures anchor the bottom stage without text overlap.
+   - `[Verified]` Immersive 3D Camera Depth Parallax:
+     - Foreground Content: Transforms upward (`translate3d(0, -scrollY * 0.28px, 0)`), gently recedes (`scale(1 - scrollY * 0.00035)`), and dissolves with focal defocus (`filter: blur(...)`, `opacity: 1 - scrollY / 440`). Pointer events auto-disable at `scrollY > 380`. The "Civic Engagement Simulation" pill badge is completely removed per user direction.
+     - Background Youth Artwork (`1.svg`): Delivers a cinematic camera push-in perspective zoom (`scale(1 + min(0.14, scrollY * 0.00035))`) anchored from `bottom center` with grounded parallax translation (`scrollY * 0.16`).
+     - Ambient Lighting & Rings: Radial glow expands and softens with scroll; orbital rings and subtle civic grid drift at complementary depth speeds.
+     - Scroll Prompt: Interactive "Scroll to explore" cue with animated bouncing indicator at bottom center, automatically dissolving upon scrolling (`opacity: max(0, 1 - scrollY / 90)`).
+     - Performance: Throttled with `requestAnimationFrame`, hardware-accelerated via `will-change: transform, opacity, filter`, and honoring `prefers-reduced-motion`.
+   - `[Verified]` Smooth Section Dissolve: Integrated subtle bottom gradient dissolve into Section 2 with zero text collisions across viewport sizes.
+   - `[Verified]` Compilation & Live Audit: Validated via `npx tsc --noEmit` (0 errors) and confirmed live server responding with HTTP 200.
+
+2. **Global Branding and Entity Alignment from CiviConnect to Civi-Tech**:
    - `[Verified]` Admin Interface: Updated card description in [`app/admin/page.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/page.tsx) to *"Restricted area for Civi-Tech administrators."*
    - `[Verified]` AI Engine Logging: Replaced all `[CiviConnect AI]` console logs across Vertex AI and Gemini Studio resolvers in [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) with `[Civi-Tech AI]`.
    - `[Verified]` Package and Database Identifiers: Renamed package name in [`package.json`](file:///d:/Admin/Music/Janella/civi-connect/package.json) and [`package-lock.json`](file:///d:/Admin/Music/Janella/civi-connect/package-lock.json) to `"civi-tech"`. Updated [`supabase/schema.sql`](file:///d:/Admin/Music/Janella/civi-connect/supabase/schema.sql) and [`lab/README.md`](file:///d:/Admin/Music/Janella/civi-connect/lab/README.md).

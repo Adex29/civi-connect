@@ -65,8 +65,8 @@ export function StakeholderChat({
                       <User className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h5 className="font-bold text-sm text-foreground leading-tight truncate">{s.name}</h5>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{s.role}</p>
+                      <h5 className="font-bold text-sm text-foreground leading-snug break-words">{s.name}</h5>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-normal break-words">{s.role}</p>
                     </div>
                   </div>
 

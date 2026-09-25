@@ -1,13 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  CivicCommunityActionHeroGraphic,
-  EvidenceResearchStoryGraphic,
-  StakeholderConsultationStoryGraphic,
-} from "@/components/landing-graphics";
 import { Parallax } from "@/components/parallax";
 import {
   ArrowRight,
@@ -37,218 +32,200 @@ const steps = [
   { num: "08", name: "Assess Community Impact", desc: "Evaluate the feasibility, sustainability, effectiveness, and ethical implications of your proposed solution.", icon: Target, badge: "Evaluation" },
 ];
 
-function FloatingLeaf({
-  className,
-  color = "#65a30d",
-  size = 22,
-  animClass = "leaf-anim-1",
+function HeroPageOneBackground({
+  mouseOffset = { x: 0, y: 0 },
+  scrollY = 0,
 }: {
-  className?: string;
-  color?: string;
-  size?: number;
-  animClass?: string;
+  mouseOffset?: { x: number; y: number };
+  scrollY?: number;
 }) {
-  return (
-    <div className={`pointer-events-none select-none ${className}`}>
-      <div className={animClass}>
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M20 4C14 4 8 8 6 13.5C4.5 17.5 5.5 20 5.5 20C5.5 20 8.2 21 12.5 19.5C18 17.5 21.5 11.5 21.5 6L20 4Z"
-            fill={color}
-            opacity="0.9"
-          />
-          <path
-            d="M5.5 20C8.5 17 14 11.5 20 4"
-            stroke="#ffffff"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-            opacity="0.45"
-          />
-        </svg>
-      </div>
-    </div>
-  );
-}
+  // Camera depth scale & parallax translations for an immersive 3D fly-in feel
+  const bgScale = 1 + Math.min(0.14, scrollY * 0.00035);
+  const bgTranslateY = scrollY * 0.16;
+  const glowScale = 1 + Math.min(0.25, scrollY * 0.0004);
+  const glowOpacity = Math.max(0.2, 0.75 - (scrollY / 600) * 0.45);
+  const overlayOpacity = Math.max(0.35, 1 - (scrollY / 700) * 0.65);
 
-function FloatingSprout({
-  className,
-  color = "#65a30d",
-  size = 20,
-  animClass = "leaf-anim-2",
-}: {
-  className?: string;
-  color?: string;
-  size?: number;
-  animClass?: string;
-}) {
   return (
-    <div className={`pointer-events-none select-none ${className}`}>
-      <div className={animClass}>
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M12 14C9.5 14 6 11 6 7C9.5 7 12 9.5 12 14Z"
-            fill={color}
-            opacity="0.9"
-          />
-          <path
-            d="M12 12C14.5 12 18 9 18 5C14.5 5 12 7.5 12 12Z"
-            fill="#0f766e"
-            opacity="0.85"
-          />
-          <path
-            d="M12 21C12 16 12 12 12 7"
-            stroke="#134e48"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            opacity="0.55"
-          />
-        </svg>
-      </div>
-    </div>
-  );
-}
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden select-none z-0">
+      {/* Soft atmospheric gradient wash across the top so text has pristine contrast */}
+      <div
+        style={{ opacity: overlayOpacity }}
+        className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/70 to-transparent z-10 transition-opacity"
+      />
 
-function FloatingBreeze({
-  className,
-  color = "#0f766e",
-  width = 46,
-  height = 14,
-  animClass = "float-gentle",
-}: {
-  className?: string;
-  color?: string;
-  width?: number;
-  height?: number;
-  animClass?: string;
-}) {
-  return (
-    <div className={`pointer-events-none select-none ${className}`}>
-      <div className={animClass}>
-        <svg width={width} height={height} viewBox="0 0 46 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M2 9C10 9 16 3 26 3C34 3 40 6 44 10"
-            stroke={color}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeDasharray="2.5 3.5"
-            opacity="0.35"
-          />
-          <circle cx="43" cy="3" r="1.5" fill={color} opacity="0.4" />
-          <circle cx="36" cy="11" r="1.2" fill={color} opacity="0.3" />
-        </svg>
-      </div>
-    </div>
-  );
-}
+      {/* Ambient radial glow centered behind headline - expands and deepens with scroll */}
+      <div
+        style={{
+          transform: `translate3d(calc(-50% + ${mouseOffset.x * 12}px), ${mouseOffset.y * 8}px, 0) scale(${glowScale})`,
+          opacity: glowOpacity,
+        }}
+        className="absolute top-4 left-1/2 w-[48rem] h-[24rem] rounded-full bg-gradient-to-b from-primary/25 via-secondary/15 to-transparent blur-3xl z-10 pointer-events-none will-change-transform"
+      />
 
-function FloatingSparkle({
-  className,
-  color = "#f59e0b",
-  size = 18,
-  animClass = "sparkle-pulse",
-}: {
-  className?: string;
-  color?: string;
-  size?: number;
-  animClass?: string;
-}) {
-  return (
-    <div className={`pointer-events-none select-none ${className}`}>
-      <div className={animClass}>
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"
-            fill={color}
-            opacity="0.85"
-          />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function FloatingSeed({
-  className,
-  color = "#d97706",
-  size = 22,
-  animClass = "seed-spin",
-}: {
-  className?: string;
-  color?: string;
-  size?: number;
-  animClass?: string;
-}) {
-  return (
-    <div className={`pointer-events-none select-none ${className}`}>
-      <div className={animClass}>
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="6" cy="18" rx="3.5" ry="2.5" fill={color} opacity="0.9" />
-          <path
-            d="M7 16.5C10 13 18 5 21 3C19 8 13 15 8.5 17.5"
-            fill={color}
-            opacity="0.55"
-          />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function FloatingDewDrop({
-  className,
-  color = "#06b6d4",
-  size = 15,
-  animClass = "leaf-anim-3",
-}: {
-  className?: string;
-  color?: string;
-  size?: number;
-  animClass?: string;
-}) {
-  return (
-    <div className={`pointer-events-none select-none ${className}`}>
-      <div className={animClass}>
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M12 3C12 3 5 12 5 16C5 19.866 8.134 23 12 23C15.866 23 19 19.866 19 16C19 12 12 3 12 3Z"
-            fill={color}
-            opacity="0.75"
-          />
-          <circle cx="9.5" cy="14.5" r="1.6" fill="#ffffff" opacity="0.65" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function HeroNatureBackdrop() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden select-none">
-      <svg
-        viewBox="0 0 1440 680"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="absolute bottom-0 left-0 w-full h-[400px] lg:h-[520px] object-cover opacity-35"
-        preserveAspectRatio="none"
+      {/* 1.svg Community Youth Solidarity Illustration Background with Dynamic Camera Parallax */}
+      <div
+        style={{
+          transform: `translate3d(${mouseOffset.x * -10}px, ${bgTranslateY + mouseOffset.y * -6}px, 0) scale(${bgScale})`,
+          transformOrigin: "bottom center",
+          transition: "transform 180ms cubic-bezier(0.16, 1, 0.3, 1)",
+          willChange: "transform",
+        }}
+        className="absolute inset-x-0 bottom-0 flex items-end justify-center z-0"
       >
-        <path
-          d="M0 500 C360 420, 720 520, 1080 440 C1250 400, 1370 430, 1440 440 L1440 680 L0 680 Z"
-          fill="color-mix(in oklch, var(--secondary), transparent 84%)"
+        <img
+          src="/1.svg"
+          alt=""
+          className="w-full max-w-[1240px] h-[280px] sm:h-[350px] md:h-[400px] lg:h-[440px] object-contain object-bottom opacity-90 dark:opacity-55 transition-opacity duration-300 drop-shadow-sm"
         />
-        <circle cx="140" cy="460" r="85" fill="color-mix(in oklch, var(--primary), transparent 90%)" />
-        <circle cx="250" cy="480" r="65" fill="color-mix(in oklch, var(--primary), transparent 92%)" />
-        <circle cx="80" cy="490" r="55" fill="color-mix(in oklch, var(--primary), transparent 93%)" />
-        <path
-          d="M0 580 C420 560, 780 610, 1100 550 C1280 515, 1380 535, 1440 540 L1440 680 L0 680 Z"
-          fill="color-mix(in oklch, var(--primary), transparent 95%)"
+      </div>
+
+      {/* Subtle bottom fade to seamlessly blend into next section border */}
+      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background via-background/75 to-transparent z-10" />
+    </div>
+  );
+}
+
+function ImmersiveShowcaseCard({
+  imageSrc,
+  imageAlt,
+  title,
+  description,
+  accentColor = "primary",
+  parallaxOffset = 0,
+}: {
+  imageSrc: string;
+  imageAlt: string;
+  title: string;
+  description: string;
+  accentColor?: "primary" | "secondary";
+  parallaxOffset?: number;
+}) {
+  const [tilt, setTilt] = useState({ x: 0, y: 0, mouseX: 0, mouseY: 0, active: false });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    // Subtle, elegant 3D tilt max +/- 4 degrees
+    const rotateX = ((y - centerY) / centerY) * -4;
+    const rotateY = ((x - centerX) / centerX) * 4;
+    setTilt({ x: rotateX, y: rotateY, mouseX: x, mouseY: y, active: true });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0, mouseX: 0, mouseY: 0, active: false });
+  };
+
+  const isPrimary = accentColor === "primary";
+
+  return (
+    <div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) translate3d(0, ${parallaxOffset}px, 0) scale3d(${
+          tilt.active ? 1.015 : 1
+        }, ${tilt.active ? 1.015 : 1}, 1)`,
+        transition: tilt.active
+          ? "transform 0.12s ease-out, border-color 0.3s ease, box-shadow 0.3s ease"
+          : "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease, box-shadow 0.4s ease",
+        transformStyle: "preserve-3d",
+        willChange: "transform",
+      }}
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border ${
+        tilt.active
+          ? isPrimary
+            ? "border-primary/55 shadow-2xl"
+            : "border-secondary/55 shadow-2xl"
+          : "border-border/70 shadow-md"
+      } bg-card/85 p-6 sm:p-8 backdrop-blur-2xl transition-all duration-500`}
+    >
+      {/* Dynamic Interactive Specular Spotlight Sheen */}
+      {tilt.active && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-30 rounded-3xl transition-opacity duration-300"
+          style={{
+            background: `radial-gradient(450px circle at ${tilt.mouseX}px ${tilt.mouseY}px, ${
+              isPrimary ? "rgba(13, 122, 117, 0.14)" : "rgba(34, 197, 94, 0.14)"
+            }, transparent 80%)`,
+          }}
         />
-      </svg>
+      )}
+
+      {/* Ambient Backlight Glow behind illustration */}
+      <div
+        className={`pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 h-80 w-80 rounded-full ${
+          isPrimary ? "bg-primary/20 dark:bg-primary/30" : "bg-secondary/25 dark:bg-secondary/35"
+        } blur-3xl opacity-70 transition-opacity duration-500 group-hover:opacity-100`}
+      />
+
+      {/* Artwork Canvas with 3D Pop Elevation */}
+      <div
+        style={{
+          transform: `translateZ(${tilt.active ? "28px" : "0px"})`,
+          transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+        className="relative flex min-h-[300px] sm:min-h-[340px] md:min-h-[380px] w-full items-center justify-center overflow-hidden rounded-2xl dark:bg-radial dark:from-white/[0.04] dark:to-transparent"
+      >
+        <img
+          src={imageSrc}
+          alt={imageAlt}
+          className="relative z-10 max-h-[300px] sm:max-h-[340px] md:max-h-[370px] w-auto max-w-full object-contain drop-shadow-md transition-transform duration-500 ease-out group-hover:scale-[1.04] select-none"
+          style={{
+            maskImage: "linear-gradient(to bottom, black 82%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 82%, transparent 100%)",
+          }}
+        />
+      </div>
+
+      {/* Card Text Content with 3D Layering */}
+      <div
+        style={{
+          transform: `translateZ(${tilt.active ? "16px" : "0px"})`,
+          transition: "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+        className="relative z-10 mt-6 flex flex-col"
+      >
+        <h3 className="text-2xl font-black text-foreground sm:text-3xl transition-colors duration-300">
+          {title}
+        </h3>
+
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          {description}
+        </p>
+      </div>
     </div>
   );
 }
 
 export default function LandingPage() {
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isReducedMotion) return;
+
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrollY(window.scrollY);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -270,188 +247,127 @@ export default function LandingPage() {
         <section
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative flex min-h-[780px] items-center border-b border-border/70 px-5 py-16 sm:px-8 lg:min-h-[880px] lg:py-24"
+          className="relative flex min-h-[720px] sm:min-h-[780px] lg:min-h-[840px] flex-col justify-between items-center border-b border-border/70 px-5 pt-10 pb-0 sm:px-8 sm:pt-14 lg:pt-16 overflow-hidden"
         >
-          {/* Nature Landscape Backdrop: Soft hills & foliage silhouettes */}
-          <HeroNatureBackdrop />
+          {/* Custom SVG Background for Page One with Dynamic Parallax & Camera Depth */}
+          <HeroPageOneBackground mouseOffset={mouseOffset} scrollY={scrollY} />
 
           {/* Subtle civic grid and background parallax rings */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div className="landing-grid absolute inset-0 opacity-25" />
+            <div
+              style={{ transform: `translate3d(0, ${scrollY * 0.06}px, 0)` }}
+              className="landing-grid absolute inset-0 opacity-20 will-change-transform"
+            />
 
-            <Parallax strength={0.03} className="absolute -right-40 top-10 size-[36rem] rounded-full border border-primary/20 sm:-right-20">
+            <div
+              style={{ transform: `translate3d(0, ${scrollY * 0.18}px, 0)` }}
+              className="absolute -right-40 top-10 size-[36rem] rounded-full border border-primary/20 sm:-right-20 will-change-transform"
+            >
               <span />
-            </Parallax>
+            </div>
 
-            <Parallax strength={-0.025} className="absolute -left-36 bottom-10 size-96 rounded-full border border-border/60">
+            <div
+              style={{ transform: `translate3d(0, ${scrollY * 0.08}px, 0)` }}
+              className="absolute -left-36 bottom-10 size-96 rounded-full border border-border/60 will-change-transform"
+            >
               <span />
-            </Parallax>
+            </div>
 
             <div className="absolute left-1/2 top-0 h-full w-px bg-gradient-to-b from-transparent via-border/40 to-transparent" />
           </div>
 
-          {/* Atmospheric Floating Wind-Blown Elements (Parallax + Multi-Plane Drift) */}
-          <Parallax strength={-0.05} className="pointer-events-none absolute top-20 left-12 z-20 hidden md:block">
-            <FloatingLeaf size={24} color="#65a30d" animClass="leaf-anim-1" />
-          </Parallax>
-          <Parallax strength={0.09} className="pointer-events-none absolute bottom-28 left-1/4 z-20 hidden sm:block">
-            <FloatingLeaf size={20} color="#f59e0b" animClass="leaf-anim-2" />
-          </Parallax>
-          <Parallax strength={-0.04} className="pointer-events-none absolute top-32 left-1/2 z-20">
-            <FloatingLeaf size={18} color="#0f766e" animClass="leaf-anim-3" />
-          </Parallax>
-          <Parallax strength={0.12} className="pointer-events-none absolute bottom-36 right-1/3 z-20 hidden lg:block">
-            <FloatingLeaf size={22} color="#65a30d" animClass="leaf-anim-1" />
-          </Parallax>
-          <Parallax strength={-0.08} className="pointer-events-none absolute top-16 right-1/4 z-20 hidden sm:block">
-            <FloatingLeaf size={26} color="#f59e0b" animClass="leaf-anim-2" />
-          </Parallax>
-          <Parallax strength={0.16} className="pointer-events-none absolute top-1/2 right-12 z-20 hidden md:block">
-            <FloatingLeaf size={19} color="#0f766e" animClass="leaf-anim-3" />
-          </Parallax>
+          {/* Main Hero Elements (Centered & Balanced with 3D Depth-of-Field Parallax) */}
+          <div
+            style={{
+              transform: `translate3d(0, ${scrollY * -0.28}px, 0) scale(${Math.max(0.92, 1 - scrollY * 0.00035)})`,
+              opacity: Math.max(0, 1 - scrollY / 440),
+              filter: scrollY > 20 ? `blur(${Math.min(6, ((scrollY - 20) / 420) * 6)}px)` : "none",
+              pointerEvents: scrollY > 380 ? "none" : "auto",
+              willChange: "transform, opacity, filter",
+            }}
+            className="relative z-20 mx-auto w-full max-w-4xl text-center"
+          >
+            {/* Heading */}
+            <h1 className="mt-2 text-4xl font-black leading-[1.08] tracking-[-0.04em] sm:text-5xl lg:text-6xl xl:text-7xl">
+              Welcome to <span className="text-primary">Civi-Tech<span className="text-secondary">!</span></span>
+            </h1>
 
-          {/* Inspiring Sparkles */}
-          <Parallax strength={-0.07} className="pointer-events-none absolute top-14 left-1/3 z-20 hidden sm:block">
-            <FloatingSparkle size={18} color="#f59e0b" animClass="sparkle-pulse" />
-          </Parallax>
-          <Parallax strength={0.14} className="pointer-events-none absolute top-10 right-1/3 z-20 hidden lg:block">
-            <FloatingSparkle size={20} color="#0d9488" animClass="sparkle-pulse" />
-          </Parallax>
-          <Parallax strength={0.06} className="pointer-events-none absolute bottom-16 left-12 z-20 hidden md:block">
-            <FloatingSparkle size={15} color="#fbbf24" animClass="sparkle-pulse" />
-          </Parallax>
+            {/* Subtitle */}
+            <p className="mx-auto mt-3 max-w-2xl text-sm font-medium leading-6 text-muted-foreground sm:text-base sm:leading-7">
+              A Web-Based Civic Engagement Simulation Platform for Community Problem-Solving in Senior High School Citizenship and Civic Engagement.
+            </p>
 
-          {/* Seedlings & Sprouts */}
-          <Parallax strength={0.08} className="pointer-events-none absolute bottom-20 left-1/3 z-20 hidden md:block">
-            <FloatingSprout size={22} color="#65a30d" animClass="leaf-anim-2" />
-          </Parallax>
-          <Parallax strength={-0.06} className="pointer-events-none absolute bottom-24 right-16 z-20 hidden sm:block">
-            <FloatingSprout size={20} color="#84cc16" animClass="leaf-anim-1" />
-          </Parallax>
+            {/* Action Buttons */}
+            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="/login"
+                className={buttonVariants({
+                  size: "lg",
+                  className: "h-11 w-full px-8 text-sm font-bold shadow-md sm:w-auto",
+                })}
+              >
+                <LogIn className="size-4" />
+                Log In
+              </Link>
+              <Link
+                href="/register"
+                className={buttonVariants({
+                  variant: "outline",
+                  size: "lg",
+                  className: "h-11 w-full px-8 text-sm font-bold border-surface-border bg-card/85 backdrop-blur-md shadow-xs sm:w-auto",
+                })}
+              >
+                <UserPlus className="size-4 text-primary" />
+                Register
+              </Link>
+            </div>
 
-          {/* Wind Streamline Swirls */}
-          <Parallax strength={-0.03} className="pointer-events-none absolute top-1/2 left-8 z-20 hidden lg:block">
-            <FloatingBreeze width={48} height={14} color="#0f766e" animClass="float-gentle" />
-          </Parallax>
-          <Parallax strength={0.07} className="pointer-events-none absolute top-28 right-16 z-20 hidden md:block">
-            <FloatingBreeze width={52} height={16} color="#65a30d" animClass="float-gentle" />
-          </Parallax>
-
-          {/* Winged Seed & Dew Droplets */}
-          <Parallax strength={0.1} className="pointer-events-none absolute top-24 right-1/2 z-20 hidden sm:block">
-            <FloatingSeed size={22} color="#d97706" animClass="seed-spin" />
-          </Parallax>
-          <Parallax strength={-0.09} className="pointer-events-none absolute bottom-32 left-16 z-20 hidden lg:block">
-            <FloatingDewDrop size={16} color="#06b6d4" animClass="leaf-anim-3" />
-          </Parallax>
-          <Parallax strength={0.05} className="pointer-events-none absolute top-40 right-28 z-20 hidden lg:block">
-            <FloatingDewDrop size={14} color="#0284c7" animClass="leaf-anim-1" />
-          </Parallax>
-
-          <div className="relative mx-auto w-full max-w-7xl">
-            <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
-              {/* Left Column: Heading, Subtitle, and CTAs */}
-              <div className="relative z-20 text-center lg:col-span-6 lg:text-left">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary">
-                  <span>Civic Engagement Simulation</span>
-                </div>
-
-                <h1 className="mt-6 text-5xl font-black leading-[0.96] tracking-[-0.05em] sm:text-6xl lg:text-5xl xl:text-6xl">
-                  Welcome to <span className="text-primary">Civi-Tech<span className="text-secondary">!</span></span>
-                </h1>
-
-                <p className="mt-6 text-base font-medium leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-                  A Web-Based Civic Engagement Simulation Platform for Community Problem-Solving in Senior High School Citizenship and Civic Engagement.
-                </p>
-
-                <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start">
-                  <Link
-                    href="/login"
-                    className={buttonVariants({
-                      size: "lg",
-                      className: "h-12 w-full px-8 text-sm font-bold shadow-xs sm:w-auto",
-                    })}
-                  >
-                    <LogIn className="size-4" />
-                    Log In
-                  </Link>
-                  <Link
-                    href="/register"
-                    className={buttonVariants({
-                      variant: "outline",
-                      size: "lg",
-                      className: "h-12 w-full px-8 text-sm font-bold border-surface-border bg-card/80 sm:w-auto",
-                    })}
-                  >
-                    <UserPlus className="size-4 text-primary" />
-                    Register
-                  </Link>
-                </div>
-
-                {/* Trust / Feature Chips */}
-                <div className="mt-10 flex flex-wrap items-center justify-center gap-3 text-xs font-semibold text-muted-foreground lg:justify-start">
-                  <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg">
-                    <CheckCircle2 className="size-3.5 text-primary" />
-                    8 Simulation Stages
-                  </span>
-                  <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg">
-                    <ShieldCheck className="size-3.5 text-secondary" />
-                    Evidence-Based Solutions
-                  </span>
-                  <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg">
-                    <Users className="size-3.5 text-primary" />
-                    Simulated Stakeholders
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Column: Multi-Plane Parallax Scene with Flat Vector Community Action Graphic */}
-              <div className="relative flex min-h-[460px] items-center justify-center lg:col-span-6 lg:min-h-[580px]">
-                {/* Layer 1: Ambient Background Halo */}
-                <Parallax strength={-0.04} className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <div
-                    style={{
-                      transform: `translate3d(${mouseOffset.x * -16}px, ${mouseOffset.y * -16}px, 0)`,
-                      transition: "transform 200ms cubic-bezier(0.16, 1, 0.3, 1)",
-                    }}
-                    className="size-[34rem] rounded-full bg-gradient-to-tr from-primary/20 via-secondary/15 to-transparent blur-3xl opacity-75"
-                  />
-                </Parallax>
-
-                {/* Layer 2: Main Flat Vector Community Action Graphic with Seamless Blended Canvas */}
-                <div className="relative z-10 w-full flex items-center justify-center">
-                  <CivicCommunityActionHeroGraphic mouseOffset={mouseOffset} />
-                </div>
-
-                {/* Layer 3: Floating Parallax Badges */}
-                <Parallax strength={-0.08} className="pointer-events-none absolute top-4 right-2 z-20 sm:top-8 sm:right-6">
-                  <div
-                    style={{
-                      transform: `translate3d(${mouseOffset.x * -18}px, ${mouseOffset.y * -18}px, 0)`,
-                      transition: "transform 240ms cubic-bezier(0.16, 1, 0.3, 1)",
-                    }}
-                    className="flex items-center gap-2 rounded-lg border border-primary/30 bg-card/90 px-3.5 py-1.5 shadow-sm backdrop-blur-md"
-                  >
-                    <span className="relative flex size-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-                    </span>
-                    <span className="text-xs font-bold text-foreground">Community Problem-Solving</span>
-                  </div>
-                </Parallax>
-              </div>
+            {/* Trust / Feature Chips */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5 text-xs font-semibold text-muted-foreground">
+              <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-card/80 backdrop-blur-md shadow-xs">
+                <CheckCircle2 className="size-3.5 text-primary" />
+                8 Simulation Stages
+              </span>
+              <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-card/80 backdrop-blur-md shadow-xs">
+                <ShieldCheck className="size-3.5 text-secondary" />
+                Evidence-Based Solutions
+              </span>
+              <span className="info-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/60 bg-card/80 backdrop-blur-md shadow-xs">
+                <Users className="size-3.5 text-primary" />
+                Simulated Stakeholders
+              </span>
             </div>
           </div>
+
+          {/* Immersive Scroll Prompt / Discover Indicator */}
+          <div
+            style={{
+              opacity: Math.max(0, 1 - scrollY / 90),
+              transform: `translate3d(-50%, ${scrollY * -0.5}px, 0)`,
+            }}
+            className="pointer-events-none absolute bottom-5 left-1/2 z-20 flex flex-col items-center gap-1.5 transition-opacity duration-200 select-none"
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/75">
+              Scroll to explore
+            </span>
+            <div className="relative flex h-7 w-4.5 justify-center rounded-full border-2 border-primary/40 bg-card/50 p-1 backdrop-blur-xs">
+              <div className="h-1.5 w-1 animate-bounce rounded-full bg-primary" />
+            </div>
+          </div>
+
+          {/* Spacer allowing the solidarity background illustration full visual prominence */}
+          <div className="relative z-10 w-full h-[220px] sm:h-[280px] lg:h-[340px] pointer-events-none" />
         </section>
 
         {/* ========================================================================= */}
         {/* SECTION: Community Partnerships & Civic Solutions (Seamless Visual Story) */}
         {/* ========================================================================= */}
         <section className="relative border-b border-border/70 overflow-hidden bg-background px-5 py-24 sm:px-8 lg:py-32">
-          {/* Environmental Landscape Backdrop Waves */}
+          {/* Environmental Landscape Backdrop Waves with Scroll Parallax */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden select-none -z-0">
             <svg
-              className="absolute bottom-0 left-0 w-full h-[320px] text-primary/[0.04]"
+              style={{ transform: `translate3d(0, ${scrollY * 0.04}px, 0)` }}
+              className="absolute bottom-0 left-0 w-full h-[320px] text-primary/[0.04] will-change-transform"
               preserveAspectRatio="none"
               viewBox="0 0 1440 320"
               fill="currentColor"
@@ -459,7 +375,8 @@ export default function LandingPage() {
               <path d="M0,192L48,197.3C96,203,192,213,288,202.7C384,192,480,160,576,165.3C672,171,768,213,864,224C960,235,1056,213,1152,192C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" />
             </svg>
             <svg
-              className="absolute bottom-0 left-0 w-full h-[200px] text-secondary/[0.07]"
+              style={{ transform: `translate3d(0, ${scrollY * 0.07}px, 0)` }}
+              className="absolute bottom-0 left-0 w-full h-[200px] text-secondary/[0.07] will-change-transform"
               preserveAspectRatio="none"
               viewBox="0 0 1440 200"
               fill="currentColor"
@@ -468,81 +385,76 @@ export default function LandingPage() {
             </svg>
           </div>
 
-          {/* Environmental floating leaves */}
-          <Parallax strength={0.07} className="pointer-events-none absolute top-12 left-8 z-10 hidden sm:block">
-            <FloatingLeaf size={22} color="#65a30d" animClass="leaf-anim-1" />
-          </Parallax>
-          <Parallax strength={-0.06} className="pointer-events-none absolute top-28 right-16 z-10 hidden md:block">
-            <FloatingLeaf size={20} color="#f59e0b" animClass="leaf-anim-3" />
-          </Parallax>
-          <Parallax strength={0.08} className="pointer-events-none absolute bottom-24 left-1/3 z-10 hidden lg:block">
-            <FloatingLeaf size={18} color="#84cc16" animClass="leaf-anim-2" />
-          </Parallax>
-          <Parallax strength={-0.05} className="pointer-events-none absolute bottom-16 right-12 z-10 hidden lg:block">
-            <FloatingLeaf size={24} color="#134e48" animClass="leaf-anim-1" />
-          </Parallax>
+          {/* Atmospheric Civic Background Panorama with Gentle Parallax Floating */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden select-none opacity-20 dark:opacity-10">
+            <div
+              style={{ transform: `translate3d(0, ${(scrollY - 700) * 0.05}px, 0)` }}
+              className="absolute -left-20 top-20 h-[520px] w-[620px] -rotate-3 rounded-full bg-radial from-primary/20 to-transparent blur-3xl will-change-transform"
+            />
+            <div
+              style={{ transform: `translate3d(0, ${(scrollY - 700) * 0.08}px, 0)` }}
+              className="absolute -right-20 bottom-10 h-[520px] w-[620px] rotate-3 rounded-full bg-radial from-secondary/25 to-transparent blur-3xl will-change-transform"
+            />
+            <img
+              src="/2.png"
+              alt=""
+              aria-hidden="true"
+              style={{
+                transform: `translate3d(0, ${(scrollY - 750) * 0.08}px, 0)`,
+                maskImage: 'radial-gradient(circle, black 40%, transparent 80%)',
+                WebkitMaskImage: 'radial-gradient(circle, black 40%, transparent 80%)',
+              }}
+              className="absolute -left-24 top-28 h-[420px] w-auto object-contain opacity-25 filter blur-[2px] will-change-transform"
+            />
+            <img
+              src="/o.png"
+              alt=""
+              aria-hidden="true"
+              style={{
+                transform: `translate3d(0, ${(scrollY - 750) * 0.12}px, 0)`,
+                maskImage: 'radial-gradient(circle, black 40%, transparent 80%)',
+                WebkitMaskImage: 'radial-gradient(circle, black 40%, transparent 80%)',
+              }}
+              className="absolute -right-24 bottom-16 h-[420px] w-auto object-contain opacity-25 filter blur-[2px] will-change-transform"
+            />
+          </div>
 
           <div className="relative z-10 mx-auto max-w-7xl">
-            {/* Header with pill badge and educational intro */}
-            <div className="grid items-end gap-6 lg:grid-cols-12 lg:gap-12">
-              <div className="lg:col-span-6">
-                <div className="section-label">
-                  <Users className="size-3.5 text-primary" />
-                  <span>Community Partnerships</span>
-                </div>
-                <h2 className="mt-4 text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-                  Collaborative Long-Term Solutions
-                </h2>
-              </div>
-              <div className="lg:col-span-6">
-                <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
-                  By working closely with local stakeholders, students expand civic reach, scrutinize digital evidence, and build sustainable community solutions that serve barangays for years.
-                </p>
-              </div>
+            {/* Header with Smooth Depth Float */}
+            <div
+              style={{
+                transform: `translate3d(0, ${Math.max(-20, Math.min(20, (scrollY - 700) * -0.04))}px, 0)`,
+              }}
+              className="mx-auto max-w-3xl text-center will-change-transform"
+            >
+              <h2 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+                Collaborative Long-Term Solutions
+              </h2>
             </div>
 
-            {/* Two Side-by-Side Visual Story Blocks with Matching Flat Color Community Illustrations */}
-            <div className="mt-16 grid gap-12 md:grid-cols-2 lg:gap-20">
-              {/* Story 1: Evidence & Data Investigation (Matching Flat Vector Graphic with Seamless Blended Edges) */}
-              <div className="group relative flex flex-col items-center text-center lg:items-start lg:text-left">
-                <div className="relative flex min-h-[320px] w-full items-center justify-center p-2">
-                  <EvidenceResearchStoryGraphic />
-                </div>
-                <div className="mt-6 w-full pt-2">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary">
-                    Stages 01–03
-                  </div>
-                  <h3 className="mt-3 text-2xl font-black text-foreground">
-                    Evidence-Based Problem Identification
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                    Students analyze local root causes, examine community data trends, and verify the credibility of digital sources before formulating proposals.
-                  </p>
-                </div>
-              </div>
+            {/* Two Balanced Showcase Cards with Immersive 3D Tilt & Specular Physics */}
+            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:gap-10">
+              <ImmersiveShowcaseCard
+                imageSrc="/2.png"
+                imageAlt="Simulated Stakeholder Consultations & Deliberation"
+                title="Evidence-Based Stakeholder Deliberation"
+                description="Engage with simulated barangay captains, local organizations, and citizens to analyze root causes, scrutinize community evidence, and deliberate on realistic interventions."
+                accentColor="primary"
+                parallaxOffset={Math.max(-25, Math.min(25, (scrollY - 750) * -0.035))}
+              />
 
-              {/* Story 2: Stakeholder Dialogue & Community Action (Matching Flat Vector Graphic with Seamless Blended Edges) */}
-              <div className="group relative flex flex-col items-center text-center lg:items-start lg:text-left">
-                <div className="relative flex min-h-[320px] w-full items-center justify-center p-2">
-                  <StakeholderConsultationStoryGraphic />
-                </div>
-                <div className="mt-6 w-full pt-2">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-secondary/35 bg-secondary/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-secondary-foreground">
-                    Stages 04–08
-                  </div>
-                  <h3 className="mt-3 text-2xl font-black text-foreground">
-                    Simulated Stakeholder Consultations
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-                    Engage with simulated barangay captains, local organizations, and citizens to adapt intervention plans and assess long-term social impact.
-                  </p>
-                </div>
-              </div>
+              <ImmersiveShowcaseCard
+                imageSrc="/o.png"
+                imageAlt="Collaborative Community Action & Solutions"
+                title="Collaborative Community Action"
+                description="Put evidence-based proposals into concrete practice. Mobilize community cleanups, tree-planting, waste reduction, and civic infrastructure plans that create measurable barangay impact."
+                accentColor="secondary"
+                parallaxOffset={Math.max(-35, Math.min(35, (scrollY - 750) * -0.06))}
+              />
             </div>
           </div>
         </section>
 
-        {/* ========================================================================= */}
         {/* SECTION: What You Will Do? (8 Critical Simulation Stages)                 */}
         {/* ========================================================================= */}
         <section id="stages" className="px-5 py-24 sm:px-8 lg:py-32">
