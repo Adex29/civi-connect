@@ -89,12 +89,9 @@ export function CreateClassroomDialog({
           <div className="space-y-4 py-2">
             {/* Classroom Name */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="classroom-name" className="text-xs font-semibold">
-                  Classroom / Section Name <span className="text-destructive">*</span>
-                </Label>
-                <span className="text-[11px] text-muted-foreground">e.g. Grade 10 - Rizal</span>
-              </div>
+              <Label htmlFor="classroom-name" className="text-xs font-semibold">
+                Classroom / Section Name <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="classroom-name"
                 placeholder="e.g. CVC-3A Community Action"
