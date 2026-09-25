@@ -7,6 +7,7 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ## Active Decisions
 
+- [D-20260925-022: Reset of User Accounts, Classrooms, and Simulation Submissions (Preserving Canonical Mission and Administrator)](#d-20260925-022--reset-of-user-accounts-classrooms-and-simulation-submissions-preserving-canonical-mission-and-administrator)
 - [D-20260925-021: Elimination of Extraneous Route Top-Loader and 'Loading...' Pill in Favor of Clean Pencil Preloader](#d-20260925-021--elimination-of-extraneous-route-top-loader-and-loading-pill-in-favor-of-clean-pencil-preloader)
 - [D-20260925-020: Multi-Tier AI-Generated Authorship Detection Calibration and Submissions Flagging](#d-20260925-020--multi-tier-ai-generated-authorship-detection-calibration-and-submissions-flagging)
 - [D-20260925-019: Pedagogical Non-Spoil Policy in AI Evaluation (Socratic Guidance, No Direct Answers)](#d-20260925-019--pedagogical-non-spoil-policy-in-ai-evaluation-socratic-guidance-no-direct-answers)
@@ -78,6 +79,64 @@ When guidance in other documentation conflicts with an accepted decision recorde
 ## Rejected Alternatives
 
 - [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+
+---
+
+### D-20260925-022 — Reset of User Accounts, Classrooms, and Simulation Submissions (Preserving Canonical Mission and Administrator)
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: User, classroom, and submission persistence layers (Supabase PostgreSQL tables: `students`, `classrooms`, `groups`, `classroom_scenarios`, `assignments`, `submissions`, `constraints`; local JSON files: `data/students.json`, `data/classrooms.json`, `data/groups.json`, `data/classroom-scenarios.json`, `data/assignments.json`, `data/submissions.json`, `data/constraints.json`)
+- **Supersedes**: Prior test users and classrooms seeded or created during simulation validation
+- **Superseded by**: None
+- **Related implementation**: `data/`, `supabase/schema.sql`, `scratch/backup_before_user_cleanup.mjs`, `scratch/execute_cleanup.mjs`
+
+#### Context
+1. The user requested: *"remove all the added user, classroom, works, all. except the mission"*.
+2. Over the course of iterative development and end-to-end simulation testing, several test accounts (`students` records), classrooms (`classrooms` records), classroom-scenario assignments, and test submission logs had accumulated in both Supabase PostgreSQL and local storage.
+3. The platform requires a clean production-ready state where teachers can create fresh classrooms, enroll student cohorts, and assign the canonical civic mission without lingering test data.
+4. Crucially:
+   - The canonical mission (**"Barangay San Isidro: Drainage and Waste Management"**, `san-isidro-drainage-crisis`) must be strictly preserved.
+   - The platform administrator (`admin@civiconnect.local`) must be preserved so administrators can continue to log in, author scenarios, and manage classrooms.
+
+#### Decision
+1. **Pre-Purge Safety Backup**:
+   - Executed a complete pre-purge backup of all local JSON files and Supabase database tables into `data/backup_user_cleanup/`.
+   - Updated `.gitignore` to match `data/backup_*/`, preventing sensitive backup records from being checked into version control.
+2. **Purge Execution Order (Foreign Key Compliant)**:
+   - Deleted records in dependency order across Supabase PostgreSQL:
+     1. `submissions` (student works)
+     2. `assignments` (student/group scenario assignments)
+     3. `classroom_scenarios` (classroom mission assignments)
+     4. `students` (student user accounts)
+     5. `groups` (student group cohorts)
+     6. `classrooms` (classrooms)
+   - Synchronized local storage files to empty arrays (`[]`):
+     - `data/submissions.json`
+     - `data/students.json`
+     - `data/classrooms.json`
+     - `data/classroom-scenarios.json`
+     - `data/assignments.json`
+     - `data/groups.json`
+     - `data/constraints.json`
+3. **Preserved Canonical Mission & Administrator**:
+   - `scenarios` / `data/scenarios.json`: Preserved 1 record — canonical mission *"Barangay San Isidro: Drainage and Waste Management"*.
+   - `admins` / `data/admins.json`: Preserved 1 record — System Administrator (`admin@civiconnect.local`).
+
+#### Evidence
+- Inspected Supabase database counts post-purge:
+  - `students`: 0
+  - `classrooms`: 0
+  - `groups`: 0
+  - `classroom_scenarios`: 0
+  - `submissions`: 0
+  - `assignments`: 0
+  - `constraints`: 0
+  - `scenarios`: 1 (Preserved)
+  - `admins`: 1 (Preserved)
+- Verified all local JSON files are empty arrays except `scenarios.json` and `admins.json`.
+- `npx tsc --noEmit` verified with 0 errors.
 
 ---
 

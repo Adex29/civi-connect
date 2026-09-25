@@ -36,9 +36,9 @@ yarn-error.log*
 *.key.json
 gcp-*.json
 
-# scratch scripts
+# scratch scripts and data backups
 scratch/
-data/backup_pre_cleanup/
+data/backup_*/
 
 
 # vercel

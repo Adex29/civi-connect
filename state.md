@@ -10,7 +10,14 @@
 
 ## Completed
 
-1. **Elimination of Extraneous Route Top-Loader and 'Loading...' Pill in Favor of Clean Pencil Preloader**:
+1. **Reset of User Accounts, Classrooms, and Simulation Submissions (Preserving Canonical Mission and Administrator)**:
+   - `[Verified]` Pre-Purge Safety Backup: Saved complete snapshots of all local data files and Supabase database tables to `data/backup_user_cleanup/`. Updated `.gitignore` to ignore `data/backup_*/`.
+   - `[Verified]` Database & Local Storage Purge: In strict FK-compliant order, cleared `submissions` (student works), `assignments`, `classroom_scenarios`, `students` (user accounts), `groups`, and `classrooms` from both Supabase PostgreSQL and local JSON storage.
+   - `[Verified]` Canonical Mission Strictly Preserved: Preserved exactly 1 scenario (`san-isidro-drainage-crisis`: *"Barangay San Isidro: Drainage and Waste Management"*).
+   - `[Verified]` Administrator Account Preserved: Preserved 1 administrator account (`admin@civiconnect.local`), allowing administrators to log in and author or manage fresh classrooms.
+   - `[Verified]` Post-Purge Verification: Verified 0 students, 0 classrooms, 0 groups, 0 assignments, 0 classroom_scenarios, and 0 submissions in Supabase and local data files.
+
+2. **Elimination of Extraneous Route Top-Loader and 'Loading...' Pill in Favor of Clean Pencil Preloader**:
    - `[Verified]` Diagnosis of Stuck Loading Elements: Identified that a secondary `RoutePreloader` component in `components/ui/route-preloader.tsx` was creating a top emerald progress bar and a floating `Loading...` pill badge with a pulsing beacon. Timer races on internal link clicks and route transitions caused it to freeze at 88% width and opacity 1, permanently remaining on screen.
    - `[Verified]` Complete Removal of `RoutePreloader`: Removed `<RoutePreloader />` and its import from [`app/layout.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/layout.tsx) and completely deleted [`components/ui/route-preloader.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/ui/route-preloader.tsx).
    - `[Verified]` Strict Pencil-Only Implementation: Preserved solely `AppPreloader` with the requested animated SVG pencil loader in brand theme colors. Refined its lifecycle with an explicit `isFading` state for smooth CSS dissolution over 400ms followed by unmounting from the DOM at 1450ms.
