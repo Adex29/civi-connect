@@ -130,13 +130,9 @@ export function ChallengeTab({ unexpectedEvent, onChange }: ChallengeTabProps) {
                         <span className="font-mono text-xs font-bold text-muted-foreground">
                           Option {i + 1}
                         </span>
-                        {opt.isOptimal ? (
+                        {opt.isOptimal && (
                           <Badge className="bg-primary text-primary-foreground text-[10px] gap-1">
                             <CheckCircle className="h-3 w-3" /> Optimal Path
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px]">
-                            Alternative Choice
                           </Badge>
                         )}
                       </div>

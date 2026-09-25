@@ -12,15 +12,36 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Menu, LayoutDashboard, Users, BookOpen, FileText, LogOut } from "lucide-react";
+import { Menu, LayoutDashboard, Users, BookOpen, FileText, LogOut, Loader2 } from "lucide-react";
 
 export function Navigation({ role }: { role: "student" | "admin" }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  
-  const handleLogout = async () => {
-    await logoutAction(role === "admin");
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleConfirmLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logoutAction(role === "admin");
+    } catch (err) {
+      console.error("Logout error:", err);
+      setLoggingOut(false);
+      setShowLogoutConfirm(false);
+    }
   };
 
   const adminNavItems = [
@@ -106,7 +127,14 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
               </div>
 
               <div className="mt-auto p-4 border-t">
-                <Button variant="outline" className="w-full justify-start gap-2 shadow-xs" onClick={handleLogout}>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2 shadow-xs"
+                  onClick={() => {
+                    setOpen(false);
+                    setShowLogoutConfirm(true);
+                  }}
+                >
                   <LogOut className="h-4 w-4" />
                   Logout
                 </Button>
@@ -122,11 +150,56 @@ export function Navigation({ role }: { role: "student" | "admin" }) {
         {/* Right Action */}
         <div className="flex items-center space-x-2">
           <ModeToggle />
-          <Button variant="outline" size="sm" onClick={handleLogout} className="hidden gap-2 text-xs font-bold md:flex shadow-2xs hover:shadow-xs hover:border-primary/50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowLogoutConfirm(true)}
+            className="hidden gap-2 text-xs font-bold md:flex shadow-2xs hover:shadow-xs hover:border-primary/50"
+          >
             <LogOut className="size-3.5" /> Logout
           </Button>
         </div>
       </div>
+
+      {/* Logout Confirmation Prompt Dialog */}
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive sm:mx-0">
+              <LogOut className="h-6 w-6" />
+            </div>
+            <AlertDialogTitle className="text-base sm:text-lg font-bold">
+              Confirm Logout
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Are you sure you want to log out of your {role === "admin" ? "administrator" : "student"} session? You will need to log in again with your credentials to continue your work.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-2 sm:mt-0">
+            <AlertDialogCancel disabled={loggingOut}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmLogout();
+              }}
+              disabled={loggingOut}
+              className={cn(buttonVariants({ variant: "destructive" }), "gap-2 font-bold")}
+            >
+              {loggingOut ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Logging out...
+                </>
+              ) : (
+                <>
+                  <LogOut className="h-4 w-4" /> Log Out
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   );
 }

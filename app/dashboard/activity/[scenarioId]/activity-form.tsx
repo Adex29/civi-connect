@@ -867,7 +867,7 @@ export function ActivityForm({
           <Card className="border border-primary/30 bg-primary/5 shadow-xs">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
-                <Scale className="h-4 w-4 shrink-0" /> Mission Context
+                Mission Context
               </CardTitle>
             </CardHeader>
             <CardContent className="text-xs text-foreground/90 leading-relaxed space-y-2">
@@ -948,7 +948,7 @@ export function ActivityForm({
                 {step === 2 && (
                   <div className="space-y-4">
                     <p className="text-xs text-muted-foreground">
-                      Use the arrows to re-order the causes from top (Most Significant) to bottom (Least Significant).
+                      Arrange the causes in order of significance from #1 (Primary Root Cause) down to least significant contributing factor or symptom. You must correctly identify the causal order to proceed.
                     </p>
                     <CauseRanker
                       key={shuffledStep2Causes.map((c) => c.id).join("-")}
@@ -1213,7 +1213,7 @@ export function ActivityForm({
             <Card className="hidden xl:block border border-primary/30 bg-primary/5 shadow-xs">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
-                  <Scale className="h-4 w-4 shrink-0" /> Mission Context
+                 Mission Context
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xs text-foreground/90 leading-relaxed space-y-2">

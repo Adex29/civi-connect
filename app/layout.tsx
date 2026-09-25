@@ -4,6 +4,8 @@ import "./globals.css";
 import { QueryProvider } from "@/lib/query-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { AppPreloader } from "@/components/ui/app-preloader";
+import { RoutePreloader } from "@/components/ui/route-preloader";
 
 const fontSans = DM_Sans({
   subsets: ["latin"],
@@ -52,6 +54,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <QueryProvider>
+            <RoutePreloader />
+            <AppPreloader />
             {children}
             <Toaster richColors position="top-center" />
           </QueryProvider>

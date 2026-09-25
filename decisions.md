@@ -7,6 +7,9 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ## Active Decisions
 
+- [D-20260925-017: Step 2 Mandatory Exact Causal Hierarchy Identification and Progression Gating](#d-20260925-017--step-2-mandatory-exact-causal-hierarchy-identification-and-progression-gating)
+- [D-20260925-016: Step 1 Mandatory Correct Root Issue Enforcement, Justification Rigor, and Elimination of Admin "Alternative Choice" Labels](#d-20260925-016--step-1-mandatory-correct-root-issue-enforcement-justification-rigor-and-elimination-of-admin-alternative-choice-labels)
+- [D-20260925-015: Interactive Preloader Architecture and Logout Confirmation Prompt](#d-20260925-015--interactive-preloader-architecture-and-logout-confirmation-prompt)
 - [D-20260925-014: Mission Cleanup and Canonical Seeding from Specification File](#d-20260925-014--mission-cleanup-and-canonical-seeding-from-specification-file)
 - [D-20260925-013: Step 8 Civic Action Reflection 5 Randomized Prompts and 5–15 Sentence Enforcement](#d-20260925-013--step-8-civic-action-reflection-5-randomized-prompts-and-515-sentence-enforcement)
 - [D-20260925-012: Removal of the Civitech Robot Mascot ("Civi") from the Student Dashboard](#d-20260925-012--removal-of-the-civitech-robot-mascot-civi-from-the-student-dashboard)
@@ -71,6 +74,146 @@ When guidance in other documentation conflicts with an accepted decision recorde
 ## Rejected Alternatives
 
 - [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+
+### D-20260925-017 — Step 2 Mandatory Exact Causal Hierarchy Identification and Progression Gating
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 2 AI evaluation engine (`lib/ai.ts`), student activity instructions (`app/dashboard/activity/[scenarioId]/activity-form.tsx`), and automated test suite (`scratch/test_step2_rules.ts`)
+- **Supersedes**: Permissive causal alignment ratio and minor adjacent factor swaps passing Step 2 in `D-20260925-002`
+- **Superseded by**: None
+- **Related implementation**: `lib/ai.ts`, `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `scratch/test_step2_rules.ts`
+
+#### Context
+1. In Step 2 (Cause Analysis / Ranking: *"Arrange the causes (Most Significant → Least Significant)"*), students analyze systemic root causes versus contributing factors and secondary symptoms.
+2. The user explicitly instructed:
+   - *"for the step 2, the student should also correctly identify the correct order for the student to proceed"*
+3. Previously under `D-20260925-002`:
+   - An alignment ratio calculation permitted minor swaps (e.g. adjacent factors swapped or alignment $\ge 60\%$) to pass with 74%–92%, allowing students to advance to Step 3 without establishing the exact designated causal hierarchy.
+   - The student instruction prompt in `activity-form.tsx` only suggested using arrows to reorder without clearly stating that discovering the correct causal sequence is mandatory to proceed.
+
+#### Decision
+1. **Mandatory Exact Match Progression Gate**:
+   - In [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) (`evaluateStep2`), verified `isExactMatch` where `orderedCauseIds` must match `correctOrder` at every single position (supporting both cause IDs and titles).
+   - `isPassingOrder = isExactMatch;` (strict equality).
+   - If the student's ranking deviates from the designated causal sequence in any position:
+     - Sets `passed: false` deterministically.
+     - Caps `step_score` strictly at 35%–45% (below the 70% passing threshold).
+     - Assigns flag `INCORRECT_CAUSE_HIERARCHY`.
+     - Actionable feedback explicitly informs the student that their ranking is not in the correct order, explains that they cannot proceed to Step 3 until all causes are correctly ordered in the designated causal sequence, and provides tailored pedagogical guidance (highlighting whether the primary root cause was misplaced or secondary symptoms/environmental triggers were elevated).
+     - A secondary policy hard gate guarantees that `evaluation.passed = false` and `evaluation.step_score <= 45` even after LLM execution.
+2. **High-Achieving Progression Feedback**:
+   - When `isExactMatch` is true, awards `passed: true` with a score of 96% and praise for analytical precision in distinguishing foundational structural blockages from secondary contributing factors and symptoms, permitting advancement to Step 3.
+3. **Student Prompt Clarity**:
+   - In [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx), updated Step 2 card description to: *"Arrange the causes in order of significance from #1 (Primary Root Cause) down to least significant contributing factor or symptom. You must correctly identify the causal order to proceed."*
+4. **Added to Global Mismatch Flags**:
+   - Added `INCORRECT_CAUSE_HIERARCHY` to `mismatchFlags` in `lib/ai.ts` to guarantee uniform policy hard gating across the simulation pipeline.
+
+#### Evidence
+- Verified via automated test suite in [`scratch/test_step2_rules.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_step2_rules.ts):
+  - **Test 1 (Inverted order / symptom at top)**: Failed (Score: 35%, `passed: false`, Flag: `INCORRECT_CAUSE_HIERARCHY`). Student blocked from proceeding.
+  - **Test 2 (Minor swap: #2 and #3 swapped)**: Failed (Score: 43%, `passed: false`, Flag: `INCORRECT_CAUSE_HIERARCHY`). Student blocked from proceeding.
+  - **Test 3 (Incomplete ranking)**: Failed (Score: 45%, `passed: false`, Flag: `INCOMPLETE_RANKING`). Student blocked from proceeding.
+  - **Test 4 (Exact designated correct order)**: Passed (Score: 96%, `passed: true`). Student advances to Step 3.
+- All Step 1 tests in `scratch/test_step1_rules.ts` also re-verified and passing.
+- `npx tsc --noEmit` verified with 0 errors.
+
+---
+
+### D-20260925-016 — Step 1 Mandatory Correct Root Issue Enforcement, Justification Rigor, and Elimination of Admin "Alternative Choice" Labels
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 1 AI evaluation pipeline (`lib/ai.ts`), admin mission authoring tabs (`components/admin/mission-editor/issues-tab.tsx`, `challenge-tab.tsx`), and automated verification tests (`scratch/test_step1_rules.ts`)
+- **Supersedes**: Permissive Step 1 LLM evaluation where incorrect priority selections could pass via prompt text, and confusing "Alternative Choice" badges in the admin editor
+- **Superseded by**: None
+- **Related implementation**: `lib/ai.ts`, `components/admin/mission-editor/issues-tab.tsx`, `components/admin/mission-editor/challenge-tab.tsx`, `scratch/test_step1_rules.ts`
+
+#### Context
+1. In Step 1, students must answer: *"What is the main issue that needs to be addressed first?"* and justify their selection in 2–3 complete sentences.
+2. The user instructed:
+   - *"for the step 1, the AI checker should check if the user correctly identify the What is the main issue that needs to be addressed first? If they did not correctly identify it, the student cannot proceed."*
+   - *"Thier should be also correct."* (Their justification must also be correct and sound).
+   - *"For the admin side, there should no alternative choice"*
+3. Previously:
+   - If an incorrect priority issue was selected, `evaluateStep1` passed the text to the LLM with prompt instructions to cap scores, but without a deterministic structural failure gate. A hallucinating LLM could award passing marks, or fail to enforce the prerequisite.
+   - Non-correct issue options in `components/admin/mission-editor/issues-tab.tsx` and non-optimal challenge options in `challenge-tab.tsx` displayed an `<Badge variant="outline">Alternative Choice</Badge>` label, which was misleading and implied that these options were acceptable alternatives.
+   - Irrelevant distractor stakeholders (e.g. basketball league coordinator) were leaking keywords into the valid scenario domain dictionary, allowing off-topic justifications mentioning basketball to bypass scenario relevance screening.
+
+#### Decision
+1. **Deterministic Gate for Step 1 Root Issue Selection**:
+   - In [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) (`evaluateStep1`), if the student fails to select the designated correct primary root issue (`correctIssue && !isCorrectChoice`):
+     - It immediately triggers a structural error with flag `INCORRECT_PRIORITY_ISSUE`.
+     - Sets `passed: false` and caps the score at 35–45% (strictly below the 70% passing threshold).
+     - Actionable feedback explicitly instructs the student that their selection is not the main issue that needs to be addressed first and that they cannot proceed to Step 2 until they correctly identify the primary issue.
+     - A secondary defensive policy gate guarantees that `result.passed = false` and `result.evaluation.step_score <= 45` even after pipeline execution.
+2. **Strict Verification of Justification Correctness & Quality ("Their justification must also be correct")**:
+   - Selection of the correct issue is necessary but NOT sufficient on its own.
+   - The justification must also be verified and correct:
+     - Must be at least 2 complete sentences and $\ge 20$ characters (rejects 1-sentence or truncated justifications with `INSUFFICIENT_LENGTH`).
+     - Must directly reference and explain the selected issue (enforced via `selectedScore === 0` check in `detectSelectionJustificationMismatch` which flags `SELECTION_JUSTIFICATION_MISMATCH` if the justification fails to reference any keywords related to the selected issue).
+     - Must directly address the community scenario crisis (flags `CONTEXT_RELEVANCE_MISMATCH`).
+     - Gemini AI evaluates whether the reasoning is factually accurate, pedagogically sound, and explains why resolving this issue takes precedence over downstream symptoms. Flawed or incorrect reasoning is failed (`passed: false`, score 45–55%).
+     - Passing (`passed: true`, score $\ge 70\%$) requires BOTH the correct issue selection AND a sound, evidence-grounded justification.
+3. **Complete Elimination of "Alternative Choice" from the Admin Side**:
+   - In [`components/admin/mission-editor/issues-tab.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/admin/mission-editor/issues-tab.tsx), removed `<Badge variant="outline">Alternative Choice</Badge>`.
+   - In [`components/admin/mission-editor/challenge-tab.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/admin/mission-editor/challenge-tab.tsx), removed `<Badge variant="outline">Alternative Choice</Badge>`.
+   - Only the designated correct answer receives the clear badge: `<Badge><CheckCircle2 /> Correct Answer</Badge>`. Other options are presented cleanly as standard candidate options without "Alternative Choice" framing.
+4. **Domain Dictionary Distractor Sanitization**:
+   - In `buildScenarioDomainDictionary`, excluded distractor evidence (`isIrrelevant: true`) and distractor stakeholders (`isIrrelevant: true`) so that distractor vocabulary (such as sports/tournament terms) cannot pollute the scenario's valid domain dictionary.
+
+#### Evidence
+- Verified with automated test suite in [`scratch/test_step1_rules.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_step1_rules.ts):
+  - **Test 1 (Incorrect issue choice)**: Failed deterministically (Score: 35%, `passed: false`, Flag: `INCORRECT_PRIORITY_ISSUE`). Student cannot proceed.
+  - **Test 2 (Correct issue, 1-sentence justification)**: Failed (Score: 35%, `passed: false`, Flag: `INSUFFICIENT_LENGTH`).
+  - **Test 3 (Correct issue, off-topic justification)**: Failed (Score: 35%, `passed: false`, Flag: `SELECTION_JUSTIFICATION_MISMATCH`).
+  - **Test 4 (Correct issue AND sound 2-3 sentence justification)**: Passed (Score: 90%, `passed: true`). Student can proceed to Step 2.
+- `npx tsc --noEmit` verified with 0 errors.
+
+---
+
+### D-20260925-015 — Interactive Preloader Architecture and Logout Confirmation Prompt
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User prompt
+- **Scope**: User authentication UX (`components/navigation.tsx`), layout preloaders (`components/ui/app-preloader.tsx`, `components/ui/route-preloader.tsx`), and Next.js route loading skeletons (`app/dashboard/loading.tsx`, `app/dashboard/activity/[scenarioId]/loading.tsx`, `app/admin/dashboard/loading.tsx`)
+- **Supersedes**: Immediate unprompted logout and blank suspense loading transitions
+- **Superseded by**: None
+- **Related implementation**: `components/navigation.tsx`, `components/ui/app-preloader.tsx`, `components/ui/route-preloader.tsx`, `app/layout.tsx`, `app/dashboard/loading.tsx`, `app/dashboard/activity/[scenarioId]/loading.tsx`, `app/admin/dashboard/loading.tsx`
+
+#### Context
+1. The user requested: *"can you add a pre loader. Add also the prompt before logging the user out"*.
+2. Previously, clicking the Logout button (on desktop navigation or inside the mobile drawer) immediately executed `logoutAction(isAdmin)` without giving users an opportunity to cancel, potentially causing accidental loss of context or unintended sign-outs.
+3. In Next.js App Router, navigating between server-rendered dashboards and simulation routes caused visual pauses before server responses completed, lacking branded visual feedback and smooth loading indicators.
+
+#### Decision
+1. **Logout Confirmation Prompt (`components/navigation.tsx`)**:
+   - Implemented an accessible `AlertDialog` confirmation prompt wired to both desktop and mobile logout triggers.
+   - When clicked, opens a modal:
+     - Title: *"Confirm Logout"*
+     - Description: *"Are you sure you want to log out of your session? You will need to log in again with your credentials to continue your work."*
+     - Cancel button dismisses the modal without altering session state.
+     - Destructive Log Out button initiates `logoutAction`, providing visual feedback with `<Loader2 className="animate-spin" /> Logging out...` and disabled action buttons to prevent duplicate requests.
+2. **Branded Initial Splash Preloader (`components/ui/app-preloader.tsx`)**:
+   - Implemented an animated full-screen initial preloader featuring:
+     - Central obsidian-pine tech badge with a diagonal light sheen sweep (`animate-sheen`) and breathing elevation (`animate-orbit-pulse`).
+     - Dual concentric orbital gyroscope rings: an outer dashed SVG orbit with glowing emerald and cyan satellite beacons (`animate-spin`), and an inner counter-rotating techno tick ring (`animate-spin-reverse`).
+     - Concentric ambient radar pulses expanding outward from the emblem into the backdrop (`animate-radar-1`, `animate-radar-2`).
+     - Real numerical progress easing counter (`0%` -> `100%`) with tabular numerals and staggered civic status milestones (*"Establishing civic terminal connection..."*, *"Loading barangay governance models..."*, *"Syncing community scenario database..."*, *"Preparing civic action simulation..."*, *"Calibrating interactive AI advisors..."*, *"Workspace ready • Welcome Citizen"*).
+     - High-tech progress track with internal animated light shimmer sweep (`animate-shimmer`) and smooth 500ms blur-zoom dissolution upon completion (`scale-105 opacity-0 blur-sm`).
+3. **Route Navigation Top-Loader (`components/ui/route-preloader.tsx`)**:
+   - Added an animated 3.5px gradient progress bar (`from-primary via-emerald-400 to-teal-300`) with an internal moving shimmer sweep, an illuminated leading tip head (`shadow-[0_0_10px_3px_rgba(52,211,153,1)]`), and a top-right ambient pulse beacon for instant navigation feedback.
+4. **Fluid Skeleton Shimmer (`components/ui/skeleton.tsx` & route `loading.tsx`)**:
+   - Upgraded base `Skeleton` primitive with an animated gradient shine wave (`before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-foreground/5 before:to-transparent`), giving all dashboard, mission activity, and admin loading skeletons a premium moving light sheen.
+
+#### Evidence
+- `npx tsc --noEmit` verified with 0 errors across all newly created and modified components.
+- Dev server running smoothly on `http://localhost:3000`.
+
+---
 
 ### D-20260925-014 — Mission Cleanup and Canonical Seeding from Specification File
 

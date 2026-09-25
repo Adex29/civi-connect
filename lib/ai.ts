@@ -65,9 +65,9 @@ You must grade with high rigor. Reject generic fluff, vague generalities, unreal
 
 #### STEP 1: Identify Community Issues
 - Question: "What is the main issue that needs to be addressed first?"
-- Requirements: Selection of the primary community issue + 2-3 sentence justification.
-- Criteria: Must identify the designated root issue (if designated by the educator) rather than secondary symptoms or peripheral constraints. Justification must cite specific data, community impacts, or urgency from the scenario context in authentic student voice.
-- Pass Threshold: Selected the designated correct priority issue (if specified) and provided a coherent 2-3 sentence justification explaining why it must be addressed first. If an incorrect issue is selected, set passed: false, score: < 60%, and include the flag INCORRECT_PRIORITY_ISSUE. If the justification is off-topic, unrelated to the crisis, or contradicts the choice, set passed: false, score: <= 52%, and include SELECTION_JUSTIFICATION_MISMATCH.
+- Requirements: Correct identification of the primary root issue + 2-3 sentence justification explaining why it takes precedence.
+- Criteria: Must identify the designated primary root issue rather than secondary symptoms or peripheral constraints. The student's 2-3 sentence justification must also be correct, logically explaining why this specific problem must be resolved first, citing local evidence or impacts from the scenario context in authentic student voice.
+- Pass Threshold: The student MUST correctly identify the primary root issue that needs to be addressed first; if they fail to identify it, they CANNOT proceed (set passed: false, score: <= 45%, and include INCORRECT_PRIORITY_ISSUE). In addition, their justification must ALSO be correct and substantive; if the justification is flawed, incorrect, off-topic, or generic fluff, set passed: false and they cannot proceed. Award passed: true (score >= 70%) ONLY when both the choice and the justification are correct.
 
 #### STEP 2: Analyze Causes
 - Requirements: Ranking of root causes from most significant (#1) to least significant contributing factor or symptom.
@@ -985,6 +985,7 @@ async function runStepPipeline({
     "CONTEXT_RELEVANCE_MISMATCH",
     "DUPLICATE_FIELD_CONTENT",
     "INCORRECT_PRIORITY_ISSUE",
+    "INCORRECT_CAUSE_HIERARCHY",
     "GENERIC_FLUFF",
   ];
   const hasMismatch = (evaluation.flags || []).some((f) => mismatchFlags.includes(f));
@@ -1022,10 +1023,28 @@ export async function evaluateStep1(
       feedback: "Please select a priority community concern from the available options.",
       flags: ["INCOMPLETE_SELECTION"],
     };
+  } else if (correctIssue && !isCorrectChoice) {
+    structuralError = {
+      summary: "Incorrect priority issue selected.",
+      feedback: `You selected "${selectedIssue}". This is not the main issue that needs to be addressed first in this scenario. You cannot proceed to the next step until you correctly identify the primary issue that must be prioritized first. Please review the scenario briefing, identify the primary root community problem, select it, and explain why it must be addressed first.`,
+      flags: ["INCORRECT_PRIORITY_ISSUE"],
+    };
   } else if (!justification?.trim() || justification.trim().length < 20) {
     structuralError = {
       summary: "Justification is too brief or incomplete.",
       feedback: "Please provide a complete 2-3 sentence justification citing specific impact metrics or community concerns from the scenario context.",
+      flags: ["INSUFFICIENT_LENGTH"],
+    };
+  }
+
+  // Sentence count check: Grade 12 specification requires 2-3 complete sentences
+  const sentences = justification?.trim()
+    ? justification.trim().split(/(?<=[.?!])\s+/).filter((s) => s.trim().length > 0)
+    : [];
+  if (!structuralError && sentences.length < 2) {
+    structuralError = {
+      summary: "Justification requires 2-3 complete sentences.",
+      feedback: "Please provide a complete 2-3 sentence justification explaining why this specific issue must be prioritized first, citing local evidence or impacts from the scenario.",
       flags: ["INSUFFICIENT_LENGTH"],
     };
   }
@@ -1066,36 +1085,13 @@ export async function evaluateStep1(
   const fallbackFlags: string[] = [];
 
   if (correctIssue && !isCorrectChoice) {
-    fallbackScore = 55;
-    fallbackSummary = `Selected "${selectedIssue}", which is a secondary factor or symptom rather than the primary issue that must be addressed first.`;
-    fallbackFeedback = `While "${selectedIssue}" is a valid concern, the primary issue that needs to be addressed first is "${correctIssue}". Addressing secondary symptoms or peripheral constraints first will not resolve the root blockage. Please review the scenario evidence, select the primary issue, and explain why it must be resolved first.`;
+    fallbackScore = 45;
+    fallbackSummary = `Selected "${selectedIssue}", which is not the main issue that needs to be addressed first.`;
+    fallbackFeedback = `While "${selectedIssue}" is a valid concern, the primary issue that needs to be addressed first is "${correctIssue}". Addressing secondary symptoms or peripheral constraints first will not resolve the root blockage. You cannot proceed until you correctly identify the primary issue and explain why it must be resolved first.`;
     fallbackFlags.push("INCORRECT_PRIORITY_ISSUE");
   }
 
-  const correctIssuePromptSection = correctIssue
-    ? `\n\nDESIGNATED CORRECT ROOT ISSUE VERIFICATION:
-The educator has designated the primary root issue that must be addressed first as:
-"${correctIssue}"
-The student selected:
-"${selectedIssue}" (${isCorrectChoice ? "CORRECT ANSWER" : "INCORRECT ANSWER"})
-
-${
-  isCorrectChoice
-    ? `The student successfully identified the designated primary root issue.
-Now evaluate their 2-3 sentence justification:
-- Verify that they provide 2-3 complete sentences explaining why this specific issue must be prioritized first.
-- Check that they reference community evidence or impacts from the scenario context.
-- If the reasoning is sound and in authentic student voice, award a passing score (75-95%) and set passed: true.`
-    : `The student chose an INCORRECT issue choice. While "${selectedIssue}" might be a secondary factor or symptom, it is NOT the primary issue that needs to be addressed first ("${correctIssue}").
-MANDATORY SCORING & INTEGRITY INSTRUCTIONS:
-- You MUST set passed: false.
-- You MUST cap step_score between 45-58% (strictly below the 70% passing threshold).
-- You MUST add "INCORRECT_PRIORITY_ISSUE" to the flags array.
-- In actionable_feedback, kindly explain why "${selectedIssue}" is a symptom or secondary concern rather than the primary root issue ("${correctIssue}"), and prompt them to revise their selection to the primary issue and explain why it takes precedence.`
-}`
-    : "";
-
-  return runStepPipeline({
+  const result = await runStepPipeline({
     stepNumber: 1,
     textToScan: justification,
     structuralError,
@@ -1113,13 +1109,51 @@ MANDATORY SCORING & INTEGRITY INSTRUCTIONS:
     prompt: `Step 1: Identifying the Issue
 Question: "What is the main issue that needs to be addressed first?"
 Scenario: ${quoteUntrustedText(`${scenario.title} - ${scenario.description}`)}
-Selected Priority Issue: ${quoteUntrustedText(selectedIssue)}
-Student Justification (untrusted data): ${quoteUntrustedText(justification)}${correctIssuePromptSection}
+Designated Correct Root Issue: "${correctIssue}"
+Selected Issue: "${selectedIssue}" (${isCorrectChoice ? "CORRECT SELECTION" : "INCORRECT SELECTION"})
+Student Justification (untrusted data): ${quoteUntrustedText(justification)}
+
+EVALUATION RUBRIC FOR JUSTIFICATION:
+The student selected "${selectedIssue}".
+${
+  isCorrectChoice
+    ? `The student has correctly identified the designated main issue that needs to be addressed first.
+Now, evaluate their 2-3 sentence justification for correctness and civic rigor:
+1. CORRECTNESS & CIVIC REASONING:
+   - Does the justification accurately explain WHY this specific issue must be prioritized first?
+   - Does it explain why solving this problem takes precedence (e.g. stagnant water breeds mosquitoes causing dengue/leptospirosis outbreaks, drainage blockage physically paralyzes the community, resolving the root blockage is required before secondary cleanups or events can work)?
+   - If the justification contains incorrect reasoning, flawed logic, or fails to explain why this issue takes precedence over other concerns, YOU MUST set passed: false, cap step_score at 45-55%, and in actionable_feedback clearly explain what is incorrect or missing in their reasoning.
+2. CONTEXTUAL GROUNDING & EVIDENCE:
+   - Does the justification cite specific community facts, evidence, or impacts from the scenario?
+   - Reject generic boilerplate or vacuous claims.
+3. AUTHENTIC STUDENT VOICE:
+   - Reject AI-generated text or corporate phrasing.
+4. PASSING CRITERIA:
+   - Award passed: true with step_score >= 70% ONLY if BOTH the selected issue is correct AND the justification reasoning is sound, factually accurate, and well-explained.`
+    : `The student chose an INCORRECT issue choice ("${selectedIssue}"). The correct primary issue that must be addressed first is "${correctIssue}".
+MANDATORY HARD-FAIL INSTRUCTIONS:
+- You MUST set passed: false.
+- You MUST cap step_score between 35-45% (strictly below the 70% passing threshold).
+- You MUST add "INCORRECT_PRIORITY_ISSUE" to the flags array.
+- In actionable_feedback, explicitly tell the student that "${selectedIssue}" is not the main issue that needs to be addressed first, and explain that they cannot proceed until they correctly identify the primary root issue ("${correctIssue}") and justify why it takes priority.`
+}
 
 IMPORTANT MISMATCH CHECK: The student selected "${selectedIssue}" as their priority issue. Verify that the justification actually explains why THIS specific issue is the most urgent. If the justification is about a different issue entirely, set passed: false and flag as SELECTION_JUSTIFICATION_MISMATCH.
 
-AI & AUTHENTICITY NOTE: Check for authentic student voice vs. generic AI-generated prose. If the student's submission is copied from ChatGPT/AI (e.g. formulaic AI buzzwords, generic advice without local barangay details), set is_ai_generated: true, passed: false, step_score: 35, and add AI_GENERATED_CONTENT to flags.`,
+AI & AUTHENTICITY NOTE: Check for authentic student voice vs. generic AI-generated prose. If the student's submission is copied from ChatGPT/AI, set is_ai_generated: true, passed: false, step_score: 35, and add AI_GENERATED_CONTENT to flags.`,
   });
+
+  // Hard Policy Gate: if selected issue was incorrect, strictly ensure failure
+  if (correctIssue && !isCorrectChoice) {
+    result.passed = false;
+    result.evaluation.passed = false;
+    result.evaluation.step_score = Math.min(result.evaluation.step_score || 0, 45);
+    if (!result.evaluation.flags.includes("INCORRECT_PRIORITY_ISSUE")) {
+      result.evaluation.flags.push("INCORRECT_PRIORITY_ISSUE");
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -1228,6 +1262,14 @@ function detectSelectionJustificationMismatch(
         };
       }
     }
+  }
+
+  // If the justification has zero keywords relating to the selected issue, it is disconnected or off-topic
+  if (selectedScore === 0) {
+    return {
+      isMismatch: true,
+      feedback: `Your justification does not reference or explain your selected priority issue ("${selectedIssue}"). Please provide reasoning that directly explains why this specific issue is the primary concern that must be addressed first.`,
+    };
   }
 
   return { isMismatch: false, feedback: "" };
@@ -1498,17 +1540,21 @@ export function buildScenarioDomainDictionary(scenario: Scenario): Set<string> {
 
   if (Array.isArray(missionData.evidenceLibrary)) {
     missionData.evidenceLibrary.forEach((e) => {
-      addText(e.title);
-      addText(e.snippet);
-      addText(e.fullText);
-      addText(e.type);
+      if (!e.isIrrelevant) {
+        addText(e.title);
+        addText(e.snippet);
+        addText(e.fullText);
+        addText(e.type);
+      }
     });
   }
 
   if (Array.isArray(missionData.stakeholders)) {
     missionData.stakeholders.forEach((s) => {
-      addText(s.name);
-      addText(s.role);
+      if (!s.isIrrelevant) {
+        addText(s.name);
+        addText(s.role);
+      }
     });
   }
 
@@ -1775,19 +1821,18 @@ export async function evaluateStep2(
   );
 
   // Criteria for passing:
-  // 1. Primary root cause must be placed in the upper tier (Rank 1 or 2)
-  // 2. Alignment ratio >= 0.60 (or exact top-2 match)
-  // 3. Lowest-ranking symptom must not be placed at #1
-  const isExactMatch = totalDistance === 0;
-  const isTop2Correct =
-    N >= 2 &&
-    (orderedCauseIds[0] === correctOrder[0] || orderedCauseIds[1] === correctOrder[0]) &&
-    (orderedCauseIds[0] === correctOrder[1] || orderedCauseIds[1] === correctOrder[1]);
+  // The student MUST correctly identify the designated correct order to proceed to Step 3.
+  const isExactMatch =
+    orderedCauseIds.length === causes.length &&
+    orderedCauseIds.every((idOrTitle, idx) => {
+      const designated = causes[idx];
+      return (
+        idOrTitle === designated.id ||
+        idOrTitle.trim().toLowerCase() === designated.title.trim().toLowerCase()
+      );
+    });
 
-  const isPassingOrder =
-    !isSymptomPlacedAtTop &&
-    (isExactMatch ||
-      (primaryRootStudentRank <= 2 && (alignmentRatio >= 0.6 || isTop2Correct)));
+  const isPassingOrder = isExactMatch;
 
   // Fallback scoring calculation
   let fallbackScore: number;
@@ -1797,57 +1842,57 @@ export async function evaluateStep2(
 
   if (isExactMatch) {
     fallbackScore = 96;
-    fallbackSummary = "Perfect alignment with the designated causal hierarchy.";
-    fallbackFeedback = `Outstanding work! You correctly ranked "${primaryRootCause.title}" as the #1 primary root cause, followed by its systemic contributing factors and secondary symptoms in precise causal order.`;
-  } else if (isPassingOrder) {
-    fallbackScore = Math.max(74, Math.min(92, Math.round(70 + alignmentRatio * 24)));
-    fallbackSummary = `Sound causal analysis prioritizing primary root causes over symptoms.`;
-    fallbackFeedback = `Your ranking recognizes that "${primaryRootCause.title}" is a primary root driver in this scenario. Focusing on root structural causes prevents recurring problems in the barangay. Consider how secondary factors reinforce this primary blockage.`;
+    fallbackSummary = "Correct causal hierarchy identified.";
+    fallbackFeedback = `Outstanding work! You correctly identified the exact causal hierarchy, placing "${primaryRootCause.title}" as the #1 primary root cause, followed by its systemic contributing factors and secondary symptoms in precise causal order. You may now proceed to Step 3.`;
   } else {
-    fallbackScore = Math.min(58, Math.max(40, Math.round(35 + alignmentRatio * 25)));
+    fallbackScore = Math.min(45, Math.max(35, Math.round(35 + alignmentRatio * 10)));
     fallbackFlags.push("INCORRECT_CAUSE_HIERARCHY");
-    fallbackSummary = `Cause ranking does not reflect the root causal hierarchy.`;
-    fallbackFeedback = isSymptomPlacedAtTop
-      ? `You ranked "${studentTopCause?.title || "this factor"}" as the #1 most significant cause, but in this scenario, it is a secondary symptom or external factor rather than the primary root cause. The primary root cause driving this crisis is "${primaryRootCause.title}". Please re-examine the causal connections and place the fundamental root cause at the top.`
-      : `Your ranking does not properly prioritize the primary root cause. "${primaryRootCause.title}" is the fundamental root cause driving this community crisis, but you ranked it as #${primaryRootStudentRank}. When analyzing community problems, structural root causes must be prioritized over secondary symptoms. Please re-order the causes with the primary root cause at #1.`;
+    fallbackSummary = `Cause ranking does not match the designated correct order.`;
+    if (isSymptomPlacedAtTop) {
+      fallbackFeedback = `You placed "${studentTopCause?.title || "this factor"}" as the #1 most significant cause. In this scenario, that is a downstream symptom or environmental trigger rather than the foundational root cause. The primary root cause driving this crisis is "${primaryRootCause.title}". You cannot proceed to Step 3 until all causes are correctly ordered in the designated causal sequence from #1 (Primary Root Cause) down to least significant contributing factor. Please re-arrange the causes into the correct sequence.`;
+    } else if (primaryRootStudentRank !== 1) {
+      fallbackFeedback = `Your cause ranking is not in the correct order. You did not identify "${primaryRootCause.title}" as the #1 primary root cause (you placed it at #${primaryRootStudentRank}). Structural root causes must be addressed before secondary effects. You cannot proceed to Step 3 until all causes are correctly arranged in order of significance from #1 (Primary Root Cause) down to least significant contributing factor. Please re-arrange the causes into the correct sequence.`;
+    } else {
+      fallbackFeedback = `Your cause ranking is not in the correct order. While you placed "${primaryRootCause.title}" at #1, the subsequent contributing factors and secondary symptoms are not in their correct causal hierarchy. You cannot proceed to Step 3 until all causes are correctly arranged in their proper order of significance (from primary structural root cause down to systemic maintenance gaps, contributing factors, and environmental triggers). Please adjust the order of the remaining causes.`;
+    }
   }
 
   // Construct detailed LLM prompt for Gemini verification
   const prompt = `Step 2: Analyzing Community Causes (Root Cause Hierarchy)
 Scenario: ${quoteUntrustedText(`${scenario.title} - ${scenario.description}`)}
 
-EDUCATOR'S DESIGNATED CAUSAL HIERARCHY (CORRECT ORDER):
-(From Top #1 Primary Root Cause down to Bottom Secondary Symptom/Factor):
-${causes.map((c, idx) => `${idx + 1}. [${c.title}] - ${c.description} (Designated Rank #${idx + 1}${idx === 0 ? " - PRIMARY ROOT CAUSE" : idx === causes.length - 1 ? " - SECONDARY SYMPTOM" : ""})`).join("\n")}
+EDUCATOR'S DESIGNATED CAUSAL HIERARCHY (EXACT CORRECT ORDER REQUIRED TO PROCEED):
+(From Top #1 Primary Root Cause down to Bottom Secondary Symptom/Trigger):
+${causes.map((c, idx) => `${idx + 1}. [${c.title}] - ${c.description} (Designated Rank #${idx + 1}${idx === 0 ? " - PRIMARY ROOT CAUSE" : idx === causes.length - 1 ? " - SECONDARY SYMPTOM / TRIGGER" : ""})`).join("\n")}
 
 STUDENT'S SUBMITTED CAUSE RANKING:
 ${orderedCauseIds.map((id, idx) => {
   const cause = causeMap.get(id);
   const correctIdx = correctOrder.indexOf(id);
-  return `${idx + 1}. [${cause?.title || id}] (Educator's Intended Rank: #${correctIdx + 1})`;
+  return `${idx + 1}. [${cause?.title || id}] (Designated Correct Rank: #${correctIdx + 1})`;
 }).join("\n")}
 
 EVALUATION ANALYSIS & METRICS:
+- Exact Match with Designated Hierarchy: ${isExactMatch ? "YES (EXACT MATCH)" : "NO (INCORRECT ORDER)"}
 - Hierarchy Alignment Score: ${Math.round(alignmentRatio * 100)}%
-- Student's #1 Ranked Cause: "${studentTopCause?.title || studentTopCauseId}" (Educator Intended Rank: #${studentTopCauseCorrectRank})
+- Student's #1 Ranked Cause: "${studentTopCause?.title || studentTopCauseId}" (Designated Correct Rank: #${studentTopCauseCorrectRank})
 - Educator's #1 Primary Root Cause: "${primaryRootCause.title}" (Student Placed as Rank #${primaryRootStudentRank})
-- Did student put primary root cause in top 2: ${primaryRootStudentRank <= 2 ? "YES" : "NO"}
-- Did student put bottom symptom at #1: ${isSymptomPlacedAtTop ? "YES" : "NO"}
-- Overall Hierarchy Assessment: ${isPassingOrder ? "PASSING HIERARCHY" : "INCORRECT HIERARCHY (FAILED)"}
+- Did student put primary root cause at #1: ${primaryRootStudentRank === 1 ? "YES" : "NO"}
+- Overall Hierarchy Assessment: ${isExactMatch ? "EXACT CORRECT ORDER (PASSED)" : "INCORRECT ORDER (FAILED - CANNOT PROCEED)"}
 
 RUBRIC AND SCORING DIRECTIVES:
 ${
-  isPassingOrder
-    ? `The student demonstrated a solid understanding of the causal hierarchy.
-- Award a passing score (${fallbackScore - 3}% to ${Math.min(98, fallbackScore + 4)}%) reflecting how well their sequence aligns with the educator's intended order.
+  isExactMatch
+    ? `The student has correctly identified the exact designated order of causes from most significant (#1 Primary Root Cause) down to least significant contributing factor/symptom.
 - Set passed: true.
-- In actionable_feedback, commend their causal reasoning. Explain why prioritizing structural root causes (like "${primaryRootCause.title}") is essential for sustainable civic solutions rather than superficial symptom treatment.`
-    : `The student failed to establish a valid causal hierarchy. They prioritized secondary symptoms, external factors, or contributing factors above the primary systemic root cause ("${primaryRootCause.title}").
-MANDATORY SCORING & INTEGRITY INSTRUCTIONS:
+- Award a high score between 92% and 98%.
+- In actionable_feedback, commend their analytical precision in correctly ranking the primary root cause at #1 and correctly tracing the causal chain down to secondary symptoms and triggers. Note that they may now proceed to Step 3.`
+    : `The student DID NOT identify the exact designated order of causes. The educator requires the student to correctly identify the designated causal order before they can proceed to Step 3.
+MANDATORY HARD-FAIL DIRECTIVES:
 - You MUST set passed: false.
-- You MUST cap step_score strictly between 45% and 60% (below the 70% passing threshold).
+- You MUST cap step_score strictly between 35% and 45% (below the 70% passing threshold).
 - You MUST include "INCORRECT_CAUSE_HIERARCHY" in the flags array.
-- In actionable_feedback, clearly explain why "${studentTopCause?.title}" is a symptom or secondary effect rather than the primary root cause ("${primaryRootCause.title}"). Prompt the student to reorganize the causes from root cause (#1) to symptom.`
+- In actionable_feedback, inform the student that their ranking is not in the correct order, explicitly explain that they cannot proceed to Step 3 until all causes are correctly ordered in the designated causal sequence, and provide constructive pedagogical guidance highlighting how systemic root causes lead into intermediate blockages and downstream effects.`
 }
 `;
 
@@ -1858,20 +1903,20 @@ MANDATORY SCORING & INTEGRITY INSTRUCTIONS:
     fallbackSummary,
     fallbackFeedback,
     isPassingOrder
-      ? ["Recognized primary systemic root drivers", "Distinguished structural causes from symptoms"]
-      : ["Reviewed scenario causal factors"],
+      ? ["Identified exact root causal sequence", "Distinguished structural causes from downstream symptoms"]
+      : ["Attempted causal hierarchy ranking"],
     isPassingOrder
-      ? ["Examine how contributing factors amplify the primary root cause."]
+      ? ["Proceed to evaluate evidence sources in Step 3."]
       : ["Prioritize structural root causes above secondary symptoms or external constraints."],
     fallbackFlags
   );
 
   const evaluation = await callGeminiVerification(prompt, fallback);
 
-  // Policy hard gate: If order is not passing, ensure model cannot accidentally pass it
-  if (!isPassingOrder) {
+  // Policy hard gate: Student CANNOT proceed unless they correctly identify the exact designated order
+  if (!isExactMatch) {
     evaluation.passed = false;
-    evaluation.step_score = Math.min(evaluation.step_score, 60);
+    evaluation.step_score = Math.min(evaluation.step_score || 0, 45);
     if (!evaluation.flags.includes("INCORRECT_CAUSE_HIERARCHY")) {
       evaluation.flags.push("INCORRECT_CAUSE_HIERARCHY");
     }

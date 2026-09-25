@@ -10,7 +10,39 @@
 
 ## Completed
 
-1. **Mission Clean-up and Canonical Seeding (`san-isidro-drainage-crisis`)**:
+1. **Step 2 Mandatory Exact Causal Hierarchy Identification and Progression Gating**:
+   - `[Verified]` Exact Causal Hierarchy Gate: In [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) (`evaluateStep2`), verified `isExactMatch` where student's `orderedCauseIds` must match `correctOrder` at every position (supporting both cause IDs and titles).
+   - `[Verified]` Progression Block on Deviation: If the student's ranking deviates from the designated causal sequence in any position, `passed: false` is enforced deterministically, score is capped strictly between 35% and 45%, and the flag `INCORRECT_CAUSE_HIERARCHY` is assigned. The student CANNOT proceed to Step 3 until the exact correct order is identified.
+   - `[Verified]` Pedagogical Actionable Feedback: Explains specifically whether the primary root cause was misplaced or secondary symptoms/environmental triggers were elevated above root causes, prompting the student to reorganize the causes properly.
+   - `[Verified]` Prompt Guidance: Updated Step 2 description in [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx) to clarify that discovering the correct causal order is mandatory to proceed.
+   - `[Verified]` Automated Test Suite: Verified via [`scratch/test_step2_rules.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_step2_rules.ts) covering inverted order (blocked), minor factor swap (blocked), incomplete ranking (blocked), and exact designated order (passed with 96%).
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed with 0 errors.
+
+2. **Step 1 Mandatory Correct Root Issue Enforcement, Justification Rigor, and Elimination of Admin "Alternative Choice" Labels**:
+   - `[Verified]` Deterministic Rejection for Incorrect Issue: In [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) (`evaluateStep1`), failing to identify the designated root issue (`"What is the main issue that needs to be addressed first?"`) triggers an immediate structural error (`passed: false`, score 35%, flag `INCORRECT_PRIORITY_ISSUE`). The student CANNOT proceed to Step 2.
+   - `[Verified]` Rigorous Justification Verification ("Their justification must also be correct"):
+     - Enforces $\ge 2$ sentences and $\ge 20$ characters (rejects with `INSUFFICIENT_LENGTH`).
+     - Detects disconnected justifications that fail to reference the selected issue (`selectedScore === 0`), rejecting with `SELECTION_JUSTIFICATION_MISMATCH`.
+     - Detects off-topic text (`CONTEXT_RELEVANCE_MISMATCH`) and AI-generated prose (`AI_GENERATED_CONTENT`).
+     - Gemini AI evaluates whether the civic reasoning correctly explains why this issue takes precedence. Passing requires BOTH correct selection and sound, evidence-grounded justification.
+   - `[Verified]` Complete Elimination of "Alternative Choice" from Admin Side: Removed `<Badge variant="outline">Alternative Choice</Badge>` from [`components/admin/mission-editor/issues-tab.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/admin/mission-editor/issues-tab.tsx) and [`components/admin/mission-editor/challenge-tab.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/admin/mission-editor/challenge-tab.tsx). Non-correct options are presented cleanly without misleading "alternative choice" framing.
+   - `[Verified]` Automated Test Suite: Verified in [`scratch/test_step1_rules.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_step1_rules.ts) with all 4 test cases passing (incorrect issue blocked, 1-sentence blocked, off-topic blocked, correct issue + justification passes).
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed with 0 errors.
+
+2. **Preloader System & Animated Loading Architecture**:
+   - `[Verified]` Logout Confirmation Prompt: Implemented accessible `AlertDialog` in [`components/navigation.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/navigation.tsx) intercepting both desktop header and mobile drawer logout clicks. Users must confirm before ending their session, with animated loading state (`Logging out...`).
+   - `[Verified]` High-Tech Initial App Splash Preloader: Enhanced [`components/ui/app-preloader.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/ui/app-preloader.tsx) featuring:
+     - Central obsidian-pine tech badge with diagonal moving light sheen (`animate-sheen`) and breathing elevation (`animate-orbit-pulse`).
+     - Dual concentric orbital gyroscope rings: an outer dashed SVG orbit with glowing emerald and cyan satellite beacons (`animate-spin`), and an inner counter-rotating techno tick ring (`animate-spin-reverse`).
+     - Expanding concentric ambient radar waves (`animate-radar-1`, `animate-radar-2`).
+     - Real numerical progress easing counter (`0%` -> `100%`) with tabular numerals and staggered civic status milestones.
+     - Progress track with internal animated light shimmer sweep (`animate-shimmer`) and smooth 500ms blur-zoom dissolution upon completion (`scale-105 opacity-0 blur-sm`).
+   - `[Verified]` Animated Route Navigation Top-Loader: Enhanced [`components/ui/route-preloader.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/ui/route-preloader.tsx) with a moving shimmer wave, an illuminated glowing leading tip head (`shadow-[0_0_10px_3px_rgba(52,211,153,1)]`), and a top-right ambient pulse beacon for instant navigation feedback.
+   - `[Verified]` Fluid Skeleton Shimmer Waves: Upgraded base `Skeleton` primitive in [`components/ui/skeleton.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/ui/skeleton.tsx) with animated gradient shine wave (`before:animate-shimmer`), giving all dashboard, mission activity, and admin loading skeletons a moving light sheen.
+   - `[Verified]` Route Loading Skeletons: Enhanced Next.js route loading skeleton fallbacks across `app/dashboard/loading.tsx`, `app/dashboard/activity/[scenarioId]/loading.tsx`, and `app/admin/dashboard/loading.tsx` (removed duplicate root `app/loading.tsx` to let `AppPreloader` cleanly handle initial splash).
+   - `[Verified]` Compilation Verification: `npx tsc --noEmit` passed with 0 errors.
+
+2. **Mission Clean-up and Canonical Seeding (`san-isidro-drainage-crisis`)**:
    - `[Verified]` Pre-cleanup Backup: Preserved all original JSON data files in `data/backup_pre_cleanup/` before data alteration.
    - `[Verified]` Purged Legacy Scenarios: Removed all 5 legacy scenarios (`ux2EoX1L61w4yPY9vbBwO`, `P4ugZ20X0Y-KS_zr_Uoup`, `7VE3D8n8BLQDx0ML4SBA9`, `7qdPFk6VauK1WMr1KPC89`, `mSg9windUj82l2sGCkk20`), their stale assignments, constraints, and 8 old test submissions from Supabase PostgreSQL and local storage.
    - `[Verified]` Seeded Specification Mission: Seeded canonical mission **"Barangay San Isidro: Drainage and Waste Management"** directly from `media_1790332814348.pdf` verbatim:

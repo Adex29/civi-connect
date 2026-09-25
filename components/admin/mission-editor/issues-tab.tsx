@@ -205,13 +205,9 @@ export function IssuesTab({ issues, onChange }: IssuesTabProps) {
                             Option {index + 1}
                           </span>
 
-                          {item.isCorrect ? (
+                          {item.isCorrect && (
                             <Badge className="bg-primary text-primary-foreground text-[10px] gap-1 font-semibold">
                               <CheckCircle2 className="h-3 w-3" /> Correct Answer
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-[10px] text-muted-foreground">
-                              Alternative Choice
                             </Badge>
                           )}
                         </div>

@@ -4,15 +4,15 @@
     "scenarioId": "san-isidro-drainage-crisis",
     "studentId": "d5BcSvdW2ShKcjKeAda2l",
     "status": "in_progress",
-    "content": "Priority Issue: \"Possible increase in mosquitoes and pests.\" — For several weeks, residents of a small neighborhood in Barangay San Isidro have noticed that rainwater remains on the street for hours after heavy rain. The affected area is a narrow street shared by eight neighboring households. Residents observed that the drainage canal beside the houses is often clogged with plastic wrappers, leaves, and other household waste. Some residents also place their household garbage near the canal before collection, and some of it is carried into the drainage during rainy weather.",
-    "feedback": "Your justification discusses \"Clogged drainage canal causing stagnant water on the neighborhood street.\" but you selected \"Possible increase in mosquitoes and pests.\". Please write a justification that explains why your selected issue (\"Possible increase in mosquitoes and pests.\") is the most urgent priority concern for the community. Note: A minimum score of 70% is required to continue to the next mission step (Current Score: 35%).",
+    "content": "Priority Issue: \"Possible increase in mosquitoes and pests.\" — For several weeks, residents of a small neighborhood in Barangay San Isidro have noticed that rainwater remains on the street for hours after heavy rain. The affected area is a narrow street shared by eight neighboring households. Residents observed tshat the drainage canal beside the houses is often clogged with plastic wrappers, leaves, and other household waste. Some residents also place their household garbage near the canal before collection, and some of it is carried into the drainage during rainy weather.",
+    "feedback": "You selected \"Possible increase in mosquitoes and pests.\". This is not the main issue that needs to be addressed first in this scenario. You cannot proceed to the next step until you correctly identify the primary issue that must be prioritized first. Please review the scenario briefing, identify the primary root community problem, select it, and explain why it must be addressed first. Note: A minimum score of 70% is required to continue to the next mission step (Current Score: 35%).",
     "score": null,
     "stepProgress": 1,
     "simulationState": {
       "step1": {
         "selectedIssue": "Possible increase in mosquitoes and pests.",
-        "justification": "For several weeks, residents of a small neighborhood in Barangay San Isidro have noticed that rainwater remains on the street for hours after heavy rain. The affected area is a narrow street shared by eight neighboring households. Residents observed that the drainage canal beside the houses is often clogged with plastic wrappers, leaves, and other household waste. Some residents also place their household garbage near the canal before collection, and some of it is carried into the drainage during rainy weather.",
-        "feedback": "Your justification discusses \"Clogged drainage canal causing stagnant water on the neighborhood street.\" but you selected \"Possible increase in mosquitoes and pests.\". Please write a justification that explains why your selected issue (\"Possible increase in mosquitoes and pests.\") is the most urgent priority concern for the community. Note: A minimum score of 70% is required to continue to the next mission step (Current Score: 35%).",
+        "justification": "For several weeks, residents of a small neighborhood in Barangay San Isidro have noticed that rainwater remains on the street for hours after heavy rain. The affected area is a narrow street shared by eight neighboring households. Residents observed tshat the drainage canal beside the houses is often clogged with plastic wrappers, leaves, and other household waste. Some residents also place their household garbage near the canal before collection, and some of it is carried into the drainage during rainy weather.",
+        "feedback": "You selected \"Possible increase in mosquitoes and pests.\". This is not the main issue that needs to be addressed first in this scenario. You cannot proceed to the next step until you correctly identify the primary issue that must be prioritized first. Please review the scenario briefing, identify the primary root community problem, select it, and explain why it must be addressed first. Note: A minimum score of 70% is required to continue to the next mission step (Current Score: 35%).",
         "passed": false,
         "evaluation": {
           "step_number": 1,
@@ -28,18 +28,18 @@
           },
           "overall_civic_score": 35,
           "flags": [
-            "SELECTION_JUSTIFICATION_MISMATCH"
+            "INCORRECT_PRIORITY_ISSUE"
           ],
           "is_ai_generated": false,
           "ai_confidence_score": 0,
-          "evaluation_summary": "Justification does not match the selected issue.",
+          "evaluation_summary": "Incorrect priority issue selected.",
           "strengths": [
             "Attempted initial response."
           ],
           "areas_for_improvement": [
             "Complete all required fields."
           ],
-          "actionable_feedback": "Your justification discusses \"Clogged drainage canal causing stagnant water on the neighborhood street.\" but you selected \"Possible increase in mosquitoes and pests.\". Please write a justification that explains why your selected issue (\"Possible increase in mosquitoes and pests.\") is the most urgent priority concern for the community. Note: A minimum score of 70% is required to continue to the next mission step (Current Score: 35%)."
+          "actionable_feedback": "You selected \"Possible increase in mosquitoes and pests.\". This is not the main issue that needs to be addressed first in this scenario. You cannot proceed to the next step until you correctly identify the primary issue that must be prioritized first. Please review the scenario briefing, identify the primary root community problem, select it, and explain why it must be addressed first. Note: A minimum score of 70% is required to continue to the next mission step (Current Score: 35%)."
         }
       },
       "currentStep": 1
