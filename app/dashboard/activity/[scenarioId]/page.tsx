@@ -1,5 +1,10 @@
 import { getCurrentStudent } from "@/lib/dal";
-import { findScenarioById, getAllSubmissions, getAllClassrooms, getAllClassroomScenarios } from "@/lib/db";
+import {
+  findScenarioById,
+  findSubmissionForStudent,
+  findClassroomById,
+  findClassroomScenario,
+} from "@/lib/db";
 import { ActivityForm } from "./activity-form";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -16,7 +21,14 @@ export default async function ActivityPage({
   }
 
   const { scenarioId } = await params;
-  const scenario = await findScenarioById(scenarioId);
+
+  // Execute targeted indexed queries in parallel
+  const [scenario, submission, classroom, assignment] = await Promise.all([
+    findScenarioById(scenarioId),
+    findSubmissionForStudent(scenarioId, student.id, student.groupId),
+    findClassroomById(student.classroomId),
+    findClassroomScenario(student.classroomId, scenarioId),
+  ]);
 
   if (!scenario) {
     return (
@@ -35,10 +47,6 @@ export default async function ActivityPage({
     );
   }
 
-  const submissions = await getAllSubmissions();
-  const submission = submissions.find(
-    (s) => s.scenarioId === scenarioId && (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
-  );
   const isCompleted = submission?.status === "completed";
 
   // Check if scenario itself is archived
@@ -61,15 +69,6 @@ export default async function ActivityPage({
       </div>
     );
   }
-
-  // Load classroom and classroom-scenario mapping
-  const classrooms = await getAllClassrooms();
-  const classroom = classrooms.find((c) => c.id === student.classroomId);
-
-  const classroomScenarios = await getAllClassroomScenarios();
-  const assignment = classroomScenarios.find(
-    (cs) => cs.classroomId === student.classroomId && cs.scenarioId === scenarioId
-  );
 
   // If unassigned or classroom missing: allow read-only access if student completed it, otherwise redirect
   if (!classroom || !assignment || !assignment.isActive) {

@@ -17,10 +17,9 @@ const STEP_LABELS: Record<number, { name: string; desc: string }> = {
   2: { name: "Step 2: Analyze Causes", desc: "Examining root causes and contributing factors" },
   3: { name: "Step 3: Evaluate Digital Evidence", desc: "Assessing credibility, relevance, and reliability of digital sources" },
   4: { name: "Step 4: Consult Simulated Stakeholders", desc: "Gathering insights from community members and local leaders" },
-  5: { name: "Step 5: Develop an Intervention Plan", desc: "Creating practical, evidence-based solutions for the identified issue" },
-  6: { name: "Step 6: Anticipate Challenges", desc: "Responding to unexpected obstacles and revising strategy" },
-  7: { name: "Step 7: Revise Plan", desc: "Refining and adapting the intervention plan based on simulation obstacles" },
-  8: { name: "Step 8: Assess Community Impact", desc: "Evaluating feasibility, sustainability, effectiveness, and ethics" },
+  5: { name: "Step 5: Community Action Planning", desc: "Creating practical, evidence-based solutions for the identified issue" },
+  6: { name: "Step 6: Challenge Simulation", desc: "Responding to unexpected obstacles and revising strategy" },
+  7: { name: "Step 7: Plan Revision", desc: "Refining and adapting the community action plan based on simulation obstacles" },
 };
 
 export function TipsTab({ stepTips, onChange }: TipsTabProps) {
@@ -35,7 +34,7 @@ export function TipsTab({ stepTips, onChange }: TipsTabProps) {
                 <span>Custom Mission Guidance Tips per Step</span>
               </CardTitle>
               <Badge variant="secondary" className="text-[10px] font-mono shrink-0">
-                8 Steps
+                7 Steps
               </Badge>
             </div>
             <CardDescription className="text-xs">
@@ -45,7 +44,7 @@ export function TipsTab({ stepTips, onChange }: TipsTabProps) {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => {
+          {[1, 2, 3, 4, 5, 6, 7].map((num) => {
             const stepInfo = STEP_LABELS[num];
             return (
               <div key={num} className="p-3.5 border border-border rounded-lg bg-card space-y-2">

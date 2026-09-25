@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +15,10 @@ export interface CauseRankerProps {
 
 export function CauseRanker({ initialCauses, onOrderChange, disabled }: CauseRankerProps) {
   const [causes, setCauses] = useState<CauseItem[]>(initialCauses);
+
+  useEffect(() => {
+    setCauses(initialCauses);
+  }, [initialCauses]);
 
   const moveItem = (index: number, direction: "up" | "down") => {
     if (disabled) return;

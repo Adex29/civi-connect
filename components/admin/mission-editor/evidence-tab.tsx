@@ -126,6 +126,11 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                         <Badge variant="outline" className="text-[10px] shrink-0 font-normal">
                           {ev.type || "Document"}
                         </Badge>
+                        {ev.isIrrelevant && (
+                          <Badge variant="outline" className="text-[10px] shrink-0 font-medium border-amber-500/50 text-amber-600 bg-amber-500/10">
+                            Irrelevant Distractor
+                          </Badge>
+                        )}
                         <div className="hidden sm:flex items-center gap-0.5 text-amber-500 shrink-0">
                           <Star className="h-3 w-3 fill-amber-500" />
                           <span className="text-[10px] font-mono font-bold">
@@ -197,6 +202,11 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                             <p className="text-[10px] text-muted-foreground">
                               Sets the baseline credibility score (1-5 stars) students will judge.
                             </p>
+                            {ev.isIrrelevant && (
+                              <p className="text-[10px] text-muted-foreground italic">
+                                Note: Star ratings are disabled on student side when &quot;Not Related&quot; is selected and have no bearing on evaluation.
+                              </p>
+                            )}
                           </div>
                           <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map((star) => (
@@ -222,11 +232,11 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                         </div>
 
                         {/* Evidence Supports Category Configuration */}
-                        <div className="space-y-1.5 p-2.5 rounded-lg border border-border bg-muted/20">
+                        <div className="space-y-2 p-2.5 rounded-lg border border-border bg-muted/20">
                           <div className="space-y-0.5">
                             <Label className="text-xs font-semibold">Evidence Scope & Supported Categories</Label>
                             <p className="text-[10px] text-muted-foreground">
-                              Tag what this evidence validates (used as ground truth for student analysis in Step 3).
+                              Tag what this evidence validates, or designate it as an irrelevant distractor for students to filter out.
                             </p>
                           </div>
                           <div className="flex flex-wrap gap-2 pt-1">
@@ -235,17 +245,19 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                               { tag: "solution", label: "Intervention / Solution" },
                               { tag: "need", label: "Community Need / Hardship" },
                             ].map(({ tag, label }) => {
-                              const isSelected = (ev.supports || []).includes(tag as any);
+                              const isSelected = !ev.isIrrelevant && (ev.supports || []).includes(tag as any);
                               return (
                                 <button
                                   key={tag}
                                   type="button"
                                   onClick={() => {
-                                    const current = ev.supports || [];
+                                    const current = ev.isIrrelevant ? [] : (ev.supports || []);
                                     const nextSupports = isSelected
                                       ? current.filter((t: string) => t !== tag)
                                       : [...current, tag as "cause" | "solution" | "need"];
-                                    updateEvidence(i, "supports", nextSupports);
+                                    const next = [...evidence];
+                                    next[i] = { ...next[i], supports: nextSupports, isIrrelevant: false };
+                                    onChange(next);
                                   }}
                                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
                                     isSelected
@@ -260,7 +272,38 @@ export function EvidenceTab({ evidence, onChange }: EvidenceTabProps) {
                                 </button>
                               );
                             })}
+
+                            {/* Explicit Distractor / Irrelevant Toggle */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const next = [...evidence];
+                                const willBeIrrelevant = !ev.isIrrelevant;
+                                next[i] = {
+                                  ...next[i],
+                                  isIrrelevant: willBeIrrelevant,
+                                  supports: willBeIrrelevant ? [] : ["cause"],
+                                };
+                                onChange(next);
+                              }}
+                              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                                ev.isIrrelevant
+                                  ? "bg-amber-600 text-white border-amber-600 dark:bg-amber-600 shadow-xs"
+                                  : "bg-card text-muted-foreground border-border hover:bg-amber-500/10 hover:text-amber-700 hover:border-amber-500/30"
+                              }`}
+                            >
+                              <span className={`text-[10px] font-bold ${ev.isIrrelevant ? "text-white" : "text-amber-600"}`}>
+                                {ev.isIrrelevant ? "✓" : "!"}
+                              </span>
+                              <span>Not Related / Irrelevant (Distractor)</span>
+                            </button>
                           </div>
+
+                          {ev.isIrrelevant && (
+                            <div className="mt-2 p-2 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 leading-snug">
+                              <strong>Distractor Source:</strong> In Step 3, students must identify this source as &quot;Not Related / Irrelevant&quot; and write a 2-3 sentence justification explaining why it does not apply to this community crisis. The AI evaluator will verify both the classification and the justification.
+                            </div>
+                          )}
                         </div>
 
                         <div className="space-y-1.5">

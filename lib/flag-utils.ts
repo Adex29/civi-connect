@@ -15,16 +15,28 @@ export const FLAG_LABELS: Record<string, string> = {
   INSUFFICIENT_LENGTH: "More Detail Needed",
   INSUFFICIENT_JUSTIFICATION: "More Justification Needed",
   SELECTION_JUSTIFICATION_MISMATCH: "Justification Mismatch",
+  INCORRECT_PRIORITY_ISSUE: "Root Issue Identification Needed",
 
   // Evidence Evaluation Flags
   INCOMPLETE_RANKING: "Incomplete Cause Ranking",
+  INCORRECT_CAUSE_HIERARCHY: "Cause Hierarchy Alignment Needed",
   INCOMPLETE_EVIDENCE_AUDIT: "All Evidence Must Be Evaluated",
   INSUFFICIENT_EVIDENCE_JUSTIFICATION: "Evidence Justification Needed",
+  MISIDENTIFIED_IRRELEVANT_EVIDENCE: "Irrelevant Evidence Misidentified",
+  DISMISSED_RELEVANT_EVIDENCE: "Relevant Evidence Dismissed",
+  INSUFFICIENT_IRRELEVANT_EVIDENCE_JUSTIFICATION: "Irrelevance Justification Needed",
+  DUPLICATE_EVIDENCE_JUSTIFICATION: "Unique Evidence Justifications Needed",
+  EVIDENCE_JUSTIFICATION_MISMATCH: "Evidence Content Alignment Needed",
   EVIDENCE_RATING_MISMATCH: "Credibility Alignment Needed",
 
-  // Intervention Plan Flags
+  // Intervention / Community Action Plan Flags
   INCOMPLETE_SCHEMA: "Missing Required Plan Fields",
   INSUFFICIENT_OPERATIONAL_DETAIL: "Operational Detail Needed",
+  MISSING_ACTIVITY_CRITERIA: "Activity Description Incomplete",
+  MISSING_CONSULTED_STAKEHOLDER: "Step 4 Stakeholder Required",
+  TIMELINE_EXCEEDS_MISSION_SCOPE: "Timeline Exceeds 7-Day Scope",
+  OUTCOMES_OBJECTIVES_MISMATCH: "Outcomes Must Align with Objectives",
+  UNREALISTIC_BUDGET: "Realistic Community Budget Needed",
   PLAN_SCENARIO_MISMATCH: "Plan Alignment Needed",
 
   // Impact Assessment Flags
@@ -37,6 +49,8 @@ export const FLAG_LABELS: Record<string, string> = {
 
   // Quality & Reasoning Flags
   GENERIC_FLUFF: "Specific Evidence Needed",
+  CONTEXT_RELEVANCE_MISMATCH: "Scenario Relevance Needed",
+  DUPLICATE_FIELD_CONTENT: "Unique Section Responses Needed",
 
   // AI & Authenticity Control Flags
   AI_PATTERN_DETECTED: "Authenticity Check",
@@ -139,8 +153,7 @@ export function extractSubmissionAiAnalysis(submission: Submission): SubmissionA
     { step: 5, evaluation: state.step5?.evaluation, feedback: state.step5?.feedback },
     { step: 6, evaluation: state.step6?.evaluation, feedback: state.step6?.feedback },
     { step: 7, evaluation: state.step7?.evaluation, feedback: state.step7?.feedback },
-    { step: 8, evaluation: state.step8?.evaluation, feedback: state.step8?.feedback },
-    { step: 9, evaluation: state.reflection?.evaluation, feedback: state.reflection?.feedback },
+    { step: 8, evaluation: state.reflection?.evaluation || state.step8?.evaluation, feedback: state.reflection?.feedback || state.step8?.feedback },
   ];
 
   const flaggedSteps: number[] = [];

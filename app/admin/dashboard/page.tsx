@@ -9,12 +9,21 @@ import {
 import { OverviewView } from "./overview-view";
 
 export default async function AdminDashboardOverview() {
-  const classrooms = await getAllClassrooms();
-  const scenarios = await getAllScenarios();
-  const students = await getAllStudents();
-  const submissions = await getAllSubmissions();
-  const groups = await getAllGroups();
-  const classroomScenarios = await getAllClassroomScenarios();
+  const [
+    classrooms,
+    scenarios,
+    students,
+    submissions,
+    groups,
+    classroomScenarios,
+  ] = await Promise.all([
+    getAllClassrooms(),
+    getAllScenarios(),
+    getAllStudents(),
+    getAllSubmissions(),
+    getAllGroups(),
+    getAllClassroomScenarios(),
+  ]);
 
   return (
     <OverviewView

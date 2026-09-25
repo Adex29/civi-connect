@@ -6,71 +6,94 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, AlertCircle, FileText, ListOrdered } from "lucide-react";
-import { Sortable, SortableDragHandle } from "@/components/ui/sortable";
 import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash2, AlertCircle, FileText, ListOrdered, CheckCircle2, Check } from "lucide-react";
+import { Sortable, SortableDragHandle } from "@/components/ui/sortable";
+import { IssueOption } from "@/lib/definitions";
 
 interface IssuesTabProps {
-  issuesText: string;
-  onChange: (issuesText: string) => void;
+  issues: IssueOption[];
+  onChange: (issues: IssueOption[]) => void;
 }
 
-interface IssueItem {
-  id: string;
-  text: string;
-}
-
-export function IssuesTab({ issuesText, onChange }: IssuesTabProps) {
+export function IssuesTab({ issues, onChange }: IssuesTabProps) {
   const [viewMode, setViewMode] = useState<"list" | "raw">("list");
-
-  // Parse lines into object array for drag and drop
-  const lines = issuesText
-    .split("\n")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-
-  const [items, setItems] = useState<IssueItem[]>(() =>
-    lines.map((text, index) => ({
-      id: `issue-${index}-${text.slice(0, 10)}`,
-      text,
-    }))
+  const [rawText, setRawText] = useState<string>(() =>
+    issues.map((i) => i.text).join("\n")
   );
 
-  const updateFromItems = (newItems: IssueItem[]) => {
-    setItems(newItems);
-    const text = newItems.map((i) => i.text.trim()).filter(Boolean).join("\n");
-    onChange(text);
+  const addIssue = () => {
+    const newIssues: IssueOption[] = [
+      ...issues,
+      {
+        id: `issue-${Date.now()}`,
+        text: "",
+        isCorrect: issues.length === 0,
+      },
+    ];
+    onChange(newIssues);
   };
 
-  const addItem = () => {
-    const newItems = [...items, { id: `issue-${Date.now()}`, text: "" }];
-    updateFromItems(newItems);
+  const removeIssue = (index: number) => {
+    const wasCorrect = issues[index]?.isCorrect;
+    const remaining = issues.filter((_, i) => i !== index);
+    if (wasCorrect && remaining.length > 0) {
+      remaining[0].isCorrect = true;
+    }
+    onChange(remaining);
   };
 
-  const removeItem = (index: number) => {
-    const newItems = items.filter((_, i) => i !== index);
-    updateFromItems(newItems);
+  const updateIssueText = (index: number, newText: string) => {
+    const updated = [...issues];
+    updated[index] = { ...updated[index], text: newText };
+    onChange(updated);
   };
 
-  const updateItemText = (index: number, newText: string) => {
-    const newItems = [...items];
-    newItems[index] = { ...newItems[index], text: newText };
-    updateFromItems(newItems);
+  const setCorrect = (index: number) => {
+    const updated = issues.map((item, i) => ({
+      ...item,
+      isCorrect: i === index,
+    }));
+    onChange(updated);
   };
 
   const handleToggleView = () => {
     if (viewMode === "raw") {
-      const parsed = issuesText
+      // Parse raw text into issue items, preserving previous correct selection if possible
+      const lines = rawText
         .split("\n")
         .map((s) => s.trim())
-        .filter((s) => s.length > 0)
-        .map((text, idx) => ({ id: `issue-${idx}-${text.slice(0, 10)}`, text }));
-      setItems(parsed);
+        .filter((s) => s.length > 0);
+
+      const parsed: IssueOption[] = lines.map((text, idx) => ({
+        id: `issue-${idx}-${Date.now()}`,
+        text,
+        isCorrect: idx === 0,
+      }));
+      onChange(parsed);
       setViewMode("list");
     } else {
+      setRawText(issues.map((i) => i.text).join("\n"));
       setViewMode("raw");
     }
   };
+
+  const handleRawChange = (text: string) => {
+    setRawText(text);
+    const lines = text
+      .split("\n")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    const parsed: IssueOption[] = lines.map((t, idx) => ({
+      id: `issue-${idx}-${Date.now()}`,
+      text: t,
+      isCorrect: idx === 0,
+    }));
+    onChange(parsed);
+  };
+
+  const correctItem = issues.find((i) => i.isCorrect);
 
   return (
     <TabsContent value="issues" className="m-0 w-full">
@@ -83,11 +106,17 @@ export function IssuesTab({ issuesText, onChange }: IssuesTabProps) {
                 <span>Step 1: Priority Issue Choices</span>
               </CardTitle>
               <Badge variant="secondary" className="text-[10px] font-mono shrink-0">
-                {items.length} Options
+                {issues.length} Options
               </Badge>
+              {correctItem && (
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-mono shrink-0 gap-1">
+                  <CheckCircle2 className="h-3 w-3" /> Correct Answer Designated
+                </Badge>
+              )}
             </div>
             <CardDescription className="text-xs">
-              Define the candidate problem statements that students will analyze and prioritize in Step 1.
+              Define the candidate issue options for Step 1 (&quot;What is the main issue that needs to be addressed first?&quot;).
+              Tick or mark the correct root issue that students should prioritize.
             </CardDescription>
           </div>
 
@@ -110,7 +139,7 @@ export function IssuesTab({ issuesText, onChange }: IssuesTabProps) {
               )}
             </Button>
             {viewMode === "list" && (
-              <Button type="button" size="sm" onClick={addItem} className="gap-1 text-xs">
+              <Button type="button" size="sm" onClick={addIssue} className="gap-1 text-xs">
                 <Plus className="h-3.5 w-3.5" /> Add Issue
               </Button>
             )}
@@ -120,49 +149,105 @@ export function IssuesTab({ issuesText, onChange }: IssuesTabProps) {
         <CardContent className="space-y-4">
           {viewMode === "raw" ? (
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">Enter one issue choice per line:</p>
+              <p className="text-xs text-muted-foreground">
+                Enter one issue choice per line. The first line will default to the correct answer:
+              </p>
               <Textarea
-                value={issuesText}
-                onChange={(e) => onChange(e.target.value)}
+                value={rawText}
+                onChange={(e) => handleRawChange(e.target.value)}
                 rows={6}
                 className="font-mono text-xs leading-relaxed"
               />
             </div>
           ) : (
             <div className="space-y-3">
-              {items.length === 0 ? (
+              {issues.length === 0 ? (
                 <div className="text-center py-8 px-4 border border-dashed border-border rounded-lg bg-muted/30 space-y-2">
                   <AlertCircle className="h-8 w-8 mx-auto text-muted-foreground/60" />
                   <p className="text-xs text-muted-foreground font-medium">No priority issues added yet.</p>
-                  <Button type="button" size="sm" variant="outline" onClick={addItem} className="text-xs gap-1">
+                  <Button type="button" size="sm" variant="outline" onClick={addIssue} className="text-xs gap-1">
                     <Plus className="h-3.5 w-3.5" /> Add First Issue
                   </Button>
                 </div>
               ) : (
                 <Sortable
-                  items={items}
-                  onValueChange={updateFromItems}
+                  items={issues}
+                  onValueChange={onChange}
                   renderItem={(item, index) => (
-                    <div className="flex items-center gap-2 p-2.5 bg-card border border-border rounded-lg shadow-xs hover:border-primary/40 transition-colors">
-                      <SortableDragHandle />
-                      <span className="font-mono text-xs font-bold text-muted-foreground w-6 text-center shrink-0">
-                        #{index + 1}
-                      </span>
-                      <Input
-                        value={item.text}
-                        onChange={(e) => updateItemText(index, e.target.value)}
-                        className="flex-1 text-xs h-8 bg-background"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => removeItem(index)}
-                        title="Remove issue"
-                        className="h-8 w-8 shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div
+                      key={item.id || index}
+                      className={`p-3 border rounded-lg bg-card space-y-2.5 transition-all shadow-xs ${
+                        item.isCorrect
+                          ? "border-primary/50 bg-primary/5 dark:bg-primary/10 shadow-xs ring-1 ring-primary/20"
+                          : "border-border hover:border-primary/30"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <SortableDragHandle />
+
+                          {/* Direct Tick / Radio Button */}
+                          <button
+                            type="button"
+                            onClick={() => setCorrect(index)}
+                            aria-label={item.isCorrect ? "Correct answer" : "Mark as correct answer"}
+                            className={`h-5 w-5 rounded-full border flex items-center justify-center transition-all cursor-pointer ${
+                              item.isCorrect
+                                ? "border-primary bg-primary text-primary-foreground shadow-xs ring-2 ring-primary/20"
+                                : "border-muted-foreground/40 hover:border-primary text-transparent"
+                            }`}
+                            title={item.isCorrect ? "Correct answer" : "Click to mark as correct answer"}
+                          >
+                            <Check className="h-3 w-3 stroke-[3]" />
+                          </button>
+
+                          <span className="font-mono text-xs font-bold text-muted-foreground">
+                            Option {index + 1}
+                          </span>
+
+                          {item.isCorrect ? (
+                            <Badge className="bg-primary text-primary-foreground text-[10px] gap-1 font-semibold">
+                              <CheckCircle2 className="h-3 w-3" /> Correct Answer
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                              Alternative Choice
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {!item.isCorrect && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setCorrect(index)}
+                              className="h-7 text-[11px] text-primary hover:bg-primary/10 gap-1 border-primary/30 hover:border-primary"
+                            >
+                              <CheckCircle2 className="h-3 w-3" /> Mark as Correct Answer
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            onClick={() => removeIssue(index)}
+                            title="Remove issue"
+                            className="h-7 w-7 shrink-0 text-destructive/80 hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="pl-6">
+                        <Input
+                          value={item.text}
+                          onChange={(e) => updateIssueText(index, e.target.value)}
+                          className={`text-xs bg-background ${item.isCorrect ? "font-medium" : ""}`}
+                        />
+                      </div>
                     </div>
                   )}
                 />

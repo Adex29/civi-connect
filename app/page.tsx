@@ -32,7 +32,7 @@ const steps = [
   { num: "02", name: "Analyze Causes", desc: "Examine the root causes and contributing factors.", icon: ListOrdered, badge: "Analysis" },
   { num: "03", name: "Evaluate Digital Evidence", desc: "Assess the credibility, relevance, and reliability of different digital sources before making decisions.", icon: FileCheck, badge: "Verification" },
   { num: "04", name: "Consult Simulated Stakeholders", desc: "Gather insights from community members, local leaders, and organizations through realistic simulations.", icon: Users, badge: "Consultation" },
-  { num: "05", name: "Develop an Intervention Plan", desc: "Create practical, evidence-based solutions for the identified community issue.", icon: Lightbulb, badge: "Planning" },
+  { num: "05", name: "Community Action Planning", desc: "Create practical, evidence-based solutions for the identified community issue.", icon: Lightbulb, badge: "Planning" },
   { num: "06", name: "Anticipate Challenges", desc: "Respond to unexpected obstacles and revise your plan accordingly.", icon: Zap, badge: "Adaptation" },
   { num: "07", name: "Revise Plan", desc: "Refine and adapt your intervention plan based on the simulation obstacle.", icon: RefreshCw, badge: "Revision" },
   { num: "08", name: "Assess Community Impact", desc: "Evaluate the feasibility, sustainability, effectiveness, and ethical implications of your proposed solution.", icon: Target, badge: "Evaluation" },

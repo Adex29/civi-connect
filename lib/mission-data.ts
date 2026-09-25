@@ -4,22 +4,217 @@ import {
   Stakeholder,
   UnexpectedEvent,
   Scenario,
+  IssueOption,
+  ChallengeEvent,
+  ChallengeCategory,
 } from "./definitions";
 
 export interface MissionData {
   scenarioId: string;
   issues: string[]; // Options for Step 1
+  issueOptions?: IssueOption[]; // Full structured options with isCorrect
+  correctIssue?: string; // Designated correct issue text
   causes: CauseItem[]; // Step 2 items to rank
   evidenceLibrary: EvidenceItem[]; // Step 3 sources
   stakeholders: Stakeholder[]; // Step 4 interviewees
-  unexpectedEvent: UnexpectedEvent; // Step 6 challenge
+  unexpectedEvent: UnexpectedEvent; // Step 6 challenge (legacy / base)
+  challenges: ChallengeEvent[]; // Step 6 3-category challenges (Stakeholder, Budget, Resource)
   stepTips: Record<number, string>; // Step 1-7 tips
 }
 
+export function getScenarioChallenges(scenario: Scenario): ChallengeEvent[] {
+  if (scenario.missionData?.challenges && scenario.missionData.challenges.length > 0) {
+    return scenario.missionData.challenges;
+  }
+
+  const title = scenario.title || "Community Project";
+  const titleLower = title.toLowerCase();
+
+  if (titleLower.includes("waste") || titleLower.includes("solid")) {
+    return [
+      {
+        id: "challenge-stakeholder-waste",
+        category: "stakeholder",
+        categoryLabel: "Stakeholder Challenge",
+        title: "Stakeholder Challenge: Key Mobilizers Reassigned",
+        description:
+          "The Barangay Chairman informed your group that the Barangay Tanods and volunteer zone leaders scheduled to co-lead the community assembly and zone clean-up drive have been reassigned to emergency disaster-preparedness duty. They cannot participate or provide on-ground manpower as planned.",
+        affectedField: "stakeholders",
+        editableFields: ["stakeholders"],
+      },
+      {
+        id: "challenge-budget-waste",
+        category: "budget",
+        categoryLabel: "Budget Challenge",
+        title: "Budget Challenge: Municipal Sanitation Subsidy Cut",
+        description:
+          "Due to municipal emergency calamity fund reallocations, the municipal government has cut barangay sanitation subsidies by 30%. Fuel and rental funding for heavy collection vehicles and sound equipment will be reduced next month. Your proposed budget is insufficient to cover all original expenses.",
+        affectedField: "budget",
+        editableFields: ["budget"],
+      },
+      {
+        id: "challenge-resource-waste",
+        category: "resource",
+        categoryLabel: "Resource Challenge",
+        title: "Resource Challenge: Clean-Up Materials & Bin Shortage",
+        description:
+          "The local hardware supplier and municipal warehouse notified your group that the color-coded waste bins, push-carts, and heavy-duty segregation bags requested for the community initiative are out of stock and cannot be delivered in time.",
+        affectedField: "resources",
+        editableFields: ["resources"],
+      },
+    ];
+  }
+
+  if (titleLower.includes("dengue")) {
+    return [
+      {
+        id: "challenge-stakeholder-dengue",
+        category: "stakeholder",
+        categoryLabel: "Stakeholder Challenge",
+        title: "Stakeholder Challenge: Health Worker Emergency Deployment",
+        description:
+          "The City Health Inspector and assigned Barangay Health Workers (BHWs) who were supposed to supervise the search-and-destroy mosquito inspection teams were called away to attend a high-level regional epidemiology emergency and cannot assist your team on the scheduled drive days.",
+        affectedField: "stakeholders",
+        editableFields: ["stakeholders"],
+      },
+      {
+        id: "challenge-budget-dengue",
+        category: "budget",
+        categoryLabel: "Budget Challenge",
+        title: "Budget Challenge: Health Outreach Budget Reduction",
+        description:
+          "The municipal health council had to reallocate funds toward an emergency influenza containment drive, resulting in a 30% budget cut for your anti-dengue community campaign materials, protective gear, and informational brochures.",
+        affectedField: "budget",
+        editableFields: ["budget"],
+      },
+      {
+        id: "challenge-resource-dengue",
+        category: "resource",
+        categoryLabel: "Resource Challenge",
+        title: "Resource Challenge: Larvicide & Fogging Equipment Shortage",
+        description:
+          "The City Health Office ran out of commercial larvicide granules and chemical fogging solutions due to regional supply shortages. An important material and facility resource needed for the activity is unavailable, requiring alternative methods.",
+        affectedField: "resources",
+        editableFields: ["resources"],
+      },
+    ];
+  }
+
+  if (titleLower.includes("rabies") || titleLower.includes("animal")) {
+    return [
+      {
+        id: "challenge-stakeholder-rabies",
+        category: "stakeholder",
+        categoryLabel: "Stakeholder Challenge",
+        title: "Stakeholder Challenge: Volunteer Veterinarian Unavailability",
+        description:
+          "The volunteer veterinarians from the partner animal welfare NGO who committed to assisting with the pet registration and vaccination drive had an emergency veterinary rescue operation in a neighboring province and can no longer participate.",
+        affectedField: "stakeholders",
+        editableFields: ["stakeholders"],
+      },
+      {
+        id: "challenge-budget-rabies",
+        category: "budget",
+        categoryLabel: "Budget Challenge",
+        title: "Budget Challenge: Animal Welfare Allocation Cut",
+        description:
+          "The local barangay council had to reduce the discretionary animal welfare fund by 35% due to seasonal flood repair costs, drastically reducing funds available for pet collars, vaccination record cards, and promotional flyers.",
+        affectedField: "budget",
+        editableFields: ["budget"],
+      },
+      {
+        id: "challenge-resource-rabies",
+        category: "resource",
+        categoryLabel: "Resource Challenge",
+        title: "Resource Challenge: Vaccine Cold-Chain Transport Delay",
+        description:
+          "Free vaccine cold-chain transport coolers and holding cages from the regional office have been delayed by 2 weeks. An important material or facility resource needed for the activity is unavailable.",
+        affectedField: "resources",
+        editableFields: ["resources"],
+      },
+    ];
+  }
+
+  // Generic fallback for any other scenario
+  const customEvent = scenario.missionData?.unexpectedEvent;
+  const customDesc = customEvent?.description?.trim();
+
+  return [
+    {
+      id: "challenge-stakeholder-gen",
+      category: "stakeholder",
+      categoryLabel: "Stakeholder Challenge",
+      title: "Stakeholder Challenge: Key Community Partner Unavailability",
+      description:
+        `A key stakeholder who was expected to assist in mobilizing ${title} is no longer available or cannot participate due to sudden conflicting official duties. You must adjust your partner network and stakeholder responsibilities to maintain community support.`,
+      affectedField: "stakeholders",
+      editableFields: ["stakeholders"],
+    },
+    {
+      id: "challenge-budget-gen",
+      category: "budget",
+      categoryLabel: "Budget Challenge",
+      title: "Budget Challenge: Funding Reallocation & Subsidy Reduction",
+      description:
+        customDesc && customDesc.toLowerCase().includes("budget")
+          ? customDesc
+          : `Due to emergency local council fund reallocations, available funding for ${title} has been cut by 30%. The proposed budget is insufficient to cover all originally projected expenses, requiring a revised budget allocation.`,
+      affectedField: "budget",
+      editableFields: ["budget"],
+    },
+    {
+      id: "challenge-resource-gen",
+      category: "resource",
+      categoryLabel: "Resource Challenge",
+      title: "Resource Challenge: Materials & Facility Shortage",
+      description:
+        customDesc && (customDesc.toLowerCase().includes("supply") || customDesc.toLowerCase().includes("delay") || customDesc.toLowerCase().includes("resource"))
+          ? customDesc
+          : `An important material, facility venue, or equipment resource essential for conducting the planned activities in ${title} is unavailable from the local supplier, requiring an adjustment of required resources.`,
+      affectedField: "resources",
+      editableFields: ["resources"],
+    },
+  ];
+}
+
 export function getMissionDataForScenario(scenario: Scenario): MissionData {
+  const baseFallback = getGenericFallbackMissionData(scenario);
+
   // If scenario has custom database-stored missionData, return it directly
   if (scenario.missionData) {
-    const baseFallback = getGenericFallbackMissionData(scenario);
+    const rawIssues = scenario.missionData.issues || [];
+    const normalizedIssueOptions: IssueOption[] = rawIssues.map((item, idx) => {
+      if (typeof item === "string") {
+        const isCorrect = scenario.missionData?.correctIssue
+          ? scenario.missionData.correctIssue.trim().toLowerCase() === item.trim().toLowerCase()
+          : idx === 0;
+        return {
+          id: `issue-${idx}`,
+          text: item,
+          isCorrect,
+        };
+      }
+      return {
+        id: item.id || `issue-${idx}`,
+        text: item.text,
+        isCorrect: Boolean(item.isCorrect),
+      };
+    });
+
+    if (normalizedIssueOptions.length > 0 && !normalizedIssueOptions.some((o) => o.isCorrect)) {
+      normalizedIssueOptions[0].isCorrect = true;
+    }
+
+    const issues = normalizedIssueOptions.length
+      ? normalizedIssueOptions.map((o) => o.text)
+      : baseFallback.issues;
+
+    const correctIssue =
+      normalizedIssueOptions.find((o) => o.isCorrect)?.text ||
+      scenario.missionData.correctIssue ||
+      issues[0] ||
+      baseFallback.correctIssue;
+
     const hasCustomEvent =
       Boolean(scenario.missionData.unexpectedEvent?.title?.trim()) ||
       (scenario.missionData.unexpectedEvent?.options &&
@@ -33,28 +228,39 @@ export function getMissionDataForScenario(scenario: Scenario): MissionData {
 
     return {
       scenarioId: scenario.id,
-      issues: scenario.missionData.issues?.length ? scenario.missionData.issues : baseFallback.issues,
+      issues,
+      issueOptions: normalizedIssueOptions.length ? normalizedIssueOptions : baseFallback.issueOptions,
+      correctIssue,
       causes: scenario.missionData.causes?.length ? scenario.missionData.causes : baseFallback.causes,
       evidenceLibrary: scenario.missionData.evidenceLibrary?.length ? scenario.missionData.evidenceLibrary : baseFallback.evidenceLibrary,
       stakeholders: scenario.missionData.stakeholders?.length ? scenario.missionData.stakeholders : baseFallback.stakeholders,
       unexpectedEvent: hasCustomEvent && scenario.missionData.unexpectedEvent ? scenario.missionData.unexpectedEvent : baseFallback.unexpectedEvent,
+      challenges: getScenarioChallenges(scenario),
       stepTips: hasCustomTips && scenario.missionData.stepTips ? scenario.missionData.stepTips : baseFallback.stepTips,
     };
   }
 
   // Fallback for new empty scenarios before admin customization
-  return getGenericFallbackMissionData(scenario);
+  return baseFallback;
 }
 
 export function getGenericFallbackMissionData(scenario: Scenario): MissionData {
+  const fallbackIssues = [
+    `${scenario.title}: Primary Systemic Issue`,
+    "Lack of Community Participation & Engagement",
+    "Inadequate Policy & Ordinance Enforcement",
+    "Limited Resource Allocation & Funding",
+  ];
+
   return {
     scenarioId: scenario.id,
-    issues: [
-      `${scenario.title}: Primary Systemic Issue`,
-      "Lack of Community Participation & Engagement",
-      "Inadequate Policy & Ordinance Enforcement",
-      "Limited Resource Allocation & Funding",
-    ],
+    issues: fallbackIssues,
+    correctIssue: fallbackIssues[0],
+    issueOptions: fallbackIssues.map((text, idx) => ({
+      id: `fallback-iss-${idx}`,
+      text,
+      isCorrect: idx === 0,
+    })),
     causes: [
       { id: "c1", title: "Weak Regulatory Enforcement", description: "Local officials struggle to enforce ordinances strictly." },
       { id: "c2", title: "Resource & Budget Limitations", description: "Insufficient financial and material resources for full implementation." },
@@ -155,12 +361,14 @@ export function getGenericFallbackMissionData(scenario: Scenario): MissionData {
         name: "Mrs. Elena Gomez",
         role: "Community Association Leader",
         initialStatement: "Residents want to help, but previous projects failed because there was no continuous follow-through.",
-        followUps: [
-          {
-            question: "What would motivate households to actively participate long-term?",
-            answer: "Transparent reporting, recognition for active Sitio groups, and tangible improvements in our daily environment.",
-          },
-        ],
+        isIrrelevant: false,
+      },
+      {
+        id: "st3",
+        name: "Coach Bryan Garcia",
+        role: "Basketball League Coordinator",
+        initialStatement: "Our summer league tournament schedule is already finalized. We are only concerned with reserving the covered court on weekends.",
+        isIrrelevant: true,
       },
     ],
     unexpectedEvent: {
@@ -187,6 +395,7 @@ export function getGenericFallbackMissionData(scenario: Scenario): MissionData {
         },
       ],
     },
+    challenges: getScenarioChallenges(scenario),
     stepTips: {
       1: "Read carefully. Differentiate symptoms from root issues before prioritizing.",
       2: "Analyze cause relationships. Consider which factor triggers the others.",
@@ -194,8 +403,7 @@ export function getGenericFallbackMissionData(scenario: Scenario): MissionData {
       4: "Gather diverse perspectives. Interview both local leaders and grassroots residents.",
       5: "Ensure your intervention plan is evidence-based, actionable, and sustainable.",
       6: "Anticipate real-world constraints. Adapt your strategy to overcome unexpected obstacles.",
-      7: "Review the obstacles faced in the challenge simulation. Refine and adapt your intervention plan to make it resilient, budget-aligned, and feasible.",
-      8: "Assess ethical implications and sustainability. Make sure vulnerable groups are protected and benefit.",
+      7: "Review the obstacles faced in the challenge simulation. Refine and adapt your community action plan to make it resilient, budget-aligned, and feasible.",
     },
   };
 }

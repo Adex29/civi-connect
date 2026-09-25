@@ -3,10 +3,12 @@ import { Classroom, Scenario, Student, Submission } from "@/lib/definitions";
 import { SubmissionsView } from "./submissions-view";
 
 export default async function SubmissionsPage() {
-  const submissions = await getAllSubmissions();
-  const students = await getAllStudents();
-  const scenarios = await getAllScenarios();
-  const classrooms = await getAllClassrooms();
+  const [submissions, students, scenarios, classrooms] = await Promise.all([
+    getAllSubmissions(),
+    getAllStudents(),
+    getAllScenarios(),
+    getAllClassrooms(),
+  ]);
 
   // Sort by newest
   const sortedSubmissions = [...submissions].sort((a, b) => 

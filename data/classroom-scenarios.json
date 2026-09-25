@@ -1,37 +1,9 @@
 [
   {
-    "id": "MjET-IfMZwktfTYwCgySH",
+    "id": "cs-san-isidro-drainage-crisis-cvc3a",
     "classroomId": "KGacUYKN3j-Q3RHxWqp_j",
-    "scenarioId": "ux2EoX1L61w4yPY9vbBwO",
+    "scenarioId": "san-isidro-drainage-crisis",
     "isActive": true,
-    "assignedAt": "2026-08-04T05:32:15.768Z"
-  },
-  {
-    "id": "ob90N5hjS1zzmo74Ww5Bt",
-    "classroomId": "KGacUYKN3j-Q3RHxWqp_j",
-    "scenarioId": "P4ugZ20X0Y-KS_zr_Uoup",
-    "isActive": true,
-    "assignedAt": "2026-08-11T01:38:23.595Z"
-  },
-  {
-    "id": "yY9NNRp92ojsbcoFO9lO9",
-    "classroomId": "KGacUYKN3j-Q3RHxWqp_j",
-    "scenarioId": "7VE3D8n8BLQDx0ML4SBA9",
-    "isActive": true,
-    "assignedAt": "2026-08-11T05:23:05.161Z"
-  },
-  {
-    "id": "m6w9BkL2F5efTI8m-bpGy",
-    "classroomId": "KGacUYKN3j-Q3RHxWqp_j",
-    "scenarioId": "7qdPFk6VauK1WMr1KPC89",
-    "isActive": true,
-    "assignedAt": "2026-09-19T19:04:09.047Z"
-  },
-  {
-    "id": "0kRPsM1nKwhC7L_He5ypr",
-    "classroomId": "KGacUYKN3j-Q3RHxWqp_j",
-    "scenarioId": "mSg9windUj82l2sGCkk20",
-    "isActive": true,
-    "assignedAt": "2026-09-19T19:04:13.048Z"
+    "assignedAt": "2026-09-25T11:21:24.720Z"
   }
 ]

@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Users, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
-import { Stakeholder, FollowUpQuestion } from "@/lib/definitions";
+import { Plus, Trash2, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { Stakeholder } from "@/lib/definitions";
 import { Sortable, SortableDragHandle } from "@/components/ui/sortable";
 
 interface StakeholdersTabProps {
@@ -33,7 +33,7 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
         name: "",
         role: "",
         initialStatement: "",
-        followUps: [],
+        isIrrelevant: false,
       },
     ]);
     setExpandedIds((prev) => ({ ...prev, [id]: true }));
@@ -46,34 +46,6 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
   const updateStakeholder = (idx: number, field: keyof Stakeholder, value: any) => {
     const next = [...stakeholders];
     next[idx] = { ...next[idx], [field]: value };
-    onChange(next);
-  };
-
-  const addFollowUp = (stIdx: number) => {
-    const next = [...stakeholders];
-    const followUps = next[stIdx].followUps || [];
-    next[stIdx] = {
-      ...next[stIdx],
-      followUps: [
-        ...followUps,
-        { question: "", answer: "" },
-      ],
-    };
-    onChange(next);
-  };
-
-  const removeFollowUp = (stIdx: number, fIdx: number) => {
-    const next = [...stakeholders];
-    const followUps = (next[stIdx].followUps || []).filter((_, i) => i !== fIdx);
-    next[stIdx] = { ...next[stIdx], followUps };
-    onChange(next);
-  };
-
-  const updateFollowUp = (stIdx: number, fIdx: number, field: keyof FollowUpQuestion, value: string) => {
-    const next = [...stakeholders];
-    const followUps = [...(next[stIdx].followUps || [])];
-    followUps[fIdx] = { ...followUps[fIdx], [field]: value };
-    next[stIdx] = { ...next[stIdx], followUps };
     onChange(next);
   };
 
@@ -142,11 +114,17 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
                               {s.role}
                             </Badge>
                           )}
+                          {s.isIrrelevant ? (
+                            <Badge variant="outline" className="text-[10px] shrink-0 font-medium border-amber-500/50 text-amber-600 bg-amber-500/10">
+                              Irrelevant Distractor
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] shrink-0 font-medium border-primary/50 text-primary bg-primary/10">
+                              Relevant
+                            </Badge>
+                          )}
                         </div>
                         <div className="flex items-center gap-3 shrink-0 text-muted-foreground hover:text-foreground">
-                          <span className="text-[10px] text-muted-foreground hidden sm:inline">
-                            {s.followUps?.length || 0} follow-up Qs
-                          </span>
                           {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
                         </div>
                       </div>
@@ -184,76 +162,50 @@ export function StakeholdersTab({ stakeholders, onChange }: StakeholdersTabProps
                           </div>
                         </div>
 
+                        {/* Relevance Selector */}
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-semibold">Initial Statement</Label>
+                          <Label className="text-xs font-semibold">Stakeholder Relevance</Label>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => updateStakeholder(i, "isIrrelevant", false)}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                                !s.isIrrelevant
+                                  ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                                  : "bg-card text-muted-foreground border-border hover:bg-muted"
+                              }`}
+                            >
+                              <span className={`text-[10px] font-bold ${!s.isIrrelevant ? "text-primary-foreground" : "text-primary"}`}>
+                                {!s.isIrrelevant ? "✓" : "+"}
+                              </span>
+                              <span>Relevant Stakeholder</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => updateStakeholder(i, "isIrrelevant", true)}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                                s.isIrrelevant
+                                  ? "bg-amber-600 text-white border-amber-600 dark:bg-amber-600 shadow-xs"
+                                  : "bg-card text-muted-foreground border-border hover:bg-amber-500/10 hover:text-amber-700 hover:border-amber-500/30"
+                              }`}
+                            >
+                              <span className={`text-[10px] font-bold ${s.isIrrelevant ? "text-white" : "text-amber-600"}`}>
+                                {s.isIrrelevant ? "✓" : "!"}
+                              </span>
+                              <span>Irrelevant / Distractor</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-semibold">Statement</Label>
                           <Textarea
                             value={s.initialStatement}
                             onChange={(e) => updateStakeholder(i, "initialStatement", e.target.value)}
                             className="text-xs leading-relaxed"
-                            rows={2}
+                            rows={3}
                           />
-                        </div>
-
-                        {/* Nested Follow-Up Questions Editor */}
-                        <div className="border-t border-border pt-3 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                              <MessageSquare className="h-3.5 w-3.5 text-primary" />
-                              <Label className="text-xs font-semibold">Follow-Up Interview Questions</Label>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => addFollowUp(i)}
-                              className="h-7 text-[11px] gap-1"
-                            >
-                              <Plus className="h-3 w-3" /> Add Question
-                            </Button>
-                          </div>
-
-                          {(s.followUps || []).length === 0 ? (
-                            <p className="text-[11px] text-muted-foreground italic pl-1">
-                              No follow-up questions added. Click &quot;Add Question&quot; to define Q&A pairs.
-                            </p>
-                          ) : (
-                            <div className="space-y-2.5">
-                              {(s.followUps || []).map((fq, fIdx) => (
-                                <div
-                                  key={fIdx}
-                                  className="p-3 border border-border rounded-md bg-muted/20 space-y-2 relative group"
-                                >
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                                      Question #{fIdx + 1}
-                                    </span>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeFollowUp(i, fIdx)}
-                                      title="Remove follow-up question"
-                                      className="h-7 text-xs gap-1.5 px-2.5 font-bold shrink-0 border border-transparent text-destructive/80 hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 hover:shadow-md transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5"
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                      <span>Remove</span>
-                                    </Button>
-                                  </div>
-                                  <Input
-                                    value={fq.question}
-                                    onChange={(e) => updateFollowUp(i, fIdx, "question", e.target.value)}
-                                    className="text-xs bg-background h-8"
-                                  />
-                                  <Textarea
-                                    value={fq.answer}
-                                    onChange={(e) => updateFollowUp(i, fIdx, "answer", e.target.value)}
-                                    className="text-xs bg-background leading-relaxed"
-                                    rows={2}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}

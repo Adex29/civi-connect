@@ -1,11 +1,15 @@
 import { getCurrentStudent } from "@/lib/dal";
-import { getAllClassrooms, getAllClassroomScenarios, getAllScenarios, getAllSubmissions } from "@/lib/db";
+import {
+  findClassroomById,
+  getClassroomScenariosByClassroom,
+  getAllScenarios,
+  getSubmissionsForStudent,
+} from "@/lib/db";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
-import { CivicCompanion } from "@/components/civic-companion";
 import {
   BookOpen,
   CheckCircle2,
@@ -32,14 +36,14 @@ export default async function StudentDashboard() {
   const student = await getCurrentStudent();
   if (!student) return null;
 
-  const classrooms = await getAllClassrooms();
-  const classroom = classrooms.find((c) => c.id === student.classroomId);
+  const [classroom, classroomScenarios, allScenarios, submissions] = await Promise.all([
+    findClassroomById(student.classroomId),
+    getClassroomScenariosByClassroom(student.classroomId),
+    getAllScenarios(),
+    getSubmissionsForStudent(student.id, student.groupId),
+  ]);
+
   const isArchived = classroom?.status === "archived";
-
-  const allClassroomScenarios = await getAllClassroomScenarios();
-  const classroomScenarios = allClassroomScenarios.filter((cs) => cs.classroomId === student.classroomId);
-
-  const allScenarios = await getAllScenarios();
 
   // Get scenarios assigned to this student's classroom (excluding archived scenarios)
   const assignedScenarios = classroomScenarios
@@ -49,11 +53,6 @@ export default async function StudentDashboard() {
       return { ...scenario, active: cs.isActive };
     })
     .filter((s): s is NonNullable<typeof s> => Boolean(s && s.id && s.active && s.status !== "archived"));
-
-  const allSubmissions = await getAllSubmissions();
-  const submissions = allSubmissions.filter(
-    (s) => s.studentId === student.id || (student.groupId && s.groupId === student.groupId)
-  );
 
   // Derived metrics from existing data
   const completedMissionsCount = submissions.filter((s) => s.status === "completed").length;
@@ -92,7 +91,7 @@ export default async function StudentDashboard() {
     {
       num: "05",
       phase: "Phase 2: Consultation",
-      name: "Develop an Intervention Plan",
+      name: "Community Action Planning",
       desc: "Create practical, evidence-based solutions for the identified community issue.",
       icon: Lightbulb,
     },
@@ -135,45 +134,37 @@ export default async function StudentDashboard() {
           className="pointer-events-none absolute bottom-0 right-1/4 size-64 rounded-full bg-secondary/10 blur-3xl"
         />
 
-        <div className="relative z-10 grid items-center gap-8 lg:grid-cols-12">
-          {/* Left Column: Welcome Heading, Mission Statement & Quick Civic Status */}
-          <div className="space-y-5 lg:col-span-8">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary">
-              <Sparkles className="size-3.5 text-secondary" />
-              <span>Senior High School Citizenship Simulation</span>
-            </div>
-
-            <div className="space-y-2">
-              <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-                Welcome, <span className="text-primary">{student.fullName}</span>!
-              </h1>
-              <p className="max-w-2xl text-sm font-medium leading-relaxed text-muted-foreground sm:text-base">
-                Be ready to think critically, analyze evidence, collaborate with stakeholders, create sustainable solutions, and become an active and responsible citizen.
-              </p>
-            </div>
-
-            {/* Quick Civic Status Badge Strip */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <div className="inline-flex items-center gap-2 rounded-lg border border-border/80 bg-muted/40 px-3.5 py-2 text-xs font-semibold text-foreground">
-                <GraduationCap className="size-4 text-primary" />
-                <span>Classroom: <strong className="text-foreground">{classroomName}</strong></span>
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-lg border border-border/80 bg-muted/40 px-3.5 py-2 text-xs font-semibold text-foreground">
-                <Layers className="size-4 text-secondary" />
-                <span>Active Missions: <strong className="text-foreground">{assignedScenarios.length}</strong></span>
-              </div>
-              {completedMissionsCount > 0 && (
-                <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
-                  <Award className="size-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>Completed: <strong>{completedMissionsCount}</strong></span>
-                </div>
-              )}
-            </div>
+        <div className="relative z-10 max-w-4xl space-y-5">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary">
+            <Sparkles className="size-3.5 text-secondary" />
+            <span>Senior High School Citizenship Simulation</span>
           </div>
 
-          {/* Right Column: Living Civic Companion ("Civi" - Interactive Vector Mascot) */}
-          <div className="relative flex items-center justify-center lg:col-span-4 self-center">
-            <CivicCompanion studentName={student.fullName} />
+          <div className="space-y-2">
+            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              Welcome, <span className="text-primary">{student.fullName}</span>!
+            </h1>
+            <p className="max-w-2xl text-sm font-medium leading-relaxed text-muted-foreground sm:text-base">
+              Be ready to think critically, analyze evidence, collaborate with stakeholders, create sustainable solutions, and become an active and responsible citizen.
+            </p>
+          </div>
+
+          {/* Quick Civic Status Badge Strip */}
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="inline-flex items-center gap-2 rounded-lg border border-border/80 bg-muted/40 px-3.5 py-2 text-xs font-semibold text-foreground">
+              <GraduationCap className="size-4 text-primary" />
+              <span>Classroom: <strong className="text-foreground">{classroomName}</strong></span>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-lg border border-border/80 bg-muted/40 px-3.5 py-2 text-xs font-semibold text-foreground">
+              <Layers className="size-4 text-secondary" />
+              <span>Active Missions: <strong className="text-foreground">{assignedScenarios.length}</strong></span>
+            </div>
+            {completedMissionsCount > 0 && (
+              <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                <Award className="size-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Completed: <strong>{completedMissionsCount}</strong></span>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -32,6 +32,7 @@ import {
   Award,
   Archive,
   Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -373,12 +374,33 @@ export function ScenarioDrawer({
                         Root Causes & Issues Bank ({scenario.missionData.issues.length})
                       </h5>
                       <div className="space-y-1.5 text-muted-foreground">
-                        {scenario.missionData.issues.map((issue, i) => (
-                          <div key={i} className="p-2 rounded bg-muted/30 border">
-                            <span className="font-semibold text-foreground">Issue {i + 1}: </span>
-                            <span>{typeof issue === "string" ? issue : (issue as any)?.title || (issue as any)?.description || JSON.stringify(issue)}</span>
-                          </div>
-                        ))}
+                        {scenario.missionData.issues.map((issue, i) => {
+                          const issueText = typeof issue === "string" ? issue : (issue as any)?.text || (issue as any)?.title || JSON.stringify(issue);
+                          const isCorrect = typeof issue === "object"
+                            ? Boolean((issue as any)?.isCorrect)
+                            : scenario.missionData?.correctIssue
+                            ? scenario.missionData.correctIssue.trim().toLowerCase() === issue.trim().toLowerCase()
+                            : i === 0;
+
+                          return (
+                            <div
+                              key={i}
+                              className={`p-2 rounded border flex items-center justify-between gap-2 ${
+                                isCorrect ? "bg-primary/5 border-primary/40 text-foreground font-medium" : "bg-muted/30"
+                              }`}
+                            >
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="font-semibold text-foreground shrink-0">Issue {i + 1}: </span>
+                                <span className="truncate">{issueText}</span>
+                              </div>
+                              {isCorrect && (
+                                <Badge className="bg-primary text-primary-foreground text-[10px] shrink-0 gap-1 font-semibold">
+                                  <CheckCircle2 className="h-3 w-3" /> Correct Answer
+                                </Badge>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

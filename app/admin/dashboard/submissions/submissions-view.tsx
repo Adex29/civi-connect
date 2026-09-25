@@ -270,7 +270,7 @@ export function SubmissionsView({
           <span>Last active: {format(new Date(sub.submittedAt), "MMMM d, yyyy h:mm a")}</span>
           <div className="flex items-center gap-3">
             {sub.stepProgress && sub.status !== "completed" && (
-              <span className="font-medium text-muted-foreground">Progress: Step {sub.stepProgress}/8</span>
+              <span className="font-medium text-muted-foreground">Progress: Step {Math.min(sub.stepProgress, 7)}/7</span>
             )}
             {sub.score !== null && sub.score !== undefined && (
               <span className="font-bold text-foreground bg-primary/10 px-2 py-0.5 rounded">

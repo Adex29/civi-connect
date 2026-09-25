@@ -38,6 +38,7 @@ gcp-*.json
 
 # scratch scripts
 scratch/
+data/backup_pre_cleanup/
 
 
 # vercel

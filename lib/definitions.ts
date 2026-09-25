@@ -116,12 +116,20 @@ export interface Group {
   createdAt: string;
 }
 
+export interface IssueOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+}
+
 export interface MissionDataConfig {
-  issues?: string[];
+  issues?: (string | IssueOption)[];
+  correctIssue?: string;
   causes?: CauseItem[];
   evidenceLibrary?: EvidenceItem[];
   stakeholders?: Stakeholder[];
   unexpectedEvent?: UnexpectedEvent;
+  challenges?: ChallengeEvent[];
   stepTips?: Record<number, string>;
 }
 
@@ -217,7 +225,8 @@ export interface EvidenceItem {
   fullText: string;
   imageUrl?: string; // Optional image / photo URL or base64 photo data
   defaultCredibility: number; // 1-5 stars
-  supports: ("cause" | "solution" | "need")[];
+  supports: ("cause" | "solution" | "need" | "not_related")[];
+  isIrrelevant?: boolean; // When true, designates this item as an irrelevant distractor
 }
 
 export interface FollowUpQuestion {
@@ -231,18 +240,49 @@ export interface Stakeholder {
   role: string;
   avatarIcon?: string;
   initialStatement: string;
-  followUps: FollowUpQuestion[];
+  followUps?: FollowUpQuestion[];
+  isIrrelevant?: boolean; // When true, designates this stakeholder as an irrelevant distractor
+}
+
+export type ChallengeCategory = "stakeholder" | "budget" | "resource";
+
+export interface ChallengeEvent {
+  id: string;
+  category: ChallengeCategory;
+  categoryLabel: string;
+  title: string;
+  description: string;
+  affectedField: "stakeholders" | "budget" | "resources";
+  editableFields: (
+    | "projectTitle"
+    | "goal"
+    | "objectives"
+    | "activities"
+    | "stakeholders"
+    | "resources"
+    | "budget"
+    | "timeline"
+    | "expectedOutcomes"
+  )[];
 }
 
 export interface UnexpectedEvent {
   title: string;
   description: string;
+  category?: ChallengeCategory;
+  affectedField?: "stakeholders" | "budget" | "resources";
   options: {
     id: string;
     text: string;
     isOptimal: boolean;
     feedback: string;
   }[];
+}
+
+export interface TimelineRow {
+  phase: string;
+  activity: string;
+  time: string;
 }
 
 export interface InterventionPlanData {
@@ -255,6 +295,13 @@ export interface InterventionPlanData {
   budget: string;
   timeline: string;
   expectedOutcomes: string;
+  // Optional rich structured fields
+  objectivesList?: string[];
+  stakeholdersList?: string[];
+  resourcesList?: string[];
+  timelineRows?: TimelineRow[];
+  timelineUnit?: "days" | "weeks";
+  expectedOutcomesList?: string[];
 }
 
 export interface ImpactAssessmentData {
@@ -296,13 +343,21 @@ export interface StepScoreBreakdown {
   interventionPlanning: number;    // Step 5 Score (0-100)
   adaptiveDecisionMaking: number;  // Step 6 Score (0-100)
   planRevision: number;            // Step 7 Score (0-100)
-  impactAssessment: number;        // Step 8 Score (0-100)
+  impactAssessment?: number;       // Optional legacy Step 8 Score (0-100) for backward compatibility
   overallScore: number;            // Cumulative Civic Decision Score (0-100)
   causeAnalysis?: number;          // Step 2 Score (0-100) for backward compatibility
 }
 
+export const CIVIC_REFLECTION_QUESTIONS = [
+  "What did you learn about solving community problems?",
+  "Why is it important to understand the causes of a community problem before proposing a solution?",
+  "How did evidence and stakeholder perspectives influence your plan?",
+  "What did the challenge teach you about flexibility and decision-making in community action?",
+  "How realistic and sustainable is your proposed community action?",
+] as const;
+
 export interface SimulationStateData {
-  currentStep: number; // 1 to 8 (or 9 for score/reflection, 10 for complete)
+  currentStep: number; // 1 to 7 (or 8 for score/reflection, 10 for complete)
   step1?: {
     selectedIssue: string;
     justification: string;
@@ -329,8 +384,8 @@ export interface SimulationStateData {
   };
   step4?: {
     consultedStakeholderIds: string[];
-    interviewNotes: string;
-    askedFollowUps: Record<string, number[]>; // stakeholderId -> array of followUp indices asked
+    interviewNotes?: string;
+    askedFollowUps?: Record<string, number[]>; // stakeholderId -> array of followUp indices asked
     feedback?: string;
     passed?: boolean;
     evaluation?: AIEvaluationResult;
@@ -342,8 +397,9 @@ export interface SimulationStateData {
     evaluation?: AIEvaluationResult;
   };
   step6?: {
-    selectedOptionId: string;
-    justification: string;
+    challenge?: ChallengeEvent;
+    selectedOptionId?: string;
+    justification?: string;
     feedback?: string;
     passed?: boolean;
     evaluation?: AIEvaluationResult;
@@ -362,6 +418,7 @@ export interface SimulationStateData {
   };
   scores?: StepScoreBreakdown;
   reflection?: {
+    question?: string;
     answer: string;
     feedback?: string;
     evaluation?: AIEvaluationResult;

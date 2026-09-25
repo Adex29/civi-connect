@@ -11,7 +11,6 @@ import {
   ClipboardList,
   AlertTriangle,
   RotateCcw,
-  TrendingUp,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Scenario } from "@/lib/definitions";
@@ -38,10 +37,9 @@ export const STEPS_CONFIG = [
   { step: 2, name: "Analyze Causes", desc: "Order root causes & contributing factors", icon: GitBranch },
   { step: 3, name: "Evidence Evaluation", desc: "Assess digital sources & credibility", icon: FileSearch },
   { step: 4, name: "Stakeholder Consultation", desc: "Gather insights from community members", icon: Users },
-  { step: 5, name: "Intervention Planning", desc: "Develop evidence-based action plan", icon: ClipboardList },
+  { step: 5, name: "Community Action Planning", desc: "Develop evidence-based action plan", icon: ClipboardList },
   { step: 6, name: "Challenge Simulation", desc: "Respond to unexpected obstacles", icon: AlertTriangle },
   { step: 7, name: "Plan Revision", desc: "Adapt intervention plan based on obstacles", icon: RotateCcw },
-  { step: 8, name: "Impact Assessment", desc: "Evaluate sustainability & ethics", icon: TrendingUp },
 ];
 
 export function StepTracker({ currentStep, scenario, completedSteps = [], onSelectStep }: StepTrackerProps) {
@@ -52,7 +50,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
         <div className="flex items-center justify-between text-xs font-bold mb-2">
           <span className="text-primary uppercase tracking-wider">Mission Progress</span>
           <span className="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">
-            Step {Math.min(currentStep, 8)} of 8
+            Step {Math.min(currentStep, 7)} of 7
           </span>
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none whitespace-nowrap">
@@ -90,7 +88,7 @@ export function StepTracker({ currentStep, scenario, completedSteps = [], onSele
           <CardTitle className="text-base font-semibold flex items-center justify-between">
             <span>Mission Timeline</span>
             <span className="rounded-md bg-primary/10 px-2.5 py-0.5 font-mono text-xs font-bold text-primary">
-              {Math.min(currentStep, 8)} / 8
+              {Math.min(currentStep, 7)} / 7
             </span>
           </CardTitle>
         </CardHeader>

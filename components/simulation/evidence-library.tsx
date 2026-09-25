@@ -55,9 +55,10 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
     setSelectedItem(item);
     const existing = evaluated.find((e) => e.evidenceId === item.id);
     if (existing) {
-      setCredibility(existing.userCredibility);
-      setSupports(existing.selectedSupports);
-      setJustification(existing.justification);
+      const isExistingNotRelated = existing.selectedSupports?.includes("not_related");
+      setCredibility(isExistingNotRelated ? 0 : (existing.userCredibility || 0));
+      setSupports(existing.selectedSupports || []);
+      setJustification(existing.justification || "");
     } else {
       setCredibility(0);
       setSupports([]);
@@ -65,14 +66,16 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
     }
   };
 
+  const isNotRelated = supports.includes("not_related");
+
   const saveEvaluation = () => {
-    if (!selectedItem || credibility === 0) return;
+    if (!selectedItem || !justification.trim() || supports.length === 0) return;
     const updated = evaluated.filter((e) => e.evidenceId !== selectedItem.id);
     updated.push({
       evidenceId: selectedItem.id,
-      userCredibility: credibility,
+      userCredibility: isNotRelated ? 0 : credibility,
       selectedSupports: supports,
-      justification,
+      justification: justification.trim(),
     });
     onUpdateEvaluated(updated);
     setSelectedItem(null);
@@ -85,6 +88,8 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
       } else {
         // Mutually exclusive: selecting "Not Related" clears any positive supports
         setSupports(["not_related"]);
+        // Disable and clear star rating when not related is selected
+        setCredibility(0);
       }
     } else {
       // Selecting Cause, Solution, or Community Need unselects "Not Related"
@@ -160,16 +165,24 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
                 <div className="pt-2.5 border-t border-border flex items-center justify-between text-xs font-medium mt-2">
                   {evalData ? (
                     <>
-                      <div className="flex items-center gap-0.5 text-primary">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3.5 w-3.5 ${
-                              i < evalData.userCredibility ? "fill-primary text-primary" : "text-muted-foreground/30"
-                            }`}
-                          />
-                        ))}
-                      </div>
+                      {evalData.selectedSupports?.includes("not_related") ? (
+                        <span className="text-[11px] font-medium text-muted-foreground italic flex items-center gap-1">
+                          <Star className="h-3 w-3 text-muted-foreground/30" /> Not Applicable
+                        </span>
+                      ) : evalData.userCredibility > 0 ? (
+                        <div className="flex items-center gap-0.5 text-primary">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-3.5 w-3.5 ${
+                                i < evalData.userCredibility ? "fill-primary text-primary" : "text-muted-foreground/30"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground italic">No rating</span>
+                      )}
                       <div className="flex items-center gap-1.5">
                         {evalData.selectedSupports?.includes("not_related") && (
                           <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/25">
@@ -253,30 +266,50 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
 
               {/* Star Rating for Source Credibility */}
               <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-semibold block">How credible is this source?</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs sm:text-sm font-semibold block">How credible is this source?</label>
+                  {isNotRelated && (
+                    <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                      Disabled (Unrelated source)
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   {Array.from({ length: 5 }).map((_, i) => {
                     const starVal = i + 1;
+                    const isStarActive = !isNotRelated && credibility > 0 && starVal <= credibility;
                     return (
                       <button
                         key={i}
                         type="button"
-                        onClick={() => !disabled && setCredibility(starVal)}
-                        className="p-1 hover:scale-110 transition-transform focus:outline-none"
+                        disabled={disabled || isNotRelated}
+                        onClick={() => !disabled && !isNotRelated && setCredibility(starVal)}
+                        className={`p-1 transition-all focus:outline-none ${
+                          isNotRelated
+                            ? "cursor-not-allowed opacity-30"
+                            : "hover:scale-110 cursor-pointer"
+                        }`}
+                        title={isNotRelated ? "" : `Rate ${starVal} star${starVal > 1 ? "s" : ""}`}
                       >
                         <Star
-                          className={`h-5 w-5 sm:h-6 sm:w-6 ${
-                            credibility > 0 && starVal <= credibility
+                          className={`h-5 w-5 sm:h-6 sm:w-6 transition-colors ${
+                            isStarActive
                               ? "fill-primary text-primary"
+                              : isNotRelated
+                              ? "text-muted-foreground/20"
                               : "text-muted-foreground/30 hover:text-primary/50"
                           }`}
                         />
                       </button>
                     );
                   })}
-                  <span className={`text-xs font-bold ml-2 ${credibility > 0 ? "text-primary" : "text-muted-foreground"}`}>
-                    {credibility > 0 ? `${credibility} / 5 Stars` : "Select a rating (1-5 stars)"}
-                  </span>
+                  {!isNotRelated && (
+                    <span className={`text-xs font-medium ml-2 ${credibility > 0 ? "text-primary font-bold" : "text-muted-foreground"}`}>
+                      {credibility > 0
+                        ? `${credibility} / 5 Stars`
+                        : "Select a rating (1-5 stars)"}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -317,11 +350,19 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
 
               {/* Justification Input */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold block">Justify your evaluation (2-3 complete sentences):</label>
+                <label className="text-sm font-semibold block">
+                  {isNotRelated
+                    ? "Justify why this evidence is irrelevant (2-3 complete sentences):"
+                    : "Justify your evaluation (2-3 complete sentences):"}
+                </label>
                 <Textarea
                   value={justification}
                   onChange={(e) => setJustification(e.target.value)}
-                  placeholder="Explain why this evidence is credible and how it connects to the community issue..."
+                  placeholder={
+                    isNotRelated
+                      ? "Explain why this document is irrelevant to the scenario (e.g., how its topic, focus, or location does not apply to our community crisis)..."
+                      : "Explain why this evidence is credible and how it connects to the community issue..."
+                  }
                   className="min-h-[90px]"
                   disabled={disabled}
                 />
@@ -332,7 +373,7 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
               <Button variant="outline" onClick={() => setSelectedItem(null)}>
                 Cancel
               </Button>
-              <Button onClick={saveEvaluation} disabled={disabled || !justification.trim() || credibility === 0}>
+              <Button onClick={saveEvaluation} disabled={disabled || !justification.trim() || supports.length === 0}>
                 Save Evaluation
               </Button>
             </DialogFooter>

@@ -47,15 +47,15 @@ import {
   FileSearch,
   Users,
   ClipboardList,
-  TrendingUp,
 } from "lucide-react";
-import { Scenario, Submission, SimulationStateData, EvidenceItem, AIEvaluationResult, SIMULATION_PASSING_THRESHOLD } from "@/lib/definitions";
-import { getMissionDataForScenario } from "@/lib/mission-data";
+import { Scenario, Submission, SimulationStateData, CauseItem, EvidenceItem, AIEvaluationResult, SIMULATION_PASSING_THRESHOLD, InterventionPlanData, ChallengeEvent, CIVIC_REFLECTION_QUESTIONS } from "@/lib/definitions";
+import { getMissionDataForScenario, getScenarioChallenges } from "@/lib/mission-data";
 import { formatFlagLabel, isAiControlFlag } from "@/lib/flag-utils";
 import { StepTracker } from "@/components/simulation/step-tracker";
 import { CauseRanker } from "@/components/simulation/cause-ranker";
 import { EvidenceLibrary, EvaluatedEvidence } from "@/components/simulation/evidence-library";
 import { StakeholderChat } from "@/components/simulation/stakeholder-chat";
+import { CommunityActionPlanForm } from "@/components/simulation/community-action-plan-form";
 import { PerformanceReport } from "@/components/simulation/performance-report";
 import { MissionBriefing } from "@/components/simulation/mission-briefing";
 import { processSimulationStepAction, submitReflectionAction } from "./actions";
@@ -65,10 +65,9 @@ const STEP_TITLES: Record<number, string> = {
   2: "Analyze Causes",
   3: "Evaluate Digital Evidence",
   4: "Consult Simulated Stakeholders",
-  5: "Develop an Intervention Plan",
-  6: "Anticipate Challenges (Simulation)",
-  7: "Revise Intervention Plan (Adaptive Revision)",
-  8: "Assess Community Impact",
+  5: "Community Action Planning",
+  6: "Challenge Simulation",
+  7: "Plan Revision",
 };
 
 const STEP_ICONS: Record<number, React.ComponentType<{ className?: string }>> = {
@@ -79,7 +78,6 @@ const STEP_ICONS: Record<number, React.ComponentType<{ className?: string }>> = 
   5: ClipboardList,
   6: AlertTriangle,
   7: RotateCcw,
-  8: TrendingUp,
 };
 
 export function ActivityForm({
@@ -125,6 +123,15 @@ export function ActivityForm({
   const [step1Justification, setStep1Justification] = useState<string>(
     simState.step1?.justification || ""
   );
+  // Randomized issues order for the student side (stable across renders)
+  const [shuffledIssues] = useState<string[]>(() => {
+    const list = [...missionData.issues];
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    return list;
+  });
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
   const [evaluationModalData, setEvaluationModalData] = useState<{
     success: boolean;
@@ -134,8 +141,40 @@ export function ActivityForm({
   } | null>(null);
 
   // --- Step 2 State ---
-  const [orderedCauseIds, setOrderedCauseIds] = useState<string[]>(
-    simState.step2?.orderedCauseIds || missionData.causes.map((c) => c.id)
+  const [shuffledStep2Causes] = useState<CauseItem[]>(() => {
+    // If student already has a saved ranking in simState, restore their saved order
+    if (simState.step2?.orderedCauseIds && simState.step2.orderedCauseIds.length > 0) {
+      const causeMap = new Map((missionData.causes || []).map((c) => [c.id, c]));
+      const restored = simState.step2.orderedCauseIds
+        .map((id) => causeMap.get(id))
+        .filter((c): c is CauseItem => Boolean(c));
+      const missing = (missionData.causes || []).filter(
+        (c) => !simState.step2?.orderedCauseIds?.includes(c.id)
+      );
+      return [...restored, ...missing];
+    }
+
+    // For initial attempts, randomize the order so students must discover the hierarchy
+    const list = [...(missionData.causes || [])];
+    if (list.length > 1) {
+      // Fisher-Yates shuffle
+      for (let i = list.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [list[i], list[j]] = [list[j], list[i]];
+      }
+      // Ensure the initial randomized list is not accidentally identical to the correct order
+      const isIdentical = list.every((item, idx) => item.id === missionData.causes[idx]?.id);
+      if (isIdentical && list.length >= 2) {
+        [list[0], list[1]] = [list[1], list[0]];
+      }
+    }
+    return list;
+  });
+
+  const [orderedCauseIds, setOrderedCauseIds] = useState<string[]>(() =>
+    simState.step2?.orderedCauseIds && simState.step2.orderedCauseIds.length > 0
+      ? simState.step2.orderedCauseIds
+      : shuffledStep2Causes.map((c) => c.id)
   );
 
   // --- Step 3 State ---
@@ -154,45 +193,81 @@ export function ActivityForm({
     simState.step4?.askedFollowUps || {}
   );
 
-  // --- Step 5 State (Original Intervention Plan) ---
-  const [planData, setPlanData] = useState({
-    projectTitle: simState.step5?.plan?.projectTitle || "",
-    goal: simState.step5?.plan?.goal || "",
-    objectives: simState.step5?.plan?.objectives || "",
-    activities: simState.step5?.plan?.activities || "",
-    stakeholders: simState.step5?.plan?.stakeholders || "",
-    resources: simState.step5?.plan?.resources || "",
-    budget: simState.step5?.plan?.budget || "",
-    timeline: simState.step5?.plan?.timeline || "",
-    expectedOutcomes: simState.step5?.plan?.expectedOutcomes || "",
-  });
+  // Helper to initialize plan data with list structures and fallbacks
+  const initPlanData = (saved?: InterventionPlanData): InterventionPlanData => {
+    const objectivesList = saved?.objectivesList?.length
+      ? saved.objectivesList
+      : saved?.objectives?.trim()
+      ? saved.objectives.split("\n").map((s) => s.replace(/^[•\-\*]\s*/, "").trim()).filter(Boolean)
+      : [""];
 
-  // --- Step 6 State (Challenge Simulation) ---
-  const [selectedChallengeOptId, setSelectedChallengeOptId] = useState<string>(
-    simState.step6?.selectedOptionId || ""
+    const stakeholdersList = saved?.stakeholdersList !== undefined
+      ? saved.stakeholdersList
+      : saved?.stakeholders?.trim()
+      ? saved.stakeholders.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+
+    const resourcesList = saved?.resourcesList !== undefined
+      ? saved.resourcesList
+      : saved?.resources?.trim()
+      ? saved.resources.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+
+    const timelineRows = saved?.timelineRows?.length
+      ? saved.timelineRows
+      : [{ phase: "", activity: "", time: "" }];
+
+    const expectedOutcomesList = saved?.expectedOutcomesList?.length
+      ? saved.expectedOutcomesList
+      : saved?.expectedOutcomes?.trim()
+      ? saved.expectedOutcomes.split("\n").map((s) => s.replace(/^[•\-\*]\s*/, "").trim()).filter(Boolean)
+      : [""];
+
+    return {
+      projectTitle: saved?.projectTitle || "",
+      goal: saved?.goal || "",
+      objectives: saved?.objectives || objectivesList.filter(Boolean).join("\n"),
+      activities: saved?.activities || "",
+      stakeholders: saved?.stakeholders || stakeholdersList.join(", "),
+      resources: saved?.resources || resourcesList.join(", "),
+      budget: saved?.budget || "",
+      timeline: saved?.timeline || timelineRows.map((r) => `${r.phase}: ${r.activity} (${r.time})`).join(" | "),
+      expectedOutcomes: saved?.expectedOutcomes || expectedOutcomesList.filter(Boolean).join("\n"),
+      objectivesList: objectivesList.length > 0 ? objectivesList.slice(0, 3) : [""],
+      stakeholdersList,
+      resourcesList,
+      timelineRows,
+      timelineUnit: saved?.timelineUnit || "days",
+      expectedOutcomesList: expectedOutcomesList.length > 0 ? expectedOutcomesList.slice(0, 3) : [""],
+    };
+  };
+
+  // --- Step 5 State (Community Action Plan) ---
+  const [planData, setPlanData] = useState<InterventionPlanData>(() =>
+    initPlanData(simState.step5?.plan)
   );
-  const [step6Justification, setStep6Justification] = useState<string>(
-    simState.step6?.justification || ""
-  );
+
+  // --- Step 6 State (Challenge Simulation - Randomized Crisis) ---
+  const scenarioChallenges = missionData.challenges || getScenarioChallenges(scenario);
+  const [step6Challenge] = useState<ChallengeEvent>(() => {
+    if (simState.step6?.challenge) {
+      return simState.step6.challenge;
+    }
+    const randomIndex = Math.floor(Math.random() * scenarioChallenges.length);
+    return scenarioChallenges[randomIndex] || scenarioChallenges[0];
+  });
 
   // --- Step 7 State (Adaptive Plan Revision - Prefilled from Step 5) ---
-  const [revisedPlanData, setRevisedPlanData] = useState({
-    projectTitle: simState.step7?.revisedPlan?.projectTitle || simState.step5?.plan?.projectTitle || "",
-    goal: simState.step7?.revisedPlan?.goal || simState.step5?.plan?.goal || "",
-    objectives: simState.step7?.revisedPlan?.objectives || simState.step5?.plan?.objectives || "",
-    activities: simState.step7?.revisedPlan?.activities || simState.step5?.plan?.activities || "",
-    stakeholders: simState.step7?.revisedPlan?.stakeholders || simState.step5?.plan?.stakeholders || "",
-    resources: simState.step7?.revisedPlan?.resources || simState.step5?.plan?.resources || "",
-    budget: simState.step7?.revisedPlan?.budget || simState.step5?.plan?.budget || "",
-    timeline: simState.step7?.revisedPlan?.timeline || simState.step5?.plan?.timeline || "",
-    expectedOutcomes: simState.step7?.revisedPlan?.expectedOutcomes || simState.step5?.plan?.expectedOutcomes || "",
-  });
-  const [showOriginalPlanRef, setShowOriginalPlanRef] = useState(false);
+  const [revisedPlanData, setRevisedPlanData] = useState<InterventionPlanData>(() =>
+    initPlanData(simState.step7?.revisedPlan || simState.step5?.plan)
+  );
 
   // Synchronize revisedPlanData from step 5 when entering step 7 if it was not previously saved
   React.useEffect(() => {
     if (step === 7 && !simState.step7?.revisedPlan) {
       setRevisedPlanData((prev) => ({
+        ...planData,
+        ...prev,
         projectTitle: prev.projectTitle || planData.projectTitle,
         goal: prev.goal || planData.goal,
         objectives: prev.objectives || planData.objectives,
@@ -202,23 +277,37 @@ export function ActivityForm({
         budget: prev.budget || planData.budget,
         timeline: prev.timeline || planData.timeline,
         expectedOutcomes: prev.expectedOutcomes || planData.expectedOutcomes,
+        objectivesList: prev.objectivesList?.length ? prev.objectivesList : planData.objectivesList,
+        stakeholdersList: prev.stakeholdersList?.length ? prev.stakeholdersList : planData.stakeholdersList,
+        resourcesList: prev.resourcesList?.length ? prev.resourcesList : planData.resourcesList,
+        timelineRows: prev.timelineRows?.length ? prev.timelineRows : planData.timelineRows,
+        timelineUnit: prev.timelineUnit || planData.timelineUnit || "days",
+        expectedOutcomesList: prev.expectedOutcomesList?.length ? prev.expectedOutcomesList : planData.expectedOutcomesList,
       }));
     }
   }, [step, planData, simState.step7?.revisedPlan]);
 
-  // --- Step 8 State (Community Impact Assessment) ---
-  const [impactData, setImpactData] = useState({
-    shortTermImpact: simState.step8?.impact?.shortTermImpact || "",
-    longTermImpact: simState.step8?.impact?.longTermImpact || "",
-    possibleRisks: simState.step8?.impact?.possibleRisks || "",
-    whoBenefits: simState.step8?.impact?.whoBenefits || "",
-    whoMightBeAffected: simState.step8?.impact?.whoMightBeAffected || "",
+  // --- Final Reflection State (Step 8: Civic Action Reflection & Evaluation) ---
+  const [reflectionQuestion] = useState<string>(() => {
+    if (simState.reflection?.question) return simState.reflection.question;
+    // Derive a stable pseudo-random assignment per student across the 5 questions
+    const seed = existingSubmission?.id || existingSubmission?.studentId || scenario.id || "civi";
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    }
+    return CIVIC_REFLECTION_QUESTIONS[hash % CIVIC_REFLECTION_QUESTIONS.length];
   });
 
-  // --- Final Reflection State ---
   const [reflectionAnswer, setReflectionAnswer] = useState<string>(
     simState.reflection?.answer || ""
   );
+
+  const reflectionSentences = reflectionAnswer
+    .split(/(?<=[.?!])\s+|\n+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 8);
+  const reflectionSentenceCount = reflectionSentences.length;
 
   const handleAskFollowUp = (stakeholderId: string, followUpIndex: number) => {
     const updated = { ...askedFollowUps };
@@ -235,13 +324,13 @@ export function ActivityForm({
   // Generic Step Handler
   const handleNextStep = async () => {
     if (isReadOnly) {
-      if (step < 8) {
+      if (step < 7) {
         setStep(step + 1);
-      } else if (step === 8) {
+      } else if (step === 7) {
         if (simState.scores) {
-          setStep(9);
+          setStep(8);
         } else {
-          setFormError("This mission was archived before Step 8 was completed. Simulation scorecard is unavailable.");
+          setFormError("This mission was archived before Step 7 was completed. Simulation scorecard is unavailable.");
         }
       }
       return;
@@ -273,43 +362,90 @@ export function ActivityForm({
       }
       payload = { evaluatedEvidences };
     } else if (step === 4) {
-      payload = { consultedIds, notes: interviewNotes, askedFollowUps };
-    } else if (step === 5) {
-      payload = { plan: planData };
-    } else if (step === 6) {
-      if (!selectedChallengeOptId) {
+      if (!consultedIds || consultedIds.length === 0) {
         setLoading(false);
-        setFormError("Please select an adaptive action option before proceeding.");
+        setFormError("Please select at least one stakeholder before continuing your mission.");
         return;
       }
-      const opt = missionData.unexpectedEvent.options.find((o) => o.id === selectedChallengeOptId);
-      payload = {
-        selectedOptionId: selectedChallengeOptId,
-        selectedOptionText: opt?.text || "",
-        justification: step6Justification,
-      };
-    } else if (step === 7) {
+      payload = { consultedIds };
+    } else if (step === 5) {
       const missing: string[] = [];
-      if (!revisedPlanData.projectTitle?.trim()) missing.push("Project Title");
-      if (!revisedPlanData.goal?.trim()) missing.push("Goal");
-      if (!revisedPlanData.objectives?.trim()) missing.push("Objectives");
-      if (!revisedPlanData.activities?.trim()) missing.push("Activities");
-      if (!revisedPlanData.stakeholders?.trim()) missing.push("Stakeholders & Roles");
-      if (!revisedPlanData.resources?.trim()) missing.push("Resources Needed");
-      if (!revisedPlanData.budget?.trim()) missing.push("Budget Allocation");
-      if (!revisedPlanData.timeline?.trim()) missing.push("Timeline");
-      if (!revisedPlanData.expectedOutcomes?.trim()) missing.push("Expected Outcomes");
+      if (!planData.projectTitle?.trim()) missing.push("Project Title");
+      if (!planData.goal?.trim()) missing.push("Goal");
+      const validObjectives = (planData.objectivesList || []).filter((o) => o.trim());
+      if (validObjectives.length === 0 && !planData.objectives?.trim()) missing.push("Objectives");
+      if (!planData.activities?.trim()) missing.push("Activities");
+      const validStakeholders = (planData.stakeholdersList || []).filter((s) => s.trim());
+      if (validStakeholders.length === 0 && !planData.stakeholders?.trim()) missing.push("Stakeholders");
+      const validResources = (planData.resourcesList || []).filter((r) => r.trim());
+      if (validResources.length === 0 && !planData.resources?.trim()) missing.push("Resources");
+      if (!planData.budget?.trim()) missing.push("Budget");
+      if (!planData.timeline?.trim()) missing.push("Timeline");
+      const validOutcomes = (planData.expectedOutcomesList || []).filter((o) => o.trim());
+      if (validOutcomes.length === 0 && !planData.expectedOutcomes?.trim()) missing.push("Expected Outcomes");
 
       if (missing.length > 0) {
         setLoading(false);
         setFormError(
-          `Please complete all 9 fields of your revised intervention plan. Missing: ${missing.join(", ")}.`
+          `Please complete all fields of your community action plan. Missing: ${missing.join(", ")}.`
         );
         return;
       }
-      payload = { revisedPlan: revisedPlanData };
-    } else if (step === 8) {
-      payload = { impact: impactData };
+      payload = { plan: planData, consultedStakeholderIds: consultedIds };
+    } else if (step === 6) {
+      payload = { challenge: step6Challenge };
+      const res = await processSimulationStepAction(scenario.id, 6, payload);
+      setLoading(false);
+
+      if ("error" in res && res.error) {
+        setFormError(res.error);
+        return;
+      }
+
+      setSimState((prev) => ({
+        ...prev,
+        currentStep: Math.max(prev.currentStep, 7),
+        step6: {
+          challenge: step6Challenge,
+          feedback: res.feedback || "Challenge acknowledged. Proceeding to Plan Revision.",
+          passed: true,
+          evaluation: res.evaluation,
+        },
+      }));
+
+      // Directly redirect to Step 7 (Plan Revision) without showing evaluation modal
+      setStep(7);
+      return;
+    } else if (step === 7) {
+      const completePlan: InterventionPlanData = {
+        ...planData,
+        ...revisedPlanData,
+      };
+
+      const target = step6Challenge.affectedField;
+      if (target === "stakeholders") {
+        const validList = (completePlan.stakeholdersList || []).filter((s) => s.trim());
+        if (validList.length === 0 && !completePlan.stakeholders?.trim()) {
+          setLoading(false);
+          setFormError("Please update the Stakeholders field to adapt to the stakeholder challenge.");
+          return;
+        }
+      } else if (target === "budget") {
+        if (!completePlan.budget?.trim()) {
+          setLoading(false);
+          setFormError("Please revise the Budget field to adapt to the budget challenge.");
+          return;
+        }
+      } else if (target === "resources") {
+        const validList = (completePlan.resourcesList || []).filter((r) => r.trim());
+        if (validList.length === 0 && !completePlan.resources?.trim()) {
+          setLoading(false);
+          setFormError("Please update the Resources field to adapt to the resource challenge.");
+          return;
+        }
+      }
+
+      payload = { revisedPlan: completePlan };
     }
 
     const res = await processSimulationStepAction(scenario.id, step, payload);
@@ -357,10 +493,26 @@ export function ActivityForm({
       return;
     }
 
+    if (reflectionSentenceCount < 5) {
+      setFeedback({
+        success: false,
+        message: `Your reflection must be between 5 and 15 complete sentences (Currently: ${reflectionSentenceCount} sentence${reflectionSentenceCount === 1 ? "" : "s"}). Please expand on your ethical reasoning and civic insights.`,
+      });
+      return;
+    }
+
+    if (reflectionSentenceCount > 15) {
+      setFeedback({
+        success: false,
+        message: `Your reflection exceeds the maximum allowed length of 15 sentences (Currently: ${reflectionSentenceCount} sentences). Please make your response more concise.`,
+      });
+      return;
+    }
+
     setLoading(true);
     setFeedback(null);
 
-    const res = await submitReflectionAction(scenario.id, reflectionAnswer);
+    const res = await submitReflectionAction(scenario.id, reflectionAnswer, reflectionQuestion);
     setLoading(false);
 
     if (res.success) {
@@ -375,7 +527,7 @@ export function ActivityForm({
   };
 
   const maxStepReached = Math.max(step, simState.currentStep || 1);
-  const completedSteps = Array.from({ length: Math.min(maxStepReached - 1, 8) }, (_, i) => i + 1);
+  const completedSteps = Array.from({ length: Math.min(maxStepReached - 1, 7) }, (_, i) => i + 1);
 
   // --- Mission Briefing Screen (Shown first upon opening scenario) ---
   if (showBriefing) {
@@ -391,8 +543,8 @@ export function ActivityForm({
     );
   }
 
-  // --- Step 9: Performance Report View ---
-  if (step === 9) {
+  // --- Performance Report View (Step 8 / 9) ---
+  if (step === 8 || step === 9) {
     if (simState.scores) {
       return (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -400,9 +552,9 @@ export function ActivityForm({
             scores={simState.scores}
             studentName={studentName}
             onContinueToReflection={() => {
-              setStep(9.5); // 9.5 = Final Reflection Form
+              setStep(8.5); // 8.5 = Final Reflection Form
             }}
-            onBack={() => setStep(8)}
+            onBack={() => setStep(7)}
           />
         </div>
       );
@@ -415,39 +567,83 @@ export function ActivityForm({
           <p className="text-sm text-muted-foreground">
             This mission was archived before all simulation steps were evaluated.
           </p>
-          <Button onClick={() => setStep(8)} variant="outline">
-            Back to Step 08
+          <Button onClick={() => setStep(7)} variant="outline">
+            Back to Step 07
           </Button>
         </Card>
       </div>
     );
   }
 
-  // --- Step 9.5: Final Reflection View ---
-  if (step === 9.5) {
+  // --- Final Reflection View (Step 8.5 / 9.5) ---
+  if (step === 8.5 || step === 9.5) {
+    const isCountValid = reflectionSentenceCount >= 5 && reflectionSentenceCount <= 15;
+    const isCountTooShort = reflectionSentenceCount < 5;
+
     return (
       <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
         <Card className="border shadow-md">
           <CardHeader className="bg-primary/5 border-b">
-            <CardTitle className="text-2xl font-bold flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" /> Final Reflection
-            </CardTitle>
-            <CardDescription className="text-sm">
-              Reflect deeply on your civic decision-making process.
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <CardTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+                <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /> Step 08: Civic Action Reflection
+              </CardTitle>
+              <Badge variant="outline" className="text-xs font-mono font-semibold">
+                Post-Simulation Evaluation
+              </Badge>
+            </div>
+            <CardDescription className="text-xs sm:text-sm">
+              Reflect deeply on your civic inquiry experience, decision-making flexibility, and community action sustainability.
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 space-y-4">
+          <CardContent className="p-4 sm:p-6 space-y-4">
+            {/* Assigned Reflection Question Prompt */}
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <span className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wide">
+                  <Sparkles className="h-3.5 w-3.5" /> Assigned Reflection Prompt
+                </span>
+                <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
+                  5–15 Sentences Required
+                </Badge>
+              </div>
+              <p className="text-sm font-semibold text-foreground leading-snug">
+                {reflectionQuestion}
+              </p>
+            </div>
+
             <div className="space-y-2">
-              <label className="text-sm font-semibold block leading-snug">
-                If this issue occurred in your own community, would you implement the same solution? Why or why not?
-              </label>
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-xs font-bold text-foreground">
+                  Your Reflection Response:
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] font-mono font-bold transition-colors ${
+                      isCountValid
+                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                        : isCountTooShort
+                        ? "border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-300"
+                        : "border-rose-500/50 bg-rose-500/10 text-rose-700 dark:text-rose-300"
+                    }`}
+                  >
+                    {isCountValid && <CheckCircle2 className="h-3 w-3 mr-1 inline" />}
+                    {reflectionSentenceCount} / 5–15 Sentences
+                  </Badge>
+                </div>
+              </div>
+
               <Textarea
                 value={reflectionAnswer}
                 onChange={(e) => setReflectionAnswer(e.target.value)}
-                placeholder="Write your final reflection here (explain your ethical reasoning and community insights)..."
-                className="min-h-[140px]"
+                placeholder="Write your civic reflection here (explain your reasoning, evidence analysis, and community insights in 5–15 complete sentences)..."
+                className="min-h-[160px] leading-relaxed"
                 disabled={isReadOnly}
               />
+              <p className="text-[11px] text-muted-foreground italic">
+                Note: A thorough civic reflection requires 5 to 15 complete sentences explaining your perspectives, ethical reasoning, and lessons learned.
+              </p>
             </div>
 
             {feedback && (
@@ -523,12 +719,12 @@ export function ActivityForm({
             )}
           </CardContent>
           <CardFooter className="bg-muted/20 border-t p-4 flex justify-between gap-4">
-            <Button variant="outline" onClick={() => setStep(9)} disabled={loading}>
+            <Button variant="outline" onClick={() => setStep(8)} disabled={loading}>
               Back to Scorecard
             </Button>
             <Button
               onClick={handleFinalReflectionSubmit}
-              disabled={loading || (!isReadOnly && !reflectionAnswer.trim()) || (isReadOnly && existingSubmission?.status !== "completed")}
+              disabled={loading || (!isReadOnly && reflectionSentenceCount < 5) || (isReadOnly && existingSubmission?.status !== "completed")}
             >
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isReadOnly
@@ -593,7 +789,7 @@ export function ActivityForm({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-            <Button onClick={() => setStep(9)} variant="outline" className="gap-2">
+            <Button onClick={() => setStep(8)} variant="outline" className="gap-2">
               <Trophy className="h-4 w-4" /> View Performance Report
             </Button>
             <Button onClick={() => router.push("/dashboard")} className="gap-2">
@@ -642,7 +838,7 @@ export function ActivityForm({
             </div>
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
-                Mission Step 0{step} of 08
+                Mission Step 0{step} of 07
               </span>
               <h2 className="text-lg sm:text-xl font-extrabold tracking-tight mt-0.5">
                 {STEP_TITLES[step] || "Civic Simulation Step"}
@@ -661,9 +857,24 @@ export function ActivityForm({
               Mission Overview
             </Button>
             <span className="w-fit shrink-0 rounded-md bg-primary px-3 py-1 font-mono text-xs font-bold text-primary-foreground">
-              {isReadOnly ? 100 : step <= 1 ? 0 : Math.min(Math.round(((step - 1) / 8) * 100), 95)}% Complete
+              {isReadOnly ? 100 : step <= 1 ? 0 : Math.min(Math.round(((step - 1) / 7) * 100), 95)}% Complete
             </span>
           </div>
+        </div>
+
+        {/* Mission Context & Legal Guidance (Mobile/Tablet View - Placed directly under header) */}
+        <div className="xl:hidden">
+          <Card className="border border-primary/30 bg-primary/5 shadow-xs">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
+                <Scale className="h-4 w-4 shrink-0" /> Mission Context
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs text-foreground/90 leading-relaxed space-y-2">
+              <h4 className="font-bold text-sm text-foreground">{scenario.title}</h4>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{scenario.description}</p>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
@@ -672,14 +883,13 @@ export function ActivityForm({
             <Card className="border shadow-sm">
               <CardHeader className="border-b bg-muted/20 pb-4">
                 <CardTitle className="text-base font-bold">
-                  {step === 1 && "Which community issue should be prioritized?"}
+                  {step === 1 && "What is the main issue that needs to be addressed first?"}
                   {step === 2 && "Arrange the causes (Most Significant → Least Significant)"}
                   {step === 3 && "Evidence Library Inspection"}
-                  {step === 4 && "Stakeholder Consultation"}
-                  {step === 5 && "Intervention Plan Builder"}
+                  {step === 4 && "Select the stakeholders you believe can provide the most useful information or assistance in developing your initiative"}
+                  {step === 5 && "Community Action Planning"}
                   {step === 6 && missionData.unexpectedEvent.title}
                   {step === 7 && "Adaptive Plan Revision (Post-Challenge)"}
-                  {step === 8 && "Community Impact Assessment"}
                 </CardTitle>
               </CardHeader>
 
@@ -688,9 +898,11 @@ export function ActivityForm({
                 {step === 1 && (
                   <div className="space-y-5">
                     <div className="space-y-2">
-                      <label className="text-sm font-semibold block">Select the priority concern:</label>
+                      <label className="text-sm font-semibold block">
+                        What is the main issue that needs to be addressed first?
+                      </label>
                       <div className="space-y-2">
-                        {missionData.issues.map((issue, idx) => (
+                        {shuffledIssues.map((issue, idx) => (
                           <div
                             key={idx}
                             onClick={() => !isReadOnly && setSelectedIssue(issue)}
@@ -739,7 +951,8 @@ export function ActivityForm({
                       Use the arrows to re-order the causes from top (Most Significant) to bottom (Least Significant).
                     </p>
                     <CauseRanker
-                      initialCauses={missionData.causes}
+                      key={shuffledStep2Causes.map((c) => c.id).join("-")}
+                      initialCauses={shuffledStep2Causes}
                       onOrderChange={(ids) => setOrderedCauseIds(ids)}
                       disabled={isReadOnly}
                     />
@@ -760,232 +973,72 @@ export function ActivityForm({
                 {step === 4 && (
                   <StakeholderChat
                     stakeholders={missionData.stakeholders}
-                    notes={interviewNotes}
-                    onNotesChange={(n) => setInterviewNotes(n)}
-                    askedFollowUps={askedFollowUps}
-                    onAskFollowUp={handleAskFollowUp}
+                    selectedStakeholderIds={consultedIds}
+                    onToggleStakeholderSelect={(id) => {
+                      setConsultedIds((prev) =>
+                        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+                      );
+                    }}
                     disabled={isReadOnly}
                   />
                 )}
 
-                {/* STEP 5: Develop an Intervention Plan */}
-                {step === 5 && (() => {
-                  const filledCount = [
-                    planData.projectTitle,
-                    planData.goal,
-                    planData.objectives,
-                    planData.activities,
-                    planData.stakeholders,
-                    planData.resources,
-                    planData.budget,
-                    planData.timeline,
-                    planData.expectedOutcomes,
-                  ].filter((f) => f && f.trim().length > 0).length;
-                  const isMissingErr = Boolean(formError);
+                {/* STEP 5: Community Action Planning */}
+                {step === 5 && (
+                  <CommunityActionPlanForm
+                    plan={planData}
+                    onChange={(updated) => setPlanData(updated)}
+                    disabled={isReadOnly || loading}
+                    isMissingErr={Boolean(formError)}
+                    consultedStakeholders={missionData.stakeholders.filter((s) => consultedIds.includes(s.id))}
+                    scenarioTitle={scenario.title}
+                  />
+                )}
 
-                  return (
-                    <div className="space-y-4 text-xs">
-                      {/* Completion Progress Tracker */}
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/40 border border-border">
-                        <div>
-                          <span className="font-bold text-foreground text-xs block">Intervention Plan Matrix</span>
-                          <span className="text-[11px] text-muted-foreground">All 9 fields must be filled out with actionable community details.</span>
-                        </div>
-                        <Badge
-                          variant={filledCount === 9 ? "default" : "outline"}
-                          className={`font-mono text-xs shrink-0 ${
-                            filledCount === 9
-                              ? "bg-primary text-primary-foreground font-bold"
-                              : "border-amber-500/50 text-amber-700 dark:text-amber-300 font-semibold"
-                          }`}
-                        >
-                          {filledCount} of 9 Completed
+                {/* STEP 6: Challenge Simulation */}
+                {step === 6 && (
+                  <div className="space-y-6">
+                    <div className="p-5 bg-amber-500/10 rounded-xl border border-amber-500/30 space-y-3">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <span className="font-bold text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                          <AlertTriangle className="h-4 w-4 shrink-0" />
+                          Unexpected Simulation Challenge
+                        </span>
+                        <Badge className="bg-amber-600 text-white font-mono uppercase text-[11px] tracking-wider">
+                          {step6Challenge.categoryLabel.replace(/^[A-Z]\.\s*/i, "")}
                         </Badge>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold flex items-center justify-between">
-                            <span>Project Title</span>
-                            <span className="text-destructive font-bold">*</span>
-                          </Label>
-                          <Input
-                            value={planData.projectTitle}
-                            onChange={(e) => setPlanData({ ...planData, projectTitle: e.target.value })}
-                            placeholder={`e.g. Community Action Plan: ${scenario.title}`}
-                            className={isMissingErr && !planData.projectTitle?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                            disabled={isReadOnly || loading}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold flex items-center justify-between">
-                            <span>Goal</span>
-                            <span className="text-destructive font-bold">*</span>
-                          </Label>
-                          <Input
-                            value={planData.goal}
-                            onChange={(e) => setPlanData({ ...planData, goal: e.target.value })}
-                            placeholder="e.g. Reduce estero dumping by 80%"
-                            className={isMissingErr && !planData.goal?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                            disabled={isReadOnly || loading}
-                          />
-                        </div>
+                      <div>
+                        <h3 className="text-base sm:text-lg font-bold text-amber-950 dark:text-amber-100">
+                          {step6Challenge.title}
+                        </h3>
+                        <p className="text-sm font-medium text-amber-900/90 dark:text-amber-200/90 mt-1 leading-relaxed">
+                          {step6Challenge.description}
+                        </p>
                       </div>
 
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold flex items-center justify-between">
-                          <span>Objectives</span>
-                          <span className="text-destructive font-bold">*</span>
-                        </Label>
-                        <Textarea
-                          value={planData.objectives}
-                          onChange={(e) => setPlanData({ ...planData, objectives: e.target.value })}
-                          className={`min-h-[60px] ${isMissingErr && !planData.objectives?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                          placeholder="Specific, measurable goals..."
-                          disabled={isReadOnly || loading}
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold flex items-center justify-between">
-                          <span>Activities</span>
-                          <span className="text-destructive font-bold">*</span>
-                        </Label>
-                        <Textarea
-                          value={planData.activities}
-                          onChange={(e) => setPlanData({ ...planData, activities: e.target.value })}
-                          className={`min-h-[60px] ${isMissingErr && !planData.activities?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                          placeholder="Key actions, clean-up drives, and community events..."
-                          disabled={isReadOnly || loading}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold flex items-center justify-between">
-                            <span>Stakeholders</span>
-                            <span className="text-destructive font-bold">*</span>
-                          </Label>
-                          <Input
-                            value={planData.stakeholders}
-                            onChange={(e) => setPlanData({ ...planData, stakeholders: e.target.value })}
-                            placeholder="e.g. SK Youth, Barangay Tanods, Residents"
-                            className={isMissingErr && !planData.stakeholders?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                            disabled={isReadOnly || loading}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold flex items-center justify-between">
-                            <span>Resources</span>
-                            <span className="text-destructive font-bold">*</span>
-                          </Label>
-                          <Input
-                            value={planData.resources}
-                            onChange={(e) => setPlanData({ ...planData, resources: e.target.value })}
-                            placeholder="e.g. Color-coded bins, collection carts, flyers"
-                            className={isMissingErr && !planData.resources?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                            disabled={isReadOnly || loading}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold flex items-center justify-between">
-                            <span>Budget</span>
-                            <span className="text-destructive font-bold">*</span>
-                          </Label>
-                          <Input
-                            value={planData.budget}
-                            onChange={(e) => setPlanData({ ...planData, budget: e.target.value })}
-                            placeholder="e.g. ₱15,000 SK Fund / Barangay allocation"
-                            className={isMissingErr && !planData.budget?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                            disabled={isReadOnly || loading}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold flex items-center justify-between">
-                            <span>Timeline</span>
-                            <span className="text-destructive font-bold">*</span>
-                          </Label>
-                          <Input
-                            value={planData.timeline}
-                            onChange={(e) => setPlanData({ ...planData, timeline: e.target.value })}
-                            placeholder="e.g. 3-month rollout (Weeks 1-12)"
-                            className={isMissingErr && !planData.timeline?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                            disabled={isReadOnly || loading}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold flex items-center justify-between">
-                          <span>Expected Outcomes</span>
-                          <span className="text-destructive font-bold">*</span>
-                        </Label>
-                        <Textarea
-                          value={planData.expectedOutcomes}
-                          onChange={(e) => setPlanData({ ...planData, expectedOutcomes: e.target.value })}
-                          className={`min-h-[60px] ${isMissingErr && !planData.expectedOutcomes?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                          placeholder="Cleaner public spaces, reduced health risks, increased community pride..."
-                          disabled={isReadOnly || loading}
-                        />
+                      <div className="pt-3 border-t border-amber-500/20 text-xs text-amber-900/80 dark:text-amber-200/80 space-y-1">
+                        <p className="font-semibold text-amber-950 dark:text-amber-100 flex items-center gap-1.5">
+                          <span>Affected Action Plan Component:</span>
+                          <Badge variant="outline" className="text-[10px] font-mono border-amber-600/40 text-amber-800 dark:text-amber-300 uppercase">
+                            {step6Challenge.affectedField}
+                          </Badge>
+                        </p>
+                        <p className="text-muted-foreground mt-0.5">
+                          This unexpected crisis directly impacts the <strong>{step6Challenge.affectedField}</strong> section of your initial plan.
+                        </p>
                       </div>
                     </div>
-                  );
-                })()}
 
-                {/* STEP 6: Anticipate Challenges */}
-                {step === 6 && (
-                  <div className="space-y-5">
-                    <div className="p-4 bg-amber-500/10 rounded-lg border border-amber-500/30 space-y-2">
-                      <span className="font-bold text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400 block">
-                        Scenario Event:
-                      </span>
-                      <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
-                        {missionData.unexpectedEvent.description}
+                    <div className="p-4 bg-muted/40 rounded-xl border border-border text-xs leading-relaxed space-y-2">
+                      <h4 className="font-bold text-foreground flex items-center gap-2">
+                        <Lightbulb className="h-4 w-4 text-primary" />
+                        Adaptive Planning Instructions:
+                      </h4>
+                      <p className="text-muted-foreground">
+                        Click <strong className="text-foreground">"Revise Initial Plan"</strong> below to proceed to the Plan Revision stage. In that stage, only the <strong className="text-foreground uppercase">{step6Challenge.affectedField}</strong> component will be unlocked for editing so you can resolve this crisis while all other sections remain locked.
                       </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold block">What are you going to do?</label>
-                      <div className="space-y-2">
-                        {missionData.unexpectedEvent.options.map((opt) => (
-                          <div
-                            key={opt.id}
-                            onClick={() => !isReadOnly && setSelectedChallengeOptId(opt.id)}
-                            className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                              isReadOnly ? "cursor-default opacity-85" : "cursor-pointer hover:bg-muted/50"
-                            } ${
-                              selectedChallengeOptId === opt.id
-                                ? "bg-primary/10 border-primary text-primary font-semibold"
-                                : ""
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={`h-4 w-4 rounded-full border flex items-center justify-center ${
-                                  selectedChallengeOptId === opt.id ? "border-primary bg-primary text-white" : ""
-                                }`}
-                              >
-                                {selectedChallengeOptId === opt.id && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
-                              </div>
-                              <span>{opt.text}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold block">Justify your adaptive decision:</label>
-                      <Textarea
-                        value={step6Justification}
-                        onChange={(e) => setStep6Justification(e.target.value)}
-                        placeholder="Explain how this decision balances immediate limitations with long-term goals..."
-                        className="min-h-[90px]"
-                        disabled={isReadOnly || loading}
-                      />
                     </div>
                   </div>
                 )}
@@ -1004,9 +1057,6 @@ export function ActivityForm({
                     revisedPlanData.expectedOutcomes,
                   ].filter((v) => v?.trim().length > 0).length;
 
-                  const isMissingErr = Boolean(formError && formError.toLowerCase().includes("missing"));
-                  const selectedOpt = missionData.unexpectedEvent.options.find((o) => o.id === selectedChallengeOptId);
-
                   return (
                     <div className="space-y-5">
                       {/* Challenge Context Banner */}
@@ -1014,78 +1064,22 @@ export function ActivityForm({
                         <div className="flex items-center justify-between gap-2 flex-wrap">
                           <span className="font-bold text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                             <AlertTriangle className="h-4 w-4 shrink-0" />
-                            Challenge Encountered in Step 6:
+                            Active Challenge from Step 6: {step6Challenge.title}
                           </span>
-                          <Badge variant="outline" className="text-[10px] font-mono border-amber-500/40 text-amber-800 dark:text-amber-300">
-                            Strategy: {selectedOpt ? selectedOpt.text.slice(0, 35) + "..." : "Selected Option"}
+                          <Badge variant="outline" className="text-[10px] font-mono border-amber-500/40 text-amber-800 dark:text-amber-300 uppercase">
+                            {step6Challenge.categoryLabel.replace(/^[A-Z]\.\s*/i, "")}
                           </Badge>
                         </div>
                         <p className="text-xs sm:text-sm font-medium text-amber-950 dark:text-amber-100">
-                          {missionData.unexpectedEvent.description}
+                          {step6Challenge.description}
                         </p>
-                        {step6Justification && (
-                          <div className="pt-2 border-t border-amber-500/20 text-xs text-amber-900/80 dark:text-amber-200/80">
-                            <span className="font-semibold">Your Decision Justification: </span>
-                            <em>"{step6Justification}"</em>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Collapsible Original Plan Reference Accordion */}
-                      <div className="border border-border rounded-xl overflow-hidden bg-muted/20">
-                        <button
-                          type="button"
-                          onClick={() => setShowOriginalPlanRef(!showOriginalPlanRef)}
-                          className="w-full flex items-center justify-between p-3.5 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors text-left"
-                        >
-                          <div className="flex items-center gap-2">
-                            <History className="h-4 w-4 text-primary" />
-                            <span>View Original Step 5 Plan (Reference Only)</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-normal text-muted-foreground hidden sm:inline">
-                              {showOriginalPlanRef ? "Hide Original" : "Show Original"}
-                            </span>
-                            {showOriginalPlanRef ? (
-                              <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            )}
-                          </div>
-                        </button>
-
-                        {showOriginalPlanRef && (
-                          <div className="p-4 border-t border-border bg-card space-y-3 text-xs animate-fade-in-up">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div>
-                                <span className="font-bold text-muted-foreground block text-[11px]">Original Project Title:</span>
-                                <p className="font-medium text-foreground mt-0.5">{planData.projectTitle || "N/A"}</p>
-                              </div>
-                              <div>
-                                <span className="font-bold text-muted-foreground block text-[11px]">Original Goal:</span>
-                                <p className="font-medium text-foreground mt-0.5">{planData.goal || "N/A"}</p>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/60">
-                              <div>
-                                <span className="font-bold text-muted-foreground block text-[11px]">Original Budget:</span>
-                                <p className="font-medium text-foreground mt-0.5">{planData.budget || "N/A"}</p>
-                              </div>
-                              <div>
-                                <span className="font-bold text-muted-foreground block text-[11px]">Original Timeline:</span>
-                                <p className="font-medium text-foreground mt-0.5">{planData.timeline || "N/A"}</p>
-                              </div>
-                            </div>
-                            <div className="pt-2 border-t border-border/60">
-                              <span className="font-bold text-muted-foreground block text-[11px]">Original Activities:</span>
-                              <p className="font-medium text-foreground mt-0.5 whitespace-pre-wrap">{planData.activities || "N/A"}</p>
-                            </div>
-                            <div className="pt-2 border-t border-border/60">
-                              <span className="font-bold text-muted-foreground block text-[11px]">Original Stakeholders & Roles:</span>
-                              <p className="font-medium text-foreground mt-0.5">{planData.stakeholders || "N/A"}</p>
-                            </div>
-                          </div>
-                        )}
+                        <div className="pt-2 border-t border-amber-500/20 text-xs text-amber-900/90 dark:text-amber-200/90 flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold">Target Section to Revise:</span>
+                          <Badge className="bg-amber-600 text-white font-mono uppercase text-[10px]">
+                            {step6Challenge.affectedField}
+                          </Badge>
+                          <span className="text-[11px] text-muted-foreground">(All other sections are locked)</span>
+                        </div>
                       </div>
 
                       {/* Header Tracker with Reset Button */}
@@ -1096,7 +1090,7 @@ export function ActivityForm({
                             <span>Adaptive Action Plan Matrix</span>
                           </h3>
                           <p className="text-xs text-muted-foreground">
-                            Update your activities, budget, timeline, or roles to accommodate the challenge.
+                            Update your <span className="font-semibold text-foreground uppercase">{step6Challenge.affectedField}</span> to accommodate the challenge.
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1105,14 +1099,20 @@ export function ActivityForm({
                             variant="ghost"
                             size="sm"
                             onClick={() => {
-                              setRevisedPlanData({ ...planData });
+                              const target = step6Challenge.affectedField;
+                              setRevisedPlanData((prev) => ({
+                                ...prev,
+                                [target]: planData[target],
+                                ...(target === "stakeholders" ? { stakeholdersList: planData.stakeholdersList } : {}),
+                                ...(target === "resources" ? { resourcesList: planData.resourcesList } : {}),
+                              }));
                             }}
                             disabled={isReadOnly || loading}
                             className="text-xs h-7 px-2 text-muted-foreground hover:text-foreground gap-1"
-                            title="Reset all fields back to your Step 5 original plan"
+                            title="Reset the affected section back to your Step 5 original plan"
                           >
                             <RotateCcw className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">Reset to Initial Plan</span>
+                            <span className="hidden sm:inline">Reset Section</span>
                           </Button>
                           <Badge
                             variant={filledCount === 9 ? "default" : "secondary"}
@@ -1127,196 +1127,20 @@ export function ActivityForm({
                         </div>
                       </div>
 
-                      {/* 9-Field Matrix for revisedPlanData (Matching Step 5 exactly) */}
-                      <div className="space-y-4 text-xs">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <Label className="text-xs font-semibold flex items-center justify-between">
-                              <span>Project Title</span>
-                              <span className="text-destructive font-bold">*</span>
-                            </Label>
-                            <Input
-                              value={revisedPlanData.projectTitle}
-                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, projectTitle: e.target.value })}
-                              placeholder={`e.g. Community Action Plan: ${scenario.title}`}
-                              className={isMissingErr && !revisedPlanData.projectTitle?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                              disabled={isReadOnly || loading}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs font-semibold flex items-center justify-between">
-                              <span>Goal</span>
-                              <span className="text-destructive font-bold">*</span>
-                            </Label>
-                            <Input
-                              value={revisedPlanData.goal}
-                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, goal: e.target.value })}
-                              placeholder="e.g. Reduce estero dumping by 80%"
-                              className={isMissingErr && !revisedPlanData.goal?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                              disabled={isReadOnly || loading}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold flex items-center justify-between">
-                            <span>Objectives</span>
-                            <span className="text-destructive font-bold">*</span>
-                          </Label>
-                          <Textarea
-                            value={revisedPlanData.objectives}
-                            onChange={(e) => setRevisedPlanData({ ...revisedPlanData, objectives: e.target.value })}
-                            className={`min-h-[60px] ${isMissingErr && !revisedPlanData.objectives?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                            placeholder="Specific, measurable goals..."
-                            disabled={isReadOnly || loading}
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold flex items-center justify-between">
-                            <span>Activities</span>
-                            <span className="text-destructive font-bold">*</span>
-                          </Label>
-                          <Textarea
-                            value={revisedPlanData.activities}
-                            onChange={(e) => setRevisedPlanData({ ...revisedPlanData, activities: e.target.value })}
-                            className={`min-h-[60px] ${isMissingErr && !revisedPlanData.activities?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                            placeholder="Key actions, clean-up drives, and community events..."
-                            disabled={isReadOnly || loading}
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <Label className="text-xs font-semibold flex items-center justify-between">
-                              <span>Stakeholders</span>
-                              <span className="text-destructive font-bold">*</span>
-                            </Label>
-                            <Input
-                              value={revisedPlanData.stakeholders}
-                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, stakeholders: e.target.value })}
-                              placeholder="e.g. SK Youth, Barangay Tanods, Residents"
-                              className={isMissingErr && !revisedPlanData.stakeholders?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                              disabled={isReadOnly || loading}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs font-semibold flex items-center justify-between">
-                              <span>Resources</span>
-                              <span className="text-destructive font-bold">*</span>
-                            </Label>
-                            <Input
-                              value={revisedPlanData.resources}
-                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, resources: e.target.value })}
-                              placeholder="e.g. Color-coded bins, collection carts, flyers"
-                              className={isMissingErr && !revisedPlanData.resources?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                              disabled={isReadOnly || loading}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <Label className="text-xs font-semibold flex items-center justify-between">
-                              <span>Budget</span>
-                              <span className="text-destructive font-bold">*</span>
-                            </Label>
-                            <Input
-                              value={revisedPlanData.budget}
-                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, budget: e.target.value })}
-                              placeholder="e.g. ₱15,000 SK Fund / Barangay allocation"
-                              className={isMissingErr && !revisedPlanData.budget?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                              disabled={isReadOnly || loading}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs font-semibold flex items-center justify-between">
-                              <span>Timeline</span>
-                              <span className="text-destructive font-bold">*</span>
-                            </Label>
-                            <Input
-                              value={revisedPlanData.timeline}
-                              onChange={(e) => setRevisedPlanData({ ...revisedPlanData, timeline: e.target.value })}
-                              placeholder="e.g. 3-month rollout (Weeks 1-12)"
-                              className={isMissingErr && !revisedPlanData.timeline?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}
-                              disabled={isReadOnly || loading}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <Label className="text-xs font-semibold flex items-center justify-between">
-                            <span>Expected Outcomes</span>
-                            <span className="text-destructive font-bold">*</span>
-                          </Label>
-                          <Textarea
-                            value={revisedPlanData.expectedOutcomes}
-                            onChange={(e) => setRevisedPlanData({ ...revisedPlanData, expectedOutcomes: e.target.value })}
-                            className={`min-h-[60px] ${isMissingErr && !revisedPlanData.expectedOutcomes?.trim() ? "border-destructive focus-visible:ring-destructive" : ""}`}
-                            placeholder="Cleaner public spaces, reduced health risks, increased community pride..."
-                            disabled={isReadOnly || loading}
-                          />
-                        </div>
-                      </div>
+                      {/* Adaptive Community Action Plan Form */}
+                      <CommunityActionPlanForm
+                        plan={revisedPlanData}
+                        onChange={(updated) => setRevisedPlanData(updated)}
+                        disabled={isReadOnly || loading}
+                        isMissingErr={Boolean(formError && formError.toLowerCase().includes("missing"))}
+                        consultedStakeholders={missionData.stakeholders.filter((s) => consultedIds.includes(s.id))}
+                        scenarioTitle={scenario.title}
+                        isRevised={true}
+                        editableFields={step6Challenge.editableFields}
+                      />
                     </div>
                   );
                 })()}
-
-                {/* STEP 8: Assess Community Impact */}
-                {step === 8 && (
-                  <div className="space-y-4 text-xs">
-                    <div className="space-y-1">
-                      <Label className="text-xs font-semibold">Short-Term Impact</Label>
-                      <Textarea
-                        value={impactData.shortTermImpact}
-                        onChange={(e) => setImpactData({ ...impactData, shortTermImpact: e.target.value })}
-                        placeholder="Immediate positive outcomes within 1-4 weeks..."
-                        className="min-h-[65px]"
-                        disabled={isReadOnly || loading}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs font-semibold">Long-Term Impact</Label>
-                      <Textarea
-                        value={impactData.longTermImpact}
-                        onChange={(e) => setImpactData({ ...impactData, longTermImpact: e.target.value })}
-                        placeholder="Sustainable environmental and civic behavior shifts over months/years..."
-                        className="min-h-[65px]"
-                        disabled={isReadOnly || loading}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs font-semibold">Possible Risks & Mitigations</Label>
-                      <Textarea
-                        value={impactData.possibleRisks}
-                        onChange={(e) => setImpactData({ ...impactData, possibleRisks: e.target.value })}
-                        placeholder="Potential obstacles and preventative steps..."
-                        className="min-h-[65px]"
-                        disabled={isReadOnly || loading}
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold">Who Benefits?</Label>
-                        <Input
-                          value={impactData.whoBenefits}
-                          onChange={(e) => setImpactData({ ...impactData, whoBenefits: e.target.value })}
-                          placeholder="Riverside residents, youth, Tanods"
-                          disabled={isReadOnly || loading}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs font-semibold">Who Might Be Affected?</Label>
-                        <Input
-                          value={impactData.whoMightBeAffected}
-                          onChange={(e) => setImpactData({ ...impactData, whoMightBeAffected: e.target.value })}
-                          placeholder="Illegal dumpers, vendor schedules"
-                          disabled={isReadOnly || loading}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Client Validation / Submission Error */}
                 {formError && (
@@ -1346,16 +1170,22 @@ export function ActivityForm({
 
                 <Button
                   onClick={handleNextStep}
-                  disabled={loading || (isReadOnly && step === 8 && !simState.scores)}
+                  disabled={loading || (isReadOnly && step === 7 && !simState.scores)}
                   className="gap-2 font-bold px-6 w-full sm:w-auto"
                 >
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                   {isReadOnly
-                    ? step === 8
+                    ? step === 7
                       ? simState.scores
                         ? "View Scorecard"
                         : "Simulation Incomplete"
                       : "Next Step"
+                    : step === 4
+                    ? "Continue Mission"
+                    : step === 5
+                    ? "Submit Initial Plan"
+                    : step === 6
+                    ? "Revise Initial Plan"
                     : "Submit Response"}{" "}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -1379,25 +1209,16 @@ export function ActivityForm({
               </CardContent>
             </Card>
 
-            {/* Mission Context & Legal Guidance */}
-            <Card className="border border-primary/30 bg-primary/5 shadow-xs">
+            {/* Mission Context & Legal Guidance (Desktop View) */}
+            <Card className="hidden xl:block border border-primary/30 bg-primary/5 shadow-xs">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2 text-primary">
-                  <Scale className="h-4 w-4 shrink-0" /> Mission Context & Legal Guidance
+                  <Scale className="h-4 w-4 shrink-0" /> Mission Context
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-xs text-foreground/90 leading-relaxed space-y-3">
+              <CardContent className="text-xs text-foreground/90 leading-relaxed space-y-2">
                 <h4 className="font-bold text-sm text-foreground">{scenario.title}</h4>
-                <p className="text-muted-foreground">{scenario.description}</p>
-                {scenario.context && (
-                  <div className="pt-2 border-t border-primary/20 text-muted-foreground italic">
-                    <span className="font-semibold not-italic block mb-1 text-primary flex items-center gap-1.5">
-                      <BookOpen className="h-3.5 w-3.5 shrink-0" />
-                      Legal & Statutory Framework:
-                    </span>
-                    {scenario.context}
-                  </div>
-                )}
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{scenario.description}</p>
               </CardContent>
             </Card>
           </div>

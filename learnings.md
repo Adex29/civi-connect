@@ -11,6 +11,8 @@ This document records non-obvious engineering lessons, traps, and debugging disc
 - [L-20260906-003: Double-Border Clipping in Drawer Headers](#l-20260906-003--double-border-clipping-in-drawer-headers)
 - [L-20260906-004: Next.js 16 Proxy Redirect Ping-Pong & In-Memory Cookie Deletion Traps](#l-20260906-004--nextjs-16-proxy-redirect-ping-pong--in-memory-cookie-deletion-traps)
 - [L-20260906-005: Multi-Select Combobox Trigger Width Explosion and Toolbar Collisions](#l-20260906-005--multi-select-combobox-trigger-width-explosion-and-toolbar-collisions)
+- [L-20260925-006: Combobox Option Duplicate Key Collision Defense](#l-20260925-006--combobox-option-duplicate-key-collision-defense)
+- [L-20260925-007: Vercel Serverless Navigation Latency & Supabase HTTP REST Full-Table Scans](#l-20260925-007--vercel-serverless-navigation-latency--supabase-http-rest-full-table-scans)
 
 ---
 
@@ -112,3 +114,49 @@ This document records non-obvious engineering lessons, traps, and debugging disc
 - **Related decisions**: `D-20260906-006`
 - **Applicable scope**: `components/ui/combobox.tsx` (`MultiSelectCombobox`), and all toolbars hosting multi-select filters (`submissions-view.tsx`, `assign-scenario-dialog.tsx`).
 - **Not applicable when**: Full-page forms with unlimited vertical space designed for multi-tag inputs.
+
+---
+
+## L-20260925-006 — Combobox Option Duplicate Key Collision Defense
+
+- **Area**: UI Primitives / Combobox / React Keys
+- **Symptoms**: React console error: `"Encountered two children with the same key, 'New Stakeholder (Community Representative)'. Keys should be unique so that components maintain their identity across updates."`
+- **Trigger**: Opening a `Combobox`, `MultiSelectCombobox`, or `BadgeCombobox` dropdown when the underlying data source contains multiple items with identical names/labels (such as default unedited mission stakeholders created as `"New Stakeholder"` with role `"Community Representative"`).
+- **Root cause**:
+  1. Dropdown options were keyed strictly with `key={opt.value}`.
+  2. `filteredOptions` did not enforce deduplication by `value`.
+  3. Parent forms passing dynamic arrays (like `consultedStakeholders.map(...)`) did not deduplicate identical value strings.
+- **Resolution**:
+  - In `components/ui/combobox.tsx` across `BadgeCombobox`, `Combobox`, and `MultiSelectCombobox`:
+    - Deduplicate options by `value` using a `Set<string>` during `filteredOptions` computation.
+    - Compound React keys with index: `key={`${opt.value}-${i}`}` as a defensive fallback.
+  - In parent callers (e.g. `CommunityActionPlanForm` in `community-action-plan-form.tsx`), use a `Set<string>` to deduplicate option arrays before passing to comboboxes, and ensure fallback indexing on mapped buttons (`key={s.id || `consulted-${idx}`}`).
+- **Prevention**: Never rely solely on user-generated data fields as unique React keys in lists. Always sanitize collections for uniqueness and use composite keys (`${value}-${index}`) in rendered loops.
+- **Evidence**: Fixed React key collision reported in `components/ui/combobox.tsx` line 593; verified clean compilation with `npx tsc --noEmit`.
+- **Related decisions**: `D-20260925-008`
+- **Applicable scope**: `components/ui/combobox.tsx`, `components/simulation/community-action-plan-form.tsx`, and all dropdown/combobox list renderers.
+- **Not applicable when**: Guaranteed unique database primary keys are used without string transformation.
+
+---
+
+## L-20260925-007 — Vercel Serverless Navigation Latency & Supabase HTTP REST Full-Table Scans
+
+- **Area**: Performance / Data Access Layer / Next.js Server Components
+- **Symptoms**: Route navigation is instantaneous on localhost (~0–50ms) but takes 2–5 seconds on production deployment (Vercel). Clicking any navigation link (e.g. Dashboard, Classrooms, Mission Library, Submissions, Activity) hangs with noticeable delay before rendering.
+- **Trigger**: Navigating between App Router routes on production Vercel serverless functions connected to Supabase Postgres over HTTP REST.
+- **Root causes**:
+  1. **Full-Table Scans in `lib/db.ts`**: Helper functions (`findStudentById`, `findClassroomById`, `findScenarioById`, `findStudentByLrn`, `findAdminByEmail`, `findSubmissionById`) were implemented by querying the *entire* table (`supabase.from("...").select("*")`) over HTTP REST and filtering rows in JavaScript memory with `.find()` or `.filter()`. On Vercel, this caused huge payloads (including every submission's entire simulation state JSON) to be downloaded across the internet on every single route transition.
+  2. **Sequential Await Waterfalls**: Server components and layouts executed 4 to 6 database queries in serial (`await A; await B; await C; ...`). In cross-region cloud environments, sequential HTTPS round-trips compounded (e.g. 5 roundtrips × 300ms = 1,500ms).
+  3. **N+1 Query Loop in Admin Classrooms**: `ClassroomsPage` looped over every classroom and called `getScenariosByClassroom(c.id)`, triggering `getAllClassroomScenarios()` and `getAllScenarios()` for each classroom sequentially (generating 10–15 roundtrips).
+  4. **Lack of Per-Request Memoization**: Repeated DAL lookups across layouts and page components duplicated identical database queries within the same request lifecycle.
+- **Resolution**:
+  - Refactored all `find*` and `get*By*` queries in `lib/db.ts` to execute direct Supabase indexed queries (`.eq()`, `.maybeSingle()`, `.in()`).
+  - Added targeted queries: `getSubmissionsForStudent`, `findSubmissionForStudent`, `findClassroomScenario`, `getClassroomScenariosByClassroom`.
+  - Wrapped request-scoped lookups with React `cache()` to eliminate duplicate queries within a single render pass.
+  - Replaced sequential `await` cascades with `Promise.all([ ... ])` in `StudentDashboard`, `ActivityPage`, `AdminDashboardOverview`, `ClassroomsPage`, `ScenariosPage`, `SubmissionsPage`, and `StudentsPage`.
+  - Eliminated the N+1 loop in `ClassroomsPage` by computing the `scenariosMap` in memory from batch-fetched scenarios and classroom-scenarios.
+- **Prevention**: Never query full database tables to filter a single row in server-side functions. Always use indexed database `.eq()` or `.filter()` predicates, batch concurrent independent queries in `Promise.all`, and memoize per-request lookups with React `cache()`.
+- **Evidence**: Production build `npm run build` completed cleanly; 0 TypeScript errors (`npx tsc --noEmit`); queries reduced from 5–15 serial full-table scans to single concurrent targeted indexed queries.
+- **Related decisions**: `decisions.md`
+- **Applicable scope**: All database query helpers (`lib/db.ts`), Data Access Layer (`lib/dal.ts`), Server Components, and Server Actions.
+

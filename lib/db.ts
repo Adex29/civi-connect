@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import "server-only";
+import { cache } from "react";
 import { supabase, isSupabaseConfigured } from "./supabase";
 import {
   Student,
@@ -61,21 +62,128 @@ export function writeData<T>(type: DataFileTypeType, data: T[]): void {
   }
 }
 
+// --- Entity Mappers ---
+function mapClassroom(row: any): Classroom {
+  return {
+    id: row.id,
+    name: row.name,
+    code: row.code,
+    description: row.description || undefined,
+    createdBy: row.created_by || undefined,
+    status: row.status as "active" | "archived",
+    createdAt: row.created_at,
+  };
+}
+
+function mapStudent(row: any): Student {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    lrn: row.lrn,
+    passwordHash: row.password_hash,
+    classroomId: row.classroom_id,
+    groupId: row.group_id || undefined,
+    createdAt: row.created_at,
+  };
+}
+
+function mapAdmin(row: any): Admin {
+  return {
+    id: row.id,
+    email: row.email,
+    passwordHash: row.password_hash,
+    name: row.name,
+    createdAt: row.created_at,
+  };
+}
+
+function mapGroup(row: any): Group {
+  return {
+    id: row.id,
+    name: row.name,
+    classroomId: row.classroom_id,
+    createdAt: row.created_at,
+  };
+}
+
+function mapScenario(row: any): Scenario {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    context: row.context || undefined,
+    constraints: Array.isArray(row.constraints) ? row.constraints : [],
+    status: row.status as any,
+    createdBy: row.created_by || undefined,
+    createdAt: row.created_at,
+    missionData: row.mission_data || undefined,
+  };
+}
+
+function mapClassroomScenario(row: any): ClassroomScenario {
+  return {
+    id: row.id,
+    classroomId: row.classroom_id,
+    scenarioId: row.scenario_id,
+    isActive: Boolean(row.is_active),
+    assignedAt: row.assigned_at,
+  };
+}
+
+function mapConstraint(row: any): Constraint {
+  return {
+    id: row.id,
+    scenarioId: row.scenario_id,
+    stepNumber: row.step_number,
+    description: row.description,
+    criteria: row.criteria,
+  };
+}
+
+function mapAssignment(row: any): Assignment {
+  return {
+    id: row.id,
+    scenarioId: row.scenario_id,
+    classroomId: row.classroom_id,
+    studentId: row.student_id || undefined,
+    groupId: row.group_id || undefined,
+    assignedAt: row.assigned_at,
+  };
+}
+
+function mapSubmission(row: any): Submission {
+  const simulationState = row.simulation_state
+    ? typeof row.simulation_state === "string"
+      ? JSON.parse(row.simulation_state)
+      : JSON.parse(JSON.stringify(row.simulation_state))
+    : row.simulationState
+    ? typeof row.simulationState === "string"
+      ? JSON.parse(row.simulationState)
+      : row.simulationState
+    : undefined;
+
+  return {
+    id: row.id,
+    scenarioId: row.scenario_id || row.scenarioId,
+    studentId: row.student_id || row.studentId,
+    groupId: row.group_id || row.groupId || undefined,
+    status: row.status,
+    content: row.content || "",
+    feedback: row.feedback || "",
+    score: row.score !== undefined ? row.score : null,
+    stepProgress: row.step_progress || simulationState?.currentStep || row.stepProgress || 1,
+    simulationState,
+    submittedAt: row.submitted_at || row.submittedAt,
+  };
+}
+
 // --- Classrooms ---
 export async function getAllClassrooms(): Promise<Classroom[]> {
   if (isSupabaseConfigured) {
     try {
       const { data, error } = await supabase.from("classrooms").select("*");
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          name: row.name,
-          code: row.code,
-          description: row.description || undefined,
-          createdBy: row.created_by || undefined,
-          status: row.status as "active" | "archived",
-          createdAt: row.created_at,
-        }));
+        return data.map(mapClassroom);
       }
     } catch (err) {
       // Quietly fall back to local JSON data on network / fetch failure
@@ -84,15 +192,39 @@ export async function getAllClassrooms(): Promise<Classroom[]> {
   return readData<Classroom>("classrooms");
 }
 
-export async function findClassroomByCode(code: string): Promise<Classroom | null> {
-  const classrooms = await getAllClassrooms();
+export const findClassroomByCode = cache(async (code: string): Promise<Classroom | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("classrooms")
+        .select("*")
+        .eq("code", code)
+        .maybeSingle();
+      if (!error && data) {
+        return mapClassroom(data);
+      }
+    } catch (err) {}
+  }
+  const classrooms = readData<Classroom>("classrooms");
   return classrooms.find((c) => c.code === code) || null;
-}
+});
 
-export async function findClassroomById(id: string): Promise<Classroom | null> {
-  const classrooms = await getAllClassrooms();
+export const findClassroomById = cache(async (id: string): Promise<Classroom | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("classrooms")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data) {
+        return mapClassroom(data);
+      }
+    } catch (err) {}
+  }
+  const classrooms = readData<Classroom>("classrooms");
   return classrooms.find((c) => c.id === id) || null;
-}
+});
 
 export async function createClassroom(classroom: Classroom): Promise<Classroom> {
   if (isSupabaseConfigured) {
@@ -168,15 +300,7 @@ export async function getAllStudents(): Promise<Student[]> {
     try {
       const { data, error } = await supabase.from("students").select("*");
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          fullName: row.full_name,
-          lrn: row.lrn,
-          passwordHash: row.password_hash,
-          classroomId: row.classroom_id,
-          groupId: row.group_id || undefined,
-          createdAt: row.created_at,
-        }));
+        return data.map(mapStudent);
       }
     } catch (err) {
       // Fallback to local
@@ -185,15 +309,39 @@ export async function getAllStudents(): Promise<Student[]> {
   return readData<Student>("students");
 }
 
-export async function findStudentByLrn(lrn: string): Promise<Student | null> {
-  const students = await getAllStudents();
+export const findStudentByLrn = cache(async (lrn: string): Promise<Student | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("lrn", lrn)
+        .maybeSingle();
+      if (!error && data) {
+        return mapStudent(data);
+      }
+    } catch (err) {}
+  }
+  const students = readData<Student>("students");
   return students.find((s) => s.lrn === lrn) || null;
-}
+});
 
-export async function findStudentById(id: string): Promise<Student | null> {
-  const students = await getAllStudents();
+export const findStudentById = cache(async (id: string): Promise<Student | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data) {
+        return mapStudent(data);
+      }
+    } catch (err) {}
+  }
+  const students = readData<Student>("students");
   return students.find((s) => s.id === id) || null;
-}
+});
 
 export async function createStudent(student: Student): Promise<Student> {
   if (isSupabaseConfigured) {
@@ -219,10 +367,21 @@ export async function createStudent(student: Student): Promise<Student> {
   return student;
 }
 
-export async function getStudentsByClassroom(classroomId: string): Promise<Student[]> {
-  const students = await getAllStudents();
+export const getStudentsByClassroom = cache(async (classroomId: string): Promise<Student[]> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("classroom_id", classroomId);
+      if (!error && data) {
+        return data.map(mapStudent);
+      }
+    } catch (err) {}
+  }
+  const students = readData<Student>("students");
   return students.filter((s) => s.classroomId === classroomId);
-}
+});
 
 // --- Admins ---
 export async function getAllAdmins(): Promise<Admin[]> {
@@ -230,13 +389,7 @@ export async function getAllAdmins(): Promise<Admin[]> {
     try {
       const { data, error } = await supabase.from("admins").select("*");
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          email: row.email,
-          passwordHash: row.password_hash,
-          name: row.name,
-          createdAt: row.created_at,
-        }));
+        return data.map(mapAdmin);
       }
     } catch (err) {
       // Fallback
@@ -245,15 +398,39 @@ export async function getAllAdmins(): Promise<Admin[]> {
   return readData<Admin>("admins");
 }
 
-export async function findAdminByEmail(email: string): Promise<Admin | null> {
-  const admins = await getAllAdmins();
+export const findAdminByEmail = cache(async (email: string): Promise<Admin | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("admins")
+        .select("*")
+        .ilike("email", email)
+        .maybeSingle();
+      if (!error && data) {
+        return mapAdmin(data);
+      }
+    } catch (err) {}
+  }
+  const admins = readData<Admin>("admins");
   return admins.find((a) => a.email.toLowerCase() === email.toLowerCase()) || null;
-}
+});
 
-export async function findAdminById(id: string): Promise<Admin | null> {
-  const admins = await getAllAdmins();
+export const findAdminById = cache(async (id: string): Promise<Admin | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("admins")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data) {
+        return mapAdmin(data);
+      }
+    } catch (err) {}
+  }
+  const admins = readData<Admin>("admins");
   return admins.find((a) => a.id === id) || null;
-}
+});
 
 // --- Groups ---
 export async function getAllGroups(): Promise<Group[]> {
@@ -261,12 +438,7 @@ export async function getAllGroups(): Promise<Group[]> {
     try {
       const { data, error } = await supabase.from("groups").select("*");
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          name: row.name,
-          classroomId: row.classroom_id,
-          createdAt: row.created_at,
-        }));
+        return data.map(mapGroup);
       }
     } catch (err) {
       // Fallback
@@ -275,15 +447,39 @@ export async function getAllGroups(): Promise<Group[]> {
   return readData<Group>("groups");
 }
 
-export async function getGroupsByClassroom(classroomId: string): Promise<Group[]> {
-  const groups = await getAllGroups();
+export const getGroupsByClassroom = cache(async (classroomId: string): Promise<Group[]> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("groups")
+        .select("*")
+        .eq("classroom_id", classroomId);
+      if (!error && data) {
+        return data.map(mapGroup);
+      }
+    } catch (err) {}
+  }
+  const groups = readData<Group>("groups");
   return groups.filter((g) => g.classroomId === classroomId);
-}
+});
 
-export async function findGroupByName(name: string, classroomId: string): Promise<Group | null> {
-  const groups = await getAllGroups();
+export const findGroupByName = cache(async (name: string, classroomId: string): Promise<Group | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("groups")
+        .select("*")
+        .eq("name", name)
+        .eq("classroom_id", classroomId)
+        .maybeSingle();
+      if (!error && data) {
+        return mapGroup(data);
+      }
+    } catch (err) {}
+  }
+  const groups = readData<Group>("groups");
   return groups.find((g) => g.name === name && g.classroomId === classroomId) || null;
-}
+});
 
 export async function createGroup(group: Group): Promise<Group> {
   if (isSupabaseConfigured) {
@@ -312,17 +508,7 @@ export async function getAllScenarios(): Promise<Scenario[]> {
     try {
       const { data, error } = await supabase.from("scenarios").select("*");
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          title: row.title,
-          description: row.description,
-          context: row.context || undefined,
-          constraints: Array.isArray(row.constraints) ? row.constraints : [],
-          status: row.status as any,
-          createdBy: row.created_by || undefined,
-          createdAt: row.created_at,
-          missionData: row.mission_data || undefined,
-        }));
+        return data.map(mapScenario);
       }
     } catch (err) {
       // Fallback
@@ -331,10 +517,22 @@ export async function getAllScenarios(): Promise<Scenario[]> {
   return readData<Scenario>("scenarios");
 }
 
-export async function findScenarioById(id: string): Promise<Scenario | null> {
-  const scenarios = await getAllScenarios();
+export const findScenarioById = cache(async (id: string): Promise<Scenario | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("scenarios")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data) {
+        return mapScenario(data);
+      }
+    } catch (err) {}
+  }
+  const scenarios = readData<Scenario>("scenarios");
   return scenarios.find((s) => s.id === id) || null;
-}
+});
 
 export async function createScenario(scenario: Scenario): Promise<Scenario> {
   if (isSupabaseConfigured) {
@@ -413,13 +611,7 @@ export async function getAllClassroomScenarios(): Promise<ClassroomScenario[]> {
     try {
       const { data, error } = await supabase.from("classroom_scenarios").select("*");
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          classroomId: row.classroom_id,
-          scenarioId: row.scenario_id,
-          isActive: Boolean(row.is_active),
-          assignedAt: row.assigned_at,
-        }));
+        return data.map(mapClassroomScenario);
       }
     } catch (err) {
       // Fallback
@@ -427,6 +619,43 @@ export async function getAllClassroomScenarios(): Promise<ClassroomScenario[]> {
   }
   return readData<ClassroomScenario>("classroomScenarios");
 }
+
+export const getClassroomScenariosByClassroom = cache(async (classroomId: string): Promise<ClassroomScenario[]> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("classroom_scenarios")
+        .select("*")
+        .eq("classroom_id", classroomId);
+      if (!error && data) {
+        return data.map(mapClassroomScenario);
+      }
+    } catch (err) {}
+  }
+  const all = readData<ClassroomScenario>("classroomScenarios");
+  return all.filter((cs) => cs.classroomId === classroomId);
+});
+
+export const findClassroomScenario = cache(async (
+  classroomId: string,
+  scenarioId: string
+): Promise<ClassroomScenario | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("classroom_scenarios")
+        .select("*")
+        .eq("classroom_id", classroomId)
+        .eq("scenario_id", scenarioId)
+        .maybeSingle();
+      if (!error && data) {
+        return mapClassroomScenario(data);
+      }
+    } catch (err) {}
+  }
+  const all = readData<ClassroomScenario>("classroomScenarios");
+  return all.find((cs) => cs.classroomId === classroomId && cs.scenarioId === scenarioId) || null;
+});
 
 export async function createClassroomScenario(assignment: ClassroomScenario): Promise<ClassroomScenario> {
   if (isSupabaseConfigured) {
@@ -472,13 +701,39 @@ export async function removeScenarioFromClassroom(scenarioId: string, classroomI
   writeData("classroomScenarios", filtered);
 }
 
-export async function getScenariosByClassroom(classroomId: string): Promise<Scenario[]> {
-  const assignments = (await getAllClassroomScenarios()).filter((a) => a.classroomId === classroomId);
-  const scenarios = await getAllScenarios();
+export const getScenariosByClassroom = cache(async (classroomId: string): Promise<Scenario[]> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data: assignments, error: aErr } = await supabase
+        .from("classroom_scenarios")
+        .select("scenario_id")
+        .eq("classroom_id", classroomId)
+        .eq("is_active", true);
+
+      if (!aErr && assignments && assignments.length > 0) {
+        const scenarioIds = assignments.map((a) => a.scenario_id);
+        const { data: scenarios, error: sErr } = await supabase
+          .from("scenarios")
+          .select("*")
+          .in("id", scenarioIds);
+
+        if (!sErr && scenarios) {
+          return scenarios.map(mapScenario);
+        }
+      } else if (!aErr && assignments && assignments.length === 0) {
+        return [];
+      }
+    } catch (err) {}
+  }
+
+  const assignments = readData<ClassroomScenario>("classroomScenarios").filter(
+    (a) => a.classroomId === classroomId && a.isActive
+  );
+  const scenarios = readData<Scenario>("scenarios");
   return assignments
     .map((a) => scenarios.find((s) => s.id === a.scenarioId))
-    .filter((s): s is Scenario => !!s);
-}
+    .filter((s): s is Scenario => Boolean(s));
+});
 
 // --- Constraints ---
 export async function getAllConstraints(): Promise<Constraint[]> {
@@ -486,13 +741,7 @@ export async function getAllConstraints(): Promise<Constraint[]> {
     try {
       const { data, error } = await supabase.from("constraints").select("*");
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          scenarioId: row.scenario_id,
-          stepNumber: row.step_number,
-          description: row.description,
-          criteria: row.criteria,
-        }));
+        return data.map(mapConstraint);
       }
     } catch (err) {
       // Fallback
@@ -501,15 +750,38 @@ export async function getAllConstraints(): Promise<Constraint[]> {
   return readData<Constraint>("constraints");
 }
 
-export async function getConstraintsByScenario(scenarioId: string): Promise<Constraint[]> {
-  const constraints = await getAllConstraints();
+export const getConstraintsByScenario = cache(async (scenarioId: string): Promise<Constraint[]> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("constraints")
+        .select("*")
+        .eq("scenario_id", scenarioId);
+      if (!error && data) {
+        return data.map(mapConstraint);
+      }
+    } catch (err) {}
+  }
+  const constraints = readData<Constraint>("constraints");
   return constraints.filter((c) => c.scenarioId === scenarioId);
-}
+});
 
-export async function getConstraintsByStep(scenarioId: string, stepNumber: number): Promise<Constraint[]> {
-  const constraints = await getAllConstraints();
+export const getConstraintsByStep = cache(async (scenarioId: string, stepNumber: number): Promise<Constraint[]> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("constraints")
+        .select("*")
+        .eq("scenario_id", scenarioId)
+        .eq("step_number", stepNumber);
+      if (!error && data) {
+        return data.map(mapConstraint);
+      }
+    } catch (err) {}
+  }
+  const constraints = readData<Constraint>("constraints");
   return constraints.filter((c) => c.scenarioId === scenarioId && c.stepNumber === stepNumber);
-}
+});
 
 export async function createConstraint(constraint: Constraint): Promise<Constraint> {
   if (isSupabaseConfigured) {
@@ -551,14 +823,7 @@ export async function getAllAssignments(): Promise<Assignment[]> {
     try {
       const { data, error } = await supabase.from("assignments").select("*");
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          scenarioId: row.scenario_id,
-          classroomId: row.classroom_id,
-          studentId: row.student_id || undefined,
-          groupId: row.group_id || undefined,
-          assignedAt: row.assigned_at,
-        }));
+        return data.map(mapAssignment);
       }
     } catch (err) {
       // Fallback
@@ -567,20 +832,55 @@ export async function getAllAssignments(): Promise<Assignment[]> {
   return readData<Assignment>("assignments");
 }
 
-export async function findAssignmentById(id: string): Promise<Assignment | null> {
-  const assignments = await getAllAssignments();
+export const findAssignmentById = cache(async (id: string): Promise<Assignment | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("assignments")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data) {
+        return mapAssignment(data);
+      }
+    } catch (err) {}
+  }
+  const assignments = readData<Assignment>("assignments");
   return assignments.find((a) => a.id === id) || null;
-}
+});
 
-export async function getAssignmentsByClassroom(classroomId: string): Promise<Assignment[]> {
-  const assignments = await getAllAssignments();
+export const getAssignmentsByClassroom = cache(async (classroomId: string): Promise<Assignment[]> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("assignments")
+        .select("*")
+        .eq("classroom_id", classroomId);
+      if (!error && data) {
+        return data.map(mapAssignment);
+      }
+    } catch (err) {}
+  }
+  const assignments = readData<Assignment>("assignments");
   return assignments.filter((a) => a.classroomId === classroomId);
-}
+});
 
-export async function getAssignmentForStudent(studentId: string): Promise<Assignment | null> {
-  const assignments = await getAllAssignments();
+export const getAssignmentForStudent = cache(async (studentId: string): Promise<Assignment | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("assignments")
+        .select("*")
+        .eq("student_id", studentId)
+        .maybeSingle();
+      if (!error && data) {
+        return mapAssignment(data);
+      }
+    } catch (err) {}
+  }
+  const assignments = readData<Assignment>("assignments");
   return assignments.find((a) => a.studentId === studentId) || null;
-}
+});
 
 export async function createAssignment(assignment: Assignment): Promise<Assignment> {
   if (isSupabaseConfigured) {
@@ -611,18 +911,7 @@ export async function getAllSubmissions(): Promise<Submission[]> {
     try {
       const { data, error } = await supabase.from("submissions").select("*");
       if (!error && data) {
-        return data.map((row) => ({
-          id: row.id,
-          scenarioId: row.scenario_id,
-          studentId: row.student_id,
-          groupId: row.group_id || undefined,
-          status: row.status,
-          content: row.content || "",
-          feedback: row.feedback || "",
-          score: row.score,
-          simulationState: row.simulation_state ? JSON.parse(JSON.stringify(row.simulation_state)) : undefined,
-          submittedAt: row.submitted_at,
-        }));
+        return data.map(mapSubmission);
       }
     } catch (err) {
       // Fallback
@@ -631,10 +920,73 @@ export async function getAllSubmissions(): Promise<Submission[]> {
   return readData<Submission>("submissions");
 }
 
-export async function findSubmissionById(id: string): Promise<Submission | null> {
-  const submissions = await getAllSubmissions();
+export const findSubmissionById = cache(async (id: string): Promise<Submission | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from("submissions")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data) {
+        return mapSubmission(data);
+      }
+    } catch (err) {}
+  }
+  const submissions = readData<Submission>("submissions");
   return submissions.find((s) => s.id === id) || null;
-}
+});
+
+export const getSubmissionsForStudent = cache(async (studentId: string, groupId?: string): Promise<Submission[]> => {
+  if (isSupabaseConfigured) {
+    try {
+      let query = supabase.from("submissions").select("*");
+      if (groupId) {
+        query = query.or(`student_id.eq.${studentId},group_id.eq.${groupId}`);
+      } else {
+        query = query.eq("student_id", studentId);
+      }
+      const { data, error } = await query;
+      if (!error && data) {
+        return data.map(mapSubmission);
+      }
+    } catch (err) {}
+  }
+  const all = readData<Submission>("submissions");
+  return all.filter((s) => s.studentId === studentId || (groupId && s.groupId === groupId));
+});
+
+export const findSubmissionForStudent = cache(async (
+  scenarioId: string,
+  studentId: string,
+  groupId?: string
+): Promise<Submission | null> => {
+  if (isSupabaseConfigured) {
+    try {
+      let query = supabase
+        .from("submissions")
+        .select("*")
+        .eq("scenario_id", scenarioId);
+      if (groupId) {
+        query = query.or(`student_id.eq.${studentId},group_id.eq.${groupId}`);
+      } else {
+        query = query.eq("student_id", studentId);
+      }
+      const { data, error } = await query.maybeSingle();
+      if (!error && data) {
+        return mapSubmission(data);
+      }
+    } catch (err) {}
+  }
+  const all = readData<Submission>("submissions");
+  return (
+    all.find(
+      (s) =>
+        s.scenarioId === scenarioId &&
+        (s.studentId === studentId || (groupId && s.groupId === groupId))
+    ) || null
+  );
+});
 
 export async function createSubmission(submission: Submission): Promise<Submission> {
   if (isSupabaseConfigured) {

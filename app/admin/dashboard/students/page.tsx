@@ -5,9 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 export default async function StudentsPage() {
-  const students = await getAllStudents();
-  const classrooms = await getAllClassrooms();
-  const groups = await getAllGroups();
+  const [students, classrooms, groups] = await Promise.all([
+    getAllStudents(),
+    getAllClassrooms(),
+    getAllGroups(),
+  ]);
 
   return (
     <div className="space-y-6">

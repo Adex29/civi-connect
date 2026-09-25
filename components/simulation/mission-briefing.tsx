@@ -5,9 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowRight, ArrowLeft, BookOpen, Target, CheckCircle2, ShieldCheck } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Scenario } from "@/lib/definitions";
-import Link from "next/link";
 
 export interface MissionBriefingProps {
   scenario: Scenario;
@@ -26,14 +25,14 @@ export function MissionBriefing({
   isArchived = false,
   onStart,
 }: MissionBriefingProps) {
-  const [stage, setStage] = useState<"welcome" | "overview">("welcome");
+  const [stage, setStage] = useState<"welcome" | "overview">(currentStep > 1 ? "overview" : "welcome");
 
-  // Calculate percentage: Step 1 = 0%, Step 4 = ~38%, Step 8 = ~88%, Completed = 100%
+  // Calculate percentage: Step 1 = 0%, Step 4 = ~43%, Step 7 = ~86%, Completed = 100%
   const progressPercent = isCompleted
     ? 100
     : currentStep <= 1
     ? 0
-    : Math.min(Math.round(((currentStep - 1) / 8) * 100), 95);
+    : Math.min(Math.round(((currentStep - 1) / 7) * 100), 95);
 
   const isResuming = currentStep > 1 && !isCompleted;
 
@@ -72,7 +71,7 @@ export function MissionBriefing({
               <Progress value={progressPercent} className="h-2 bg-muted" />
               {isResuming && (
                 <p className="text-[11px] text-muted-foreground">
-                  Resuming at Step 0{currentStep} of 08
+                  Resuming at Step 0{currentStep} of 07
                 </p>
               )}
             </div>
@@ -124,51 +123,9 @@ export function MissionBriefing({
         </div>
 
         <CardContent className="p-6 sm:p-8 space-y-6">
-          {/* Overview Section */}
-          <div className="space-y-2">
-            <h3 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-primary" /> Overview
-            </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-              {scenario.description}
-            </p>
-          </div>
-
-          {/* Legal / Statutory Context if present */}
-          {scenario.context && (
-            <div className="p-3.5 rounded-lg border border-border bg-muted/30 text-xs text-muted-foreground space-y-1">
-              <span className="font-semibold text-foreground flex items-center gap-1.5">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Statutory / Policy Context:
-              </span>
-              <p className="leading-relaxed italic">{scenario.context}</p>
-            </div>
-          )}
-
-          {/* Mission Objective Section */}
-          <div className="space-y-2 border-t border-border pt-4">
-            <h3 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" /> Mission Objective
-            </h3>
-            <p className="text-xs sm:text-sm font-medium text-foreground leading-relaxed">
-              Develop an evidence-based and sustainable intervention.
-            </p>
-          </div>
-
-          {/* Key Requirements & Constraints */}
-          {scenario.constraints && scenario.constraints.length > 0 && (
-            <div className="space-y-2 border-t border-border pt-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Key Requirements & Constraints
-              </span>
-              <ul className="list-disc list-inside text-xs sm:text-sm text-muted-foreground space-y-1 pl-1">
-                {scenario.constraints.map((c, i) => (
-                  <li key={i} className="leading-relaxed">
-                    {c}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
+            {scenario.description}
+          </p>
 
           {/* Action Buttons Footer */}
           <div className="border-t border-border pt-6 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">

@@ -206,10 +206,9 @@ export function SubmissionDrawer({
     { label: "Community Investigation", score: scores?.communityInvestigation ?? 85, desc: "Issue identification & local context accuracy" },
     { label: "Evidence Evaluation", score: scores?.evidenceEvaluation ?? 88, desc: "Source credibility & evidentiary linkage" },
     { label: "Stakeholder Analysis", score: scores?.stakeholderAnalysis ?? 90, desc: "Inclusivity & synthesis of diverse viewpoints" },
-    { label: "Intervention Planning", score: scores?.interventionPlanning ?? 88, desc: "Feasibility, itemized budget & timeline realism" },
+    { label: "Community Action Planning", score: scores?.interventionPlanning ?? 88, desc: "Feasibility, itemized budget & timeline realism" },
     { label: "Adaptive Decision-Making", score: scores?.adaptiveDecisionMaking ?? 86, desc: "Contingency problem-solving under obstacles" },
     { label: "Adaptive Plan Revision", score: scores?.planRevision ?? scores?.interventionPlanning ?? 88, desc: "Resilient refinement following challenge simulation" },
-    { label: "Impact Assessment", score: scores?.impactAssessment ?? 91, desc: "Long-term sustainability & ethical risk mitigations" },
   ];
 
   return (
@@ -232,7 +231,7 @@ export function SubmissionDrawer({
               </Badge>
             ) : (
               <Badge variant="secondary" className="gap-1">
-                <Clock className="h-3.5 w-3.5" /> In Progress (Step {submission.stepProgress || 1}/8)
+                <Clock className="h-3.5 w-3.5" /> In Progress (Step {submission.stepProgress || 1}/7)
               </Badge>
             )}
             {submission.score !== null && submission.score !== undefined && (
@@ -299,12 +298,12 @@ export function SubmissionDrawer({
             )}
           </div>
 
-          {/* 7-Dimension Competency Audit Card */}
+          {/* 6-Core Competency Audit Card */}
           {scores && (
             <div className="space-y-3 p-4 rounded-xl border bg-card shadow-2xs">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Award className="h-4 w-4 text-primary" /> 7-Dimension Competency Scores
+                  <Award className="h-4 w-4 text-primary" /> 6-Core Competency Scores
                 </h4>
                 <Badge variant="default" className="font-mono font-bold">
                   {scores.overallScore}% Overall
@@ -414,7 +413,11 @@ export function SubmissionDrawer({
                             <div className="flex items-center justify-between font-semibold">
                               <span className="text-foreground">{evObj?.title || ev.evidenceId}</span>
                               <span className="text-amber-500 font-bold">
-                                {"★".repeat(ev.userCredibility)}{"☆".repeat(Math.max(0, 5 - ev.userCredibility))}
+                                {ev.selectedSupports?.includes("not_related")
+                                  ? "N/A (Not Related)"
+                                  : ev.userCredibility > 0
+                                  ? `${"★".repeat(ev.userCredibility)}${"☆".repeat(Math.max(0, 5 - ev.userCredibility))}`
+                                  : "No Rating"}
                               </span>
                             </div>
                             <div className="flex gap-1 flex-wrap">
@@ -462,9 +465,11 @@ export function SubmissionDrawer({
                           );
                         })}
                       </div>
-                      <p className="text-foreground font-medium">
-                        <strong className="text-muted-foreground">Consultation Notes:</strong> &ldquo;{simState.step4.interviewNotes}&rdquo;
-                      </p>
+                      {simState.step4.interviewNotes && (
+                        <p className="text-foreground font-medium">
+                          <strong className="text-muted-foreground">Consultation Notes:</strong> &ldquo;{simState.step4.interviewNotes}&rdquo;
+                        </p>
+                      )}
                     </div>
                     <StepAiEvaluationBox
                       stepNumber={4}
@@ -484,7 +489,7 @@ export function SubmissionDrawer({
                   <TimelineConnector />
                   <TimelineContent>
                     <TimelineHeader>
-                      <TimelineTitle className="text-xs font-bold">Step 5: Initial Intervention Plan</TimelineTitle>
+                      <TimelineTitle className="text-xs font-bold">Step 5: Community Action Plan</TimelineTitle>
                       <span className="text-[10px] font-bold text-primary">
                         {simState.step5.plan.projectTitle}
                       </span>
@@ -494,6 +499,9 @@ export function SubmissionDrawer({
                       <p><strong className="text-foreground">Objectives:</strong> {simState.step5.plan.objectives}</p>
                       <p><strong className="text-foreground">Activities:</strong> {simState.step5.plan.activities}</p>
                       <p><strong className="text-foreground">Stakeholders:</strong> {simState.step5.plan.stakeholders}</p>
+                      {simState.step5.plan.resources && (
+                        <p><strong className="text-foreground">Resources:</strong> {simState.step5.plan.resources}</p>
+                      )}
                       <p><strong className="text-foreground">Budget:</strong> {simState.step5.plan.budget} | <strong className="text-foreground">Timeline:</strong> {simState.step5.plan.timeline}</p>
                       <p><strong className="text-foreground">Expected Outcomes:</strong> {simState.step5.plan.expectedOutcomes}</p>
                     </div>
@@ -515,17 +523,36 @@ export function SubmissionDrawer({
                   <TimelineConnector />
                   <TimelineContent>
                     <TimelineHeader>
-                      <TimelineTitle className="text-xs font-bold">Step 6: Challenge Simulation Decision</TimelineTitle>
+                      <TimelineTitle className="text-xs font-bold">Step 6: Challenge Simulation</TimelineTitle>
                     </TimelineHeader>
-                    <div className="text-xs p-2.5 bg-muted/20 border rounded-md mt-1 space-y-1">
-                      {simState.step6.selectedOptionId && (
-                        <p className="font-semibold text-primary">
-                          Option Selected: {simState.step6.selectedOptionId}
-                        </p>
+                    <div className="text-xs p-2.5 bg-muted/20 border rounded-md mt-1 space-y-1.5">
+                      {simState.step6.challenge ? (
+                        <>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-semibold text-primary">{simState.step6.challenge.title}</span>
+                            <Badge variant="outline" className="text-[10px] font-mono capitalize">
+                              {simState.step6.challenge.categoryLabel.replace(/^[A-Z]\.\s*/i, "")}
+                            </Badge>
+                          </div>
+                          <p className="text-foreground leading-relaxed">{simState.step6.challenge.description}</p>
+                          <p className="text-[11px] text-muted-foreground pt-1 border-t border-border/50">
+                            <strong>Affected Component:</strong> <span className="uppercase font-semibold text-primary">{simState.step6.challenge.affectedField}</span>
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          {simState.step6.selectedOptionId && (
+                            <p className="font-semibold text-primary">
+                              Option Selected: {simState.step6.selectedOptionId}
+                            </p>
+                          )}
+                          {simState.step6.justification && (
+                            <p className="text-foreground">
+                              &ldquo;{simState.step6.justification}&rdquo;
+                            </p>
+                          )}
+                        </>
                       )}
-                      <p className="text-foreground">
-                        &ldquo;{simState.step6.justification}&rdquo;
-                      </p>
                     </div>
                     <StepAiEvaluationBox
                       stepNumber={6}
@@ -552,8 +579,20 @@ export function SubmissionDrawer({
                     </TimelineHeader>
                     <div className="text-xs space-y-1.5 p-2.5 bg-muted/20 border rounded-md mt-1 text-muted-foreground">
                       <p><strong className="text-foreground">Goal:</strong> {simState.step7.revisedPlan.goal}</p>
+                      {simState.step7.revisedPlan.objectives && (
+                        <p><strong className="text-foreground">Objectives:</strong> {simState.step7.revisedPlan.objectives}</p>
+                      )}
                       <p><strong className="text-foreground">Activities:</strong> {simState.step7.revisedPlan.activities}</p>
+                      {simState.step7.revisedPlan.stakeholders && (
+                        <p><strong className="text-foreground">Stakeholders:</strong> {simState.step7.revisedPlan.stakeholders}</p>
+                      )}
+                      {simState.step7.revisedPlan.resources && (
+                        <p><strong className="text-foreground">Resources:</strong> {simState.step7.revisedPlan.resources}</p>
+                      )}
                       <p><strong className="text-foreground">Budget:</strong> {simState.step7.revisedPlan.budget} | <strong className="text-foreground">Timeline:</strong> {simState.step7.revisedPlan.timeline}</p>
+                      {simState.step7.revisedPlan.expectedOutcomes && (
+                        <p><strong className="text-foreground">Expected Outcomes:</strong> {simState.step7.revisedPlan.expectedOutcomes}</p>
+                      )}
                     </div>
                     <StepAiEvaluationBox
                       stepNumber={7}
@@ -563,34 +602,7 @@ export function SubmissionDrawer({
                   </TimelineContent>
                 </TimelineItem>
               )}
-
-              {/* Step 8 Community Impact */}
-              {simState?.step8?.impact && (
-                <TimelineItem>
-                  <TimelineDot status={simState.step8.passed ? "completed" : "current"}>
-                    <CheckCircle className="h-3.5 w-3.5" />
-                  </TimelineDot>
-                  <TimelineConnector />
-                  <TimelineContent>
-                    <TimelineHeader>
-                      <TimelineTitle className="text-xs font-bold">Step 8: Community Impact Assessment</TimelineTitle>
-                    </TimelineHeader>
-                    <div className="text-xs space-y-1 p-2.5 bg-muted/20 border rounded-md mt-1 text-muted-foreground">
-                      <p><strong className="text-foreground">Short-Term:</strong> {simState.step8.impact.shortTermImpact}</p>
-                      <p><strong className="text-foreground">Long-Term:</strong> {simState.step8.impact.longTermImpact}</p>
-                      <p><strong className="text-foreground">Risks/Mitigations:</strong> {simState.step8.impact.possibleRisks}</p>
-                      <p><strong className="text-foreground">Beneficiaries:</strong> {simState.step8.impact.whoBenefits}</p>
-                    </div>
-                    <StepAiEvaluationBox
-                      stepNumber={8}
-                      evaluation={simState.step8.evaluation}
-                      fallbackFeedback={simState.step8.feedback}
-                    />
-                  </TimelineContent>
-                </TimelineItem>
-              )}
-
-              {/* Step 8.5 Reflection */}
+              {/* Final Reflection */}
               {simState?.reflection && (
                 <TimelineItem>
                   <TimelineDot status="completed">
@@ -599,11 +611,18 @@ export function SubmissionDrawer({
                   <TimelineConnector />
                   <TimelineContent>
                     <TimelineHeader>
-                      <TimelineTitle className="text-xs font-bold">Final Reflection</TimelineTitle>
+                      <TimelineTitle className="text-xs font-bold">Step 8: Civic Action Reflection</TimelineTitle>
                     </TimelineHeader>
-                    <p className="text-xs text-foreground p-2.5 bg-muted/20 border rounded-md mt-1">
-                      &ldquo;{simState.reflection.answer}&rdquo;
-                    </p>
+                    <div className="text-xs p-2.5 bg-muted/20 border rounded-md mt-1 space-y-1.5">
+                      {simState.reflection.question && (
+                        <p className="font-semibold text-primary">
+                          Prompt: &ldquo;{simState.reflection.question}&rdquo;
+                        </p>
+                      )}
+                      <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+                        &ldquo;{simState.reflection.answer}&rdquo;
+                      </p>
+                    </div>
                     <StepAiEvaluationBox
                       stepNumber="Reflection"
                       evaluation={simState.reflection.evaluation}

@@ -7,6 +7,20 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ## Active Decisions
 
+- [D-20260925-014: Mission Cleanup and Canonical Seeding from Specification File](#d-20260925-014--mission-cleanup-and-canonical-seeding-from-specification-file)
+- [D-20260925-013: Step 8 Civic Action Reflection 5 Randomized Prompts and 5–15 Sentence Enforcement](#d-20260925-013--step-8-civic-action-reflection-5-randomized-prompts-and-515-sentence-enforcement)
+- [D-20260925-012: Removal of the Civitech Robot Mascot ("Civi") from the Student Dashboard](#d-20260925-012--removal-of-the-civitech-robot-mascot-civi-from-the-student-dashboard)
+- [D-20260925-011: Civic Mission Briefing & Mission Context Minimalist Display (Mission Title and Description Only)](#d-20260925-011--civic-mission-briefing--mission-context-minimalist-display-mission-title-and-description-only)
+- [D-20260925-010: Complete Elimination of Step 8 (Community Impact Assessment) and Streamlining to 7 Simulation Steps](#d-20260925-010--complete-elimination-of-step-8-community-impact-assessment-and-streamlining-to-7-simulation-steps)
+- [D-20260925-009: Step 6 Challenge Simulation Narrative Transition, Random Obstacle Selection, and Step 7 Single-Component Locked Plan Revision](#d-20260925-009--step-6-challenge-simulation-narrative-transition-random-obstacle-selection-and-step-7-single-component-locked-plan-revision)
+- [D-20260925-008: Step 5 Community Action Planning Architecture, Structured Arrays, 7-Criteria Activity Evaluation, and 7-Day Scope Enforcement](#d-20260925-008--step-5-community-action-planning-architecture-structured-arrays-7-criteria-activity-evaluation-and-7-day-scope-enforcement)
+- [D-20260925-007: Step 4 Stakeholder Relevance Designation, Statement-Only Architecture, and Non-Scored Click-Gated Selection](#d-20260925-007--step-4-stakeholder-relevance-designation-statement-only-architecture-and-non-scored-click-gated-selection)
+- [D-20260925-006: Universal Scenario Grounding, Context Relevance Screening, and Cross-Field Duplicate Rejection Across All Steps](#d-20260925-006--universal-scenario-grounding-context-relevance-screening-and-cross-field-duplicate-rejection-across-all-steps)
+- [D-20260925-005: Step 3 Student UX Cleanup, Copy-Paste Detection, and Evidence Justification Grounding](#d-20260925-005--step-3-student-ux-cleanup-copy-paste-detection-and-evidence-justification-grounding)
+- [D-20260925-004: Step 3 AI Verification of Irrelevant Evidence Identification and Irrelevance Justification](#d-20260925-004--step-3-ai-verification-of-irrelevant-evidence-identification-and-irrelevance-justification)
+- [D-20260925-003: Step 3 Not Related Star Rating Disabling and Star Score Independence](#d-20260925-003--step-3-not-related-star-rating-disabling-and-star-score-independence)
+- [D-20260925-002: Step 2 Designated Causal Hierarchy and Student Order Randomization](#d-20260925-002--step-2-designated-causal-hierarchy-and-student-order-randomization)
+- [D-20260925-001: Step 1 Designated Correct Root Issue and Admin Option Ticking](#d-20260925-001--step-1-designated-correct-root-issue-and-admin-option-ticking)
 - [D-20260923-006: Flat Color Vector Community Graphics and Open-Canvas Fluid Blob Blending](#d-20260923-006--flat-color-vector-community-graphics-and-open-canvas-fluid-blob-blending)
 - [D-20260923-005: Comprehensive AI Evaluation Response Capture and Admin Audit Review](#d-20260923-005--comprehensive-ai-evaluation-response-capture-and-admin-audit-review)
 - [D-20260923-004: Consolidation of Mission Step Iconography to Step Header Banner](#d-20260923-004--consolidation-of-mission-step-iconography-to-step-header-banner)
@@ -27,7 +41,6 @@ When guidance in other documentation conflicts with an accepted decision recorde
 - [D-20260919-003: Human-Readable Evaluation Flag Mapping & Variable Name Sanitization](#d-20260919-003--human-readable-evaluation-flag-mapping--variable-name-sanitization)
 - [D-20260919-002: AI Evaluation Response Modal and Explicit Submit Response Workflow](#d-20260919-002--ai-evaluation-response-modal-and-explicit-submit-response-workflow)
 - [D-20260919-001: Explicit Unselected Initial State for Student Simulation Decisions](#d-20260919-001--explicit-unselected-initial-state-for-student-simulation-decisions)
-- [D-20260908-001: Living Interactive Vector Mascot Companion ("Civi") for Student Dashboard](#d-20260908-001--living-interactive-vector-mascot-companion-civi-for-student-dashboard)
 - [D-20260906-001: Underline Indicator Line Tabs for Drawer Navigation](#d-20260906-001--underline-indicator-line-tabs-for-drawer-navigation)
 - [D-20260906-002: Dynamic Contrast Pill Badges for Tab Navigation](#d-20260906-002--dynamic-contrast-pill-badges-for-tab-navigation)
 - [D-20260906-004: Neutral Form Controls & Toolbar Surfaces (Removal of Blue Hue 220)](#d-20260906-004--neutral-form-controls--toolbar-surfaces-removal-of-blue-hue-220)
@@ -50,6 +63,7 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ## Superseded Decisions
 
+- [D-20260908-001: Living Interactive Vector Mascot Companion ("Civi") for Student Dashboard](#d-20260908-001--living-interactive-vector-mascot-companion-civi-for-student-dashboard)
 - [D-20260905-001: Forced Solid Primary Block Tabs with Drop Shadows](#d-20260905-001--forced-solid-primary-block-tabs-with-drop-shadows)
 
 ---
@@ -57,6 +71,625 @@ When guidance in other documentation conflicts with an accepted decision recorde
 ## Rejected Alternatives
 
 - [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+
+### D-20260925-014 — Mission Cleanup and Canonical Seeding from Specification File
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Database and local scenario repository (`data/scenarios.json`, `data/classroom-scenarios.json`, `data/submissions.json`, Supabase tables: `scenarios`, `classroom_scenarios`, `submissions`)
+- **Supersedes**: Legacy multi-scenario mock dataset (`ux2EoX1L61w4yPY9vbBwO`, `P4ugZ20X0Y-KS_zr_Uoup`, `7VE3D8n8BLQDx0ML4SBA9`, `7qdPFk6VauK1WMr1KPC89`, `mSg9windUj82l2sGCkk20`)
+- **Superseded by**: None
+- **Related implementation**: `scripts/seed-file-mission.mjs`, `data/scenarios.json`, `data/classroom-scenarios.json`, `data/submissions.json`
+
+#### Context
+1. The user explicitly instructed: *"Clean up the missions including in the databases, remove all the mission and seed it with the mission included in the file"*.
+2. The user-uploaded specification document (`media_1790332814348.pdf`) defines the canonical CIVITECH curriculum mission: **Barangay San Isidro: Drainage and Waste Management**.
+3. All previous draft scenarios in `data/scenarios.json` and Supabase (Dengue Outbreak, Rabies Threat, Curfew, BDRRM) and their corresponding test submissions needed to be removed, resetting the platform to a clean slate seeded exclusively with the specification mission.
+
+#### Decision
+1. **Safety Backup**:
+   - Preserved all pre-cleanup JSON files in `data/backup_pre_cleanup/` before altering records.
+2. **Canonical Mission Construction (`san-isidro-drainage-crisis`)**:
+   - Title: `"Barangay San Isidro: Drainage and Waste Management"`
+   - Full narrative verbatim from Page 1 of the specification document.
+   - Step 1: 4 options with `"Clogged drainage canal causing stagnant water on the neighborhood street."` marked as the designated correct answer.
+   - Step 2: 4 causes arranged in the educator-designated causal sequence (1. Improper waste disposal near canal -> 2. Accumulation of leaves/debris -> 3. Lack of regular community cleaning -> 4. Heavy rainfall).
+   - Step 3: 4 evidence items matching Pages 2–3, including the distractor `"Many residents prefer to stay indoors when it rains"` (`isIrrelevant: true`).
+   - Step 4: 4 stakeholders matching Pages 3–4, including the distractor `"Nearby Store Owner"` (`isIrrelevant: true`).
+   - Step 6: 3 challenges across Stakeholder, Budget, and Resource categories.
+   - StepTips: Pedagogical tips tailored to Barangay San Isidro.
+3. **Database and Local Storage Synchronization**:
+   - Emptied `submissions`, `constraints`, `assignments`, and legacy `classroom_scenarios` in Supabase PostgreSQL and local JSON.
+   - Seeded `san-isidro-drainage-crisis` as the sole scenario in both Supabase `scenarios` and `data/scenarios.json`.
+   - Assigned `san-isidro-drainage-crisis` to classroom `KGacUYKN3j-Q3RHxWqp_j` (`CVC-3A`) in both Supabase `classroom_scenarios` and `data/classroom-scenarios.json`.
+
+#### Evidence
+- Executed `node scripts/seed-file-mission.mjs`.
+- Verified live via `scratch/verify_db.mjs`:
+  - `Supabase Scenarios`: exactly 1 record (`san-isidro-drainage-crisis`).
+  - `Supabase Classroom Scenarios`: exactly 1 record (assigned to `KGacUYKN3j-Q3RHxWqp_j`).
+  - `Supabase Submissions`: 0 records.
+- Verified TypeScript compilation: `npx tsc --noEmit` exited with code 0.
+
+---
+
+### D-20260925-013 — Step 8 Civic Action Reflection 5 Randomized Prompts and 5–15 Sentence Enforcement
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering & CIVITECH Specification Alignment
+- **Scope**: Civic Action Reflection ([`activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx), [`lib/definitions.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/definitions.ts), [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts), [`submission-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submission-drawer.tsx))
+- **Supersedes**: None
+- **Superseded by**: None
+- **Related implementation**: `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `lib/ai.ts`, `lib/definitions.ts`, `app/admin/dashboard/submissions/submission-drawer.tsx`
+
+#### Context
+1. Page 7 of the CIVITECH specification document specifies:
+   - *"Step 8: Reflection and Evaluation"*
+   - Questions drawn from 5 reflection prompts:
+     1. *"What did you learn about solving community problems?"*
+     2. *"Why is it important to understand the causes of a community problem before proposing a solution?"*
+     3. *"How did evidence and stakeholder perspectives influence your plan?"*
+     4. *"What did the challenge teach you about flexibility and decision-making in community action?"*
+     5. *"How realistic and sustainable is your proposed community action?"*
+   - Author's note: *"Randomly ulit iyong questions per students. 5-15 sentences."*
+2. Previously, the system used a single static reflection prompt with a minimal 20-character / 2–3 sentence check.
+
+#### Decision
+1. Defined `CIVIC_REFLECTION_QUESTIONS` in [`lib/definitions.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/definitions.ts) containing the exact 5 questions from the specification.
+2. In [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx), implemented pseudo-random prompt assignment per student that persists stably in `simState.reflection.question`.
+3. Added a real-time sentence counter displaying `${reflectionSentenceCount} / 5–15 Sentences` with color-coded feedback and submit gating.
+4. In [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) (`evaluateReflection`), enforced that submissions under 5 sentences fail with `INSUFFICIENT_REFLECTION_LENGTH` and submissions over 15 sentences fail with `EXCESSIVE_REFLECTION_LENGTH`, while injecting the assigned prompt into the evaluation pipeline for coherence validation.
+5. In [`app/admin/dashboard/submissions/submission-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submission-drawer.tsx), displayed the assigned prompt question alongside the student's reflection text and AI evaluation.
+
+---
+
+### D-20260925-012 — Removal of the Civitech Robot Mascot ("Civi") from the Student Dashboard
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Student Welcome Command Center (`app/dashboard/page.tsx`)
+- **Supersedes**: D-20260908-001 (Living Interactive Vector Mascot Companion "Civi")
+- **Superseded by**: None
+- **Related implementation**: `app/dashboard/page.tsx`
+
+#### Context
+1. The student dashboard previously featured an animated vector robotic companion ("Civi") occupying a 4-column right container in the hero banner.
+2. The user explicitly requested: *"remove the civitech robot"*.
+
+#### Decision
+1. In [`app/dashboard/page.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/page.tsx), removed the `CivicCompanion` component and its import.
+2. Restructured the hero welcome container into a clean, unified, full-width layout (`max-w-4xl space-y-5`) highlighting the welcome greeting, mission statement, and quick civic status pills (Classroom, Active Missions, Completed Missions).
+
+---
+
+### D-20260925-011 — Civic Mission Briefing & Mission Context Minimalist Display (Mission Title and Description Only)
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Civic Mission Briefing screen (`components/simulation/mission-briefing.tsx`) and Mission Context & Legal Guidance sidebar card (`app/dashboard/activity/[scenarioId]/activity-form.tsx`)
+- **Supersedes**: Cluttered mission briefing and context cards displaying statutory policy context, legal framework insets, hardcoded mission objectives, and constraint bullet points
+- **Superseded by**: None
+- **Related implementation**: `components/simulation/mission-briefing.tsx`, `app/dashboard/activity/[scenarioId]/activity-form.tsx`
+
+#### Context
+1. In the Civic Mission Briefing (`MissionBriefing` Stage 2) and the sidebar "Mission Context & Legal Guidance" card in the simulation, the interface previously rendered redundant statutory and policy framework insets (`scenario.context`), hardcoded mission objectives, and constraint bullet points.
+2. The user explicitly requested:
+   - *"in the Civic Mission Briefing, it should only display the mission title and the description"*
+   - *"Mission Context & Legal Guidance: here also, it should be the mission title and the description only"*
+
+#### Decision
+1. In `components/simulation/mission-briefing.tsx`, removed Statutory Context, Mission Objective, and Key Requirements & Constraints.
+2. In `app/dashboard/activity/[scenarioId]/activity-form.tsx`, removed the Legal & Statutory Framework inset (`scenario.context`) from the "Mission Context & Legal Guidance" sidebar card.
+3. Both containers now cleanly and exclusively display:
+   - The mission title (`{scenario.title}`).
+   - The scenario description narrative (`{scenario.description}`).
+4. If mid-mission (`currentStep > 1`), opening the Mission Briefing (e.g. via "Mission Overview") defaults directly to the briefing screen rather than the initial welcome card.
+
+---
+
+### D-20260925-010 — Complete Elimination of Step 8 (Community Impact Assessment) and Streamlining to 7 Simulation Steps
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Simulation steps count, Step 7 completion transition, evaluation scoring pipeline (`lib/ai.ts`, `actions.ts`), competency reports (`performance-report.tsx`), step tracking (`step-tracker.tsx`, `mission-briefing.tsx`), admin submission inspection (`submission-drawer.tsx`), and mission editor (`tips-tab.tsx`, `lib/mission-data.ts`)
+- **Supersedes**: Step 8 "Assess Community Impact" / "Community Impact Assessment", 7-dimension scoring models, and 8-step simulation timeline
+- **Superseded by**: None
+- **Related implementation**: `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `app/dashboard/activity/[scenarioId]/actions.ts`, `components/simulation/step-tracker.tsx`, `components/simulation/mission-briefing.tsx`, `components/simulation/performance-report.tsx`, `app/admin/dashboard/submissions/submission-drawer.tsx`, `lib/definitions.ts`, `lib/ai.ts`, `lib/mission-data.ts`, `lib/flag-utils.ts`
+
+#### Context
+1. **User Steering**: The user explicitly requested to "remove the whole step 8".
+2. **Pedagogical Streamlining**: The simulation workflow culminates at Step 7 ("Adaptive Plan Revision") where the student demonstrates the core competencies of civic problem-solving under real-world community constraints. Step 8 ("Community Impact Assessment") was redundant with the comprehensive Action Plan and Final Reflection.
+3. **Architectural Alignment**:
+   - The simulation now comprises exactly 7 core interactive steps:
+     1. Identify Issue
+     2. Analyze Causes
+     3. Evidence Evaluation
+     4. Stakeholder Consultation
+     5. Community Action Planning
+     6. Challenge Simulation
+     7. Plan Revision
+   - Passing Step 7 completes the simulation activity and directly unlocks the Performance Scorecard (Step 8 view) followed by the Final Reflection (Step 8.5) and Completion Certificate (Step 10).
+   - Competency evaluation scoring is consolidated into 6 core dimensions:
+     1. Community Investigation (Step 1)
+     2. Evidence Evaluation (Step 2 & 3)
+     3. Stakeholder Analysis (Step 4)
+     4. Community Action Planning (Step 5)
+     5. Adaptive Decision-Making (Step 6)
+     6. Adaptive Plan Revision (Step 7)
+     Overall score is computed as `(cInv + eEval + sAna + iPlan + aDec + pRev) / 6`.
+
+#### Decision
+1. **Removed Step 8 from All Trackers and Navigation**:
+   - `components/simulation/step-tracker.tsx`: Updated `STEPS_CONFIG` to 7 steps, mobile progress to "Step X of 7", and timeline progress to "X / 7".
+   - `components/simulation/mission-briefing.tsx`: Resuming status reads "Resuming at Step 0X of 07" and progress calculation normalized over 7 steps.
+   - `app/dashboard/activity/[scenarioId]/activity-form.tsx`: Header banner reads "Mission Step 0X of 07", CardTitle step 8 removed, step 8 form inputs removed, and read-only mode checks step 7 for completion.
+2. **Transition After Step 7**:
+   - In `actions.ts`, passing Step 7 calculates `calculateMissionScores(state)`, sets `state.scores = scores`, `state.currentStep = 8` (Performance Report), and updates `submission.score`.
+   - In `activity-form.tsx`, `step === 8 || step === 9` renders the Performance Report, which transitions to `step = 8.5` (Final Reflection) and then `step = 10` (Certificate).
+3. **Competency Score Normalization**:
+   - In `lib/ai.ts`, `calculateMissionScores` computes the overall score across the 6 active dimensions. `impactAssessment` is made optional in `StepScoreBreakdown` for backwards compatibility with previously evaluated submissions.
+   - In `components/simulation/performance-report.tsx` and `submission-drawer.tsx`, displays are updated to "6-Core Competency Evaluation Timeline" and "6-Core Competency Scores".
+4. **Admin and Diagnostic Consistency**:
+   - `submission-drawer.tsx`: Step progress displays `Step X/7` and Step 8 Community Impact timeline card is retired.
+   - `tips-tab.tsx` & `lib/mission-data.ts`: Mission editor allows configuring tips for Steps 1 through 7.
+   - `lib/flag-utils.ts`: AI evaluation diagnostics align to the 7 steps plus reflection.
+
+---
+
+### D-20260925-009 — Step 6 Challenge Simulation Narrative Transition, Random Obstacle Selection, and Step 7 Single-Component Locked Plan Revision
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 6 Challenge Simulation (`activity-form.tsx`), Step 7 Plan Revision (`community-action-plan-form.tsx`), mission data challenges engine (`lib/mission-data.ts`), server actions (`actions.ts`), AI evaluation engine (`lib/ai.ts`), data models (`lib/definitions.ts`), and admin submission drawer (`submission-drawer.tsx`)
+- **Supersedes**: Step 6 options selection and justification essay, whole-plan re-editing in Step 7, static single-obstacle events, and generic Step 7 AI diff checking
+- **Superseded by**: None
+- **Related implementation**: `lib/definitions.ts`, `lib/mission-data.ts`, `components/simulation/community-action-plan-form.tsx`, `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `app/dashboard/activity/[scenarioId]/actions.ts`, `lib/ai.ts`, `app/admin/dashboard/submissions/submission-drawer.tsx`
+
+#### Context
+1. **Curricular Simulation Dynamics**: In civic action planning, real-world community initiatives routinely face sudden logistical, budgetary, or stakeholder crises. In the curriculum, Step 6 ("Challenge Simulation") introduces an unexpected crisis, while Step 7 ("Plan Revision") challenges students to adapt their plan without unraveling the approved foundation.
+2. **User Requirements**:
+   - **Step 6 Cleanup**: Remove the "What are you going to do?" radio list and the "Justify your adaptive decision" textarea.
+   - **Button Workflow & Direct Redirection**:
+     - Step 5 button label: **"Submit Initial Plan"**.
+     - Step 6 button label: **"Revise Initial Plan"**.
+     - Clicking "Revise Initial Plan" on Step 6 immediately redirects the student directly to Step 7 ("Plan Revision") without an evaluation modal.
+   - **Random Challenge Presentation in Step 6**: The challenge must appear randomly to each student across the 3 curriculum categories:
+     - **Stakeholder Challenge**: A vital group, partner, or community leader withdraws, gets reassigned, or poses friction (`affectedField: 'stakeholders'`).
+     - **Budget Challenge**: A funding source drops, a municipal subsidy is slashed, or unexpected fees emerge (`affectedField: 'budget'`).
+     - **Resource Challenge**: Equipment, materials, printing facilities, or vehicles become inaccessible or scarce (`affectedField: 'resources'`).
+   - **Step 7 Single-Component Editability**: Whichever challenge was presented to the student, *only that affected component* is editable in the community action plan during Plan Revision; all other components are disabled and locked.
+
+#### Decision
+1. **Data Model & Challenge Definitions (`ChallengeEvent`)**:
+   - Added `ChallengeCategory` (`'stakeholder' | 'budget' | 'resource'`) and `ChallengeEvent` interface (`id`, `category`, `categoryLabel`, `title`, `description`, `affectedField`, `editableFields`) to [`lib/definitions.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/definitions.ts).
+   - Created `getScenarioChallenges(scenario: Scenario): ChallengeEvent[]` in [`lib/mission-data.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/mission-data.ts) generating authentic scenario-tailored events for Solid Waste, Dengue Prevention, Rabies Control, and generic civic fallback scenarios.
+   - Extended `SimulationStateData.step6` with `challenge?: ChallengeEvent`.
+2. **Step 6 Streamlined Narrative Experience**:
+   - Removed the question radio list and justification textarea from [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx).
+   - Rendered an unexpected crisis banner with amber accent, category badge, event title, full description, and a clear callout noting which section of their community action plan is impacted.
+   - On clicking "Revise Initial Plan", `handleNextStep` sends `{ challenge: step6Challenge }` to `processSimulationStepAction`, records passing status in Supabase, and immediately redirects the user to Step 7 (`setStep(7)`) without presenting an evaluation modal dialog.
+   - Retained session-stable randomization (`simState.step6?.challenge || randomPick(...)`) so page reloads maintain the exact challenge already assigned.
+3. **Step 7 Single-Component Editability & Visual Locking (`CommunityActionPlanForm`)**:
+   - Added `editableFields?: PlanFieldKey[]` to `CommunityActionPlanFormProps` in [`components/simulation/community-action-plan-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/community-action-plan-form.tsx).
+   - All 9 plan fields check `isFieldDisabled(fieldName)`:
+     - **Affected Component**: Highlighted with an amber border (`border-amber-500/60`), ambient ring, and `<Badge className="bg-amber-600 text-white">Affected (Editable)</Badge>`.
+     - **Locked Components**: Marked with `<span className="text-xs text-muted-foreground flex items-center gap-1 font-normal"><Lock className="h-3 w-3" /> Locked</span>`, tinted background (`bg-muted/20`), and disabled input fields/buttons.
+   - In `activity-form.tsx`, `step6Challenge.editableFields` is passed directly to `<CommunityActionPlanForm />`.
+   - The Reset button in Step 7 resets only the affected component back to the Step 5 plan.
+4. **Adaptive AI Evaluation (`evaluateStep7` in `lib/ai.ts`)**:
+   - Updated `evaluateStep7` to accept `challenge?: ChallengeEvent`.
+   - Checks whether the student actually revised the affected component (`targetModified`). If the student leaves the affected component identical to the Step 5 plan, the AI flags `CHALLENGE_REVISION_UNMODIFIED`, deducts points, and requires revision.
+   - Tailors the Gemini prompt to evaluate whether the proposed modification realistically mitigates the specific obstacle described in the challenge.
+5. **Teacher/Admin Audit Transparency**:
+   - Updated [`app/admin/dashboard/submissions/submission-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submission-drawer.tsx) so the inspector cleanly displays the challenge title, category label, crisis description, and affected component under Step 6.
+
+#### Evidence
+Verified via `npx tsc --noEmit` (`exit code: 0`) and automated unit suite `scratch/test_step6_step7.ts` (3 of 3 test assertions passing, verifying challenge generation, unmodified target detection, and revised adaptation passing).
+
+---
+
+### D-20260925-008 — Step 5 Community Action Planning Architecture, Structured Arrays, 7-Criteria Activity Evaluation, and 7-Day Scope Enforcement
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 5 Community Action Planning simulation (`community-action-plan-form.tsx`), simulation activity form (`activity-form.tsx`), trackers and review drawers (`step-tracker.tsx`, `performance-report.tsx`, `submission-drawer.tsx`, `tips-tab.tsx`), data models (`lib/definitions.ts`), and AI evaluation engine (`lib/ai.ts`)
+- **Supersedes**: Plain textarea inputs for Step 5, name "Intervention Planning", unstructured open timeline, unverified activity criteria, and missing consulted stakeholder validation
+- **Superseded by**: None
+- **Related implementation**: `components/simulation/community-action-plan-form.tsx`, `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `app/dashboard/activity/[scenarioId]/actions.ts`, `lib/definitions.ts`, `lib/ai.ts`, `lib/flag-utils.ts`, `components/simulation/step-tracker.tsx`, `components/simulation/performance-report.tsx`, `app/admin/dashboard/submissions/submission-drawer.tsx`
+
+#### Context
+1. **Curriculum Alignment**: Based on the project specification PDF, Step 5 was formally designated as **"Community Action Planning"** (formerly "Intervention Planning").
+2. **Structural & Pedagogical Requirements**:
+   - **Objectives**: Must be formatted as a dynamic list with a **maximum of 3** items.
+   - **Activities**: Students must propose one main community action initiative directly addressing the identified root issue, provided as a **10–15 sentence description** covering 7 mandatory criteria:
+     1. What the activity is
+     2. How it will be conducted
+     3. Who will participate
+     4. What students/community members will do
+     5. How the activity addresses the identified cause or need
+     6. Why the activity is appropriate for the community
+     7. What students expect the activity to accomplish
+   - **AI Evaluation**: If the submission does not qualify on all 7 criteria or length, the AI response must explicitly enumerate which criteria are missing.
+   - **Stakeholders**: Multi-badge input where the student must include at least one consulted stakeholder from Step 4, accompanied by the exact note: `"Kailangan ay mailagay ang at least isa sa consulated niya na stakeholders from Step 4."`
+   - **Resources**: Multiple badge tags with addition and removal controls.
+   - **Budget**: Estimated budget input validated for reasonableness relative to the small-scale community problem.
+   - **Timeline**: Tabular table with columns `(Phase, Activity, Time)`, radio buttons for time unit (`Days` vs `Weeks`), and an `+ Add Row` button. Constrained to the 7-day community mission scope ("on the 7th day ay tapos na iyong activity / 7th day is the implementation of the community action initiative").
+   - **Expected Outcomes**: Dynamic list with a **maximum of 3** items, directly justifying the objectives.
+   - **Holistic AI Checking**: Evaluates the plan coherence as an integrated whole.
+
+#### Decision
+1. **Data Model Extensions with Backward Compatibility**:
+   - Extended `InterventionPlanData` with optional structured fields: `objectivesList?: string[]`, `stakeholdersList?: string[]`, `resourcesList?: string[]`, `timelineRows?: TimelineRow[]`, `timelineUnit?: "days" | "weeks"`, and `expectedOutcomesList?: string[]`.
+   - Kept legacy string properties (`objectives`, `stakeholders`, `resources`, `timeline`, `expectedOutcomes`) automatically synchronized on every change. Existing database records, export tools, and Step 7 cloning operate seamlessly without schema migrations.
+2. **Dedicated Interactive UI (`CommunityActionPlanForm`)**:
+   - Built modern Base UI component with dynamic list add/remove buttons, live sentence counter matching the AI's regex count, prompt box detailing the 7 criteria, Step 4 quick-add chips, multi-value resource badges, and tabular timeline with Base UI radio buttons and add-row capability.
+   - Applied identical modern UI to both Step 5 (Initial Plan) and Step 7 (Adaptive Plan Revision).
+3. **Multi-Pillar AI Evaluation & Integrity Enforcement (`evaluateStep5` in `lib/ai.ts`)**:
+   - `evaluateCommunityActionActivity`: Evaluates the 10–15 sentence description against all 7 criteria and outputs explicit missing elements in `actionable_feedback`.
+   - `checkStep4ConsultedStakeholderIncluded`: Verifies that at least one consulted stakeholder from Step 4 is included by name or role, outputting the required reminder if missing.
+   - `checkTimelineSevenDayScope`: Enforces the 7-day implementation scope, flagging timelines specifying months or extended multi-week intervals (`TIMELINE_EXCEEDS_MISSION_SCOPE`).
+   - Retained multi-field copy-paste detection and scenario topic relevance checks.
+4. **Clean Slate Input Surface (Removal of Placeholders and Default Values)**:
+   - In alignment with user instructions and prior clean-slate authoring standards (`D-20260920-007`), eliminated all `placeholder="..."` attributes from every `Input` and `Textarea` field across [`components/simulation/community-action-plan-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/community-action-plan-form.tsx).
+   - Removed pre-filled default timeline rows (`"Phase 1: Mobilization & Planning"`, `"Day 1-2"`, etc.) from both `community-action-plan-form.tsx` and `activity-form.tsx` (`initPlanData`). Initial timeline row fallback is clean `[{ phase: "", activity: "", time: "" }]`.
+   - In `handleAddTimelineRow`, new rows now initialize with blank strings `{ phase: "", activity: "", time: "" }` instead of pre-populating `"Phase ${n}: "`, ensuring student inputs start completely clean without ghost or pre-populated text.
+5. **Unified Badge Combobox Architecture (Elimination of Secondary Input Fields & Add Buttons)**:
+   - Replaced the two-element pattern (an empty select-like display container + a secondary `<Input>` with an `<Button>Add</Button>`) with a unified `BadgeCombobox` (`BadgeInput`) component in [`components/ui/combobox.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/ui/combobox.tsx) and [`components/ui/badge-input.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/ui/badge-input.tsx).
+   - In Stakeholders and Resources within [`components/simulation/community-action-plan-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/community-action-plan-form.tsx):
+     - When an input has no options (e.g., Resources), typing inside the field and pressing `Enter` inserts the text directly as a badge within the same control. There is no secondary field, no add button, and no dead 'No options found' dropdown.
+     - When options exist (e.g., Stakeholders consulted in Step 4), the combobox filters options as the user types, while allowing custom entries on `Enter`.
+     - Supports keyboard navigation, backspace deletion of the preceding badge, click removal, and paste parsing for comma/newline-separated entries.
+
+#### Evidence
+Verified via `npx tsc --noEmit` (`exit code: 0`) and automated unit suite `scratch/test_step5_action_plan.ts` (6 of 6 tests passing).
+
+---
+
+### D-20260925-007 — Step 4 Stakeholder Relevance Designation, Statement-Only Architecture, and Non-Scored Click-Gated Selection
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 4 Stakeholder simulation (`stakeholder-chat.tsx`), mission editor (`stakeholders-tab.tsx`), definitions (`lib/definitions.ts`), simulation form (`activity-form.tsx`), and evaluation engine (`lib/ai.ts`)
+- **Supersedes**: Multi-turn Q&A follow-up interview mechanic, consultation notes/synthesis textarea, and scored rubric evaluation for Step 4
+- **Superseded by**: None
+- **Related implementation**: `components/simulation/stakeholder-chat.tsx`, `components/admin/mission-editor/stakeholders-tab.tsx`, `components/ui/checkbox.tsx`, `lib/definitions.ts`, `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `lib/ai.ts`
+
+#### Context
+1. Step 4 previously required simulated multi-turn question-and-answer interview cycles, followed by an open-ended "Consultation Notes & Synthesis" essay evaluated with strict rubrics and AI content checks.
+2. The user directed streamlining Step 4 into an objective stakeholder identification task:
+   - "Remove the q and A, it should be the statement only."
+   - "For the admin side there should be an option to add the relevant stakeholder"
+   - "Remove the consultation Notes and Synthesis input field."
+   - "For the admin side. Add an option to select a stakeholder to mark as irrelevant"
+   - "For the student side, this step have no bearing on the scoring"
+   - "Change the card title to 'Select the stakeholders you believe can provide the most useful information or assistance in developing your initiative'"
+   - "Disable the checkbox if the student did not click the stakesholder."
+   - "From submit response to continue mission"
+   - Strict constraint: "Just this dont add notes in the admin or student side and dont change the current UI".
+
+#### Decision
+1. **Admin Mission Editor (`stakeholders-tab.tsx`)**:
+   - Removed follow-up Q&A authoring section entirely. Stakeholders now have Name, Role, Statement, and Relevance.
+   - Added clean toggle/selectors for "Relevant Stakeholder" vs "Irrelevant / Distractor".
+   - Header row displays a distinct badge (`Relevant` in primary tone vs `Irrelevant Distractor` in amber tone).
+   - No extra notes or verbose explanatory callouts added.
+2. **Student Simulation View (`stakeholder-chat.tsx` & `activity-form.tsx`)**:
+   - Removed the consultation notes and synthesis textarea completely.
+   - Removed Q&A question buttons and revealed response bubbles. The stakeholder statement is displayed directly.
+   - Card title updated to: `"Select the stakeholders you believe can provide the most useful information or assistance in developing your initiative"`.
+   - Click-Gated Checkbox Selection: A stakeholder's checkbox is disabled by default. Clicking the stakeholder's card views their statement and immediately enables their selection checkbox.
+   - Button text on Step 4 updated from `"Submit Response"` to `"Continue Mission"`.
+3. **AI Checker & Zero Scoring Bearing (`lib/ai.ts`)**:
+   - Implemented an irrelevant stakeholder checker: If the student selects an irrelevant distractor stakeholder, the AI feedback specifically identifies the irrelevant stakeholder by name and role and guides the student towards relevant community figures.
+   - Zero score bearing: Step 4 awards `passed: true` and `step_score: 100` regardless of whether irrelevant distractors were selected, ensuring students can advance with "Continue Mission" without grade penalties.
+
+---
+
+### D-20260925-006 — Universal Scenario Grounding, Context Relevance Screening, and Cross-Field Duplicate Rejection Across All Steps
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Multi-step AI evaluation pipeline (`lib/ai.ts`), flag labels (`lib/flag-utils.ts`), and system prompts
+- **Supersedes**: Step-isolated checks that allowed unrelated text, generic civic fluff, and copy-pasted fields to pass in Steps 1, 4, 5, 6, 7, 8, and Reflection
+- **Superseded by**: None
+- **Related implementation**: `lib/ai.ts`, `lib/flag-utils.ts`, `scratch/test_all_steps_relevance.ts`
+
+#### Context
+1. The user identified that student work which is not related / mismatched to the scenario content or context was still passing in other steps of the simulation.
+2. Root cause analysis across all 8 steps revealed:
+   - In Step 1 & Step 6: `detectSelectionJustificationMismatch` only checked if a student mentioned a *different* issue or option. An off-topic response (e.g., about shopping, food, gaming) produced zero overlap with any other option and was never checked against the scenario crisis, allowing it to pass.
+   - In Step 4: `detectNotesStakeholderMismatch` contained a loophole where generic interview verbs like `"interview"`, `"said"`, or `"mentioned"` exempted the submission from being flagged as a mismatch even if the notes were completely off-topic.
+   - In Steps 5, 7, 8, and Reflection: `detectScenarioRelevanceMismatch` permitted generic civic scaffolding words (e.g. `"community"`, `"barangay"`, `"plan"`, `"project"`) to pass without verifying any connection to the scenario's actual crisis topic (e.g. solid waste, drainage, flooding, traffic, health).
+   - In Steps 5, 7, and 8: There was no cross-field duplicate detection, allowing students to copy-paste the exact same text across multiple fields (e.g., Goal into Activities and Outcomes, or Short-Term into Long-Term Impact).
+   - In `runStepPipeline`: There was no deterministic policy hard gate guaranteeing that submissions with relevance mismatch flags or structural errors cannot accidentally receive a passing score from the LLM or fallback.
+
+#### Decision
+1. **Universal Scenario Domain Dictionary (`buildScenarioDomainDictionary`)**:
+   - Compiles a comprehensive domain vocabulary from scenario title, description, context, category, mission issues, root causes, evidence library, stakeholders, and unexpected events.
+2. **Strict Scenario Grounding & Relevance Verification (`detectScenarioRelevanceMismatch`)**:
+   - Isolates generic civic terms (`"barangay"`, `"community"`, `"plan"`, `"project"`, `"resident"`, etc.) as scaffolding stopwords that alone DO NOT prove relevance.
+   - Requires every student response in Steps 1, 4, 5, 6, 7, 8, and Reflection to match at least one specific scenario crisis keyword. Off-topic submissions immediately fail (`passed: false`, score capped $\le 55\%$) with flags like `SELECTION_JUSTIFICATION_MISMATCH`, `NOTES_STAKEHOLDER_MISMATCH`, `PLAN_SCENARIO_MISMATCH`, `IMPACT_SCENARIO_MISMATCH`, `REFLECTION_SCENARIO_MISMATCH`, or `CONTEXT_RELEVANCE_MISMATCH`.
+3. **Cross-Field Duplicate & Repetition Detection (`detectDuplicatePlanFields`)**:
+   - Compares text across distinct form fields in multi-section steps (Steps 5, 7, 8). Submissions copying and pasting the same or $\ge 80\%$ similar sentences across fields immediately fail with `DUPLICATE_FIELD_CONTENT` and score $\le 45\%$.
+4. **Deterministic Policy Hard Gate in `runStepPipeline`**:
+   - Enforces a mandatory post-processing policy gate: whenever ANY mismatch or structural flag is present, `evaluation.passed` is forcibly overridden to `false` and `evaluation.step_score` is capped $\le 55\%$, completely eliminating lenient LLM pass-throughs.
+5. **System Prompt Universal Principle**:
+   - Added Rule 6 ("Scenario Grounding & Relevance Enforcement Rule") to `MASTER_SYSTEM_PROMPT` in [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts).
+
+#### Evidence
+- `npx tsc --noEmit` verified with 0 errors across the entire codebase.
+- Comprehensive test suite `scratch/test_all_steps_relevance.ts` verified:
+  - Step 1 Off-Topic: Failed (Score: 35%, Flag: `SELECTION_JUSTIFICATION_MISMATCH`, `CONTEXT_RELEVANCE_MISMATCH`).
+  - Step 4 Off-Topic Notes: Failed (Score: 35%, Flag: `NOTES_STAKEHOLDER_MISMATCH`, `CONTEXT_RELEVANCE_MISMATCH`).
+  - Step 5 Duplicate Fields: Failed (Score: 35%, Flag: `DUPLICATE_FIELD_CONTENT`).
+  - Step 5 Off-Topic Plan: Failed (Score: 30%, Flag: `PLAN_SCENARIO_MISMATCH`, `MISALIGNED_INTERVENTION`).
+  - Step 6 Off-Topic Justification: Failed (Score: 35%, Flag: `SELECTION_JUSTIFICATION_MISMATCH`, `CONTEXT_RELEVANCE_MISMATCH`).
+  - Step 8 Duplicate Impact: Failed (Score: 35%, Flag: `DUPLICATE_FIELD_CONTENT`).
+  - Step 8.5 Off-Topic Reflection: Failed (Score: 35%, Flag: `REFLECTION_SCENARIO_MISMATCH`, `CONTEXT_RELEVANCE_MISMATCH`).
+  - Step 1 Authentic On-Topic: Passed (Score: 92%, Flags: []).
+
+
+---
+
+## Provisional Decisions
+
+- [D-20260906-003: Peer-Review Policy Audit Workflow](#d-20260906-003--peer-review-policy-audit-workflow)
+
+---
+
+## Superseded Decisions
+
+- [D-20260905-001: Forced Solid Primary Block Tabs with Drop Shadows](#d-20260905-001--forced-solid-primary-block-tabs-with-drop-shadows)
+
+---
+
+## Rejected Alternatives
+
+- [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+
+### D-20260925-005 — Step 3 Student UX Cleanup, Copy-Paste Detection, and Evidence Justification Grounding
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 3 student evidence library modal (`components/simulation/evidence-library.tsx`), flag dictionary (`lib/flag-utils.ts`), and AI evaluation pipeline (`lib/ai.ts`)
+- **Supersedes**: Loose justification length-only checks that allowed duplicate copy-pasting and unrelated text to pass
+- **Superseded by**: None
+- **Related implementation**: `components/simulation/evidence-library.tsx`, `lib/flag-utils.ts`, `lib/ai.ts`
+
+#### Context
+1. In Step 3 (Evaluating Digital Evidence), students examine scenario evidence documents, tag scopes, and provide a 2-3 sentence justification for each source.
+2. The user reported two critical issues:
+   - *"\"Disabled for unrelated sources (no bearing on evaluation)\" dont display it on the student side."*
+   - *"I still pass to this step even though I add justification not related to the evidence. And I also copy and paste it to other evidence still, i get pass"*
+3. Root cause diagnosis:
+   - `components/simulation/evidence-library.tsx` displayed an unnecessary inline text note explaining star disabling.
+   - `evaluateStep3` previously only performed a simple length threshold (`justification.length < 15`). A student could copy and paste the same generic sentence across all cards or write completely irrelevant gibberish (e.g. "I love eating pizza with friends at the mall"), satisfying the length requirement and passing if the LLM graded leniently.
+
+#### Decision
+1. **Student UI Suppression**:
+   - In [`components/simulation/evidence-library.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/evidence-library.tsx), suppressed the helper text span *"Disabled for unrelated sources (no bearing on evaluation)"* and the hover tooltip *"Star rating is disabled for unrelated sources"*. Star buttons are cleanly disabled at 30% opacity without intrusive text.
+2. **Duplicate & Copy-Paste Detection**:
+   - In [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts), implemented `detectDuplicateEvidenceJustifications(evaluations, libraryItems)`. It normalizes text, strips punctuation, and checks exact matches or $\ge 80\%$ Jaccard token overlap between any pair of evidence submissions.
+   - If duplicates are detected across cards:
+     - Sets `fallbackPassed = false`, caps the score $\le 48\%$.
+     - Assigns flag `DUPLICATE_EVIDENCE_JUSTIFICATION` (user-facing label: *"Unique Evidence Justifications Needed"* in [`lib/flag-utils.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/flag-utils.ts)).
+     - Actionable feedback identifies specific duplicated evidence titles and instructs students to evaluate each document independently.
+3. **Evidence Content Alignment & Domain Grounding**:
+   - Implemented `isEvidenceJustificationUnrelated(justification, item, scenario)`:
+     - Builds a domain token dictionary from scenario title/description/context, evidence item title/snippet/fullText/type, and civic inquiry terminology (causes, solutions, stakeholders, LGU, community, etc.).
+     - Extracts content words from the student's justification (filtering out common English stopwords).
+     - If the student writes a justification that contains zero domain tokens connecting to the evidence or community scenario, it is flagged as completely off-topic.
+   - If off-topic justifications are detected:
+     - Sets `fallbackPassed = false`, caps the score $\le 52\%$.
+     - Assigns flag `EVIDENCE_JUSTIFICATION_MISMATCH` (user-facing label: *"Evidence Content Alignment Needed"* in [`lib/flag-utils.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/flag-utils.ts)).
+     - Instructs the student to explain how the specific findings or data inside that document relate to the scenario crisis.
+4. **Mandatory Policy Hard Gates**:
+   - Even if Gemini returns a passing score, deterministic post-processing overrides `evaluation.passed = false` and forces `evaluation.step_score <= 58` if duplicate justifications or off-topic mismatches exist.
+
+#### Evidence
+- `npx tsc --noEmit` verified clean with 0 errors.
+- Standalone test suite in `scratch/test_step3_irrelevant_check.ts` verified:
+  - **Case E** (Copy-pasting identical justification across cards): Failed (Score: 48%, Flag: `DUPLICATE_EVIDENCE_JUSTIFICATION`, `passed: false`).
+  - **Case F** (Off-topic justification about pizza and shopping): Failed (Score: 52%, Flag: `EVIDENCE_JUSTIFICATION_MISMATCH`, `passed: false`).
+
+
+---
+
+## Provisional Decisions
+
+- [D-20260906-003: Peer-Review Policy Audit Workflow](#d-20260906-003--peer-review-policy-audit-workflow)
+
+---
+
+## Superseded Decisions
+
+- [D-20260905-001: Forced Solid Primary Block Tabs with Drop Shadows](#d-20260905-001--forced-solid-primary-block-tabs-with-drop-shadows)
+
+---
+
+## Rejected Alternatives
+
+- [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+
+### D-20260925-004 — Step 3 AI Verification of Irrelevant Evidence Identification and Irrelevance Justification
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 3 AI evaluation pipeline (`lib/ai.ts`), flag labels (`lib/flag-utils.ts`), admin mission authoring (`evidence-tab.tsx`), and student simulation interface (`evidence-library.tsx`)
+- **Supersedes**: Unchecked evidence relevance classification and unverified distractor justifications
+- **Superseded by**: None
+- **Related implementation**: `lib/ai.ts`, `lib/definitions.ts`, `lib/flag-utils.ts`, `components/admin/mission-editor/evidence-tab.tsx`, `components/simulation/evidence-library.tsx`
+
+#### Context
+1. In Step 3 (Evaluating Digital Evidence), students examine scenario evidence sources to validate community causes, solutions, or needs, while filtering out irrelevant distractor documents.
+2. The user specified:
+   - "double check also how the AI will check this. The student also correctly Identifiy the irrelivant evidence and should also justify the irrelivant evidience"
+3. Previously, `evaluateStep3` performed only a quantity check on evaluated sources and minimum character length without checking whether students correctly classified irrelevant distractor documents versus relevant documents, and without verifying whether the student justified why an irrelevant document does not apply to the scenario.
+
+#### Decision
+1. **Admin Mission Authoring & Ground Truth Grounding**:
+   - In [`components/admin/mission-editor/evidence-tab.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/admin/mission-editor/evidence-tab.tsx), educators can explicitly designate an evidence item as an **Irrelevant / Distractor** document with a single click.
+   - When marked as a distractor, `isIrrelevant` is set to `true`, positive supports are cleared (`supports: []`), an *"Irrelevant Distractor"* badge is displayed in the card header, and an instructional banner explains: *"In Step 3, students must identify this source as 'Not Related / Irrelevant' and write a 2-3 sentence justification explaining why it does not apply to this community crisis."*
+   - In [`lib/definitions.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/definitions.ts), `EvidenceItem` includes `isIrrelevant?: boolean;` and allows `"not_related"` in `supports`.
+2. **AI Verification of Evidence Relevance & Irrelevance Justifications**:
+   - In [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) (`evaluateStep3`), the engine audits each evidence document against ground-truth relevance:
+     - **Irrelevant Distractor Misidentification**: If a student tags an irrelevant distractor as a cause, solution, or need, the AI sets `passed: false`, caps the score strictly below 60%, flags `MISIDENTIFIED_IRRELEVANT_EVIDENCE`, and guides the student to classify the source as Not Related.
+     - **Dismissed Relevant Evidence**: If a student falsely marks an essential relevant document as Not Related, the AI sets `passed: false`, caps score below 60%, flags `DISMISSED_RELEVANT_EVIDENCE`, and requires them to re-examine what community scope it validates.
+     - **Irrelevance Justification Verification**: When a source is marked as Not Related, `isInsufficientIrrelevanceJustification` checks that the student wrote a substantive 2-3 sentence justification explaining *why* it does not apply to the scenario (rejecting vacuous circular phrases like "not related" or "irrelevant"). If insufficient, the AI sets `passed: false`, caps score below 62%, and flags `INSUFFICIENT_IRRELEVANT_EVIDENCE_JUSTIFICATION`.
+     - **Star Rating Independence Preserved**: Star ratings have zero bearing on checking the student's work.
+3. **Structured Gemini Verification & Hard Policy Gates**:
+   - The LLM prompt presents the complete ground-truth evidence library alongside the student's classifications and justifications, with mandatory scoring directives capping failed submissions below the 70% threshold.
+   - Deterministic policy hard gates guarantee that if a student misidentifies irrelevant evidence or provides inadequate justification, the evaluation cannot accidentally pass.
+4. **Student UX Guidance**:
+   - In [`components/simulation/evidence-library.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/evidence-library.tsx), selecting "Not Related / Irrelevant" dynamically updates the justification label and placeholder: *"Justify why this evidence is irrelevant (2-3 complete sentences): Explain why this document is irrelevant to the scenario (e.g., how its topic, focus, or location does not apply to our community crisis)..."*
+
+#### Evidence
+- `npx tsc --noEmit` verified cleanly with 0 errors across the entire codebase.
+- Verified live with standalone test suite `scratch/test_step3_irrelevant_check.ts`:
+  - **Case A** (Student correctly identifies and justifies irrelevant distractor): Passed (Score: 96%, Flags: []).
+  - **Case B** (Student misidentifies irrelevant distractor as Cause): Failed (Score: 55%, Flag: `MISIDENTIFIED_IRRELEVANT_EVIDENCE`).
+  - **Case C** (Student marks distractor as Not Related with lazy justification "not related to the topic"): Failed (Score: 55%, Flag: `INSUFFICIENT_IRRELEVANT_EVIDENCE_JUSTIFICATION`).
+  - **Case D** (Student falsely dismisses relevant evidence as Not Related): Failed (Score: 55%, Flag: `DISMISSED_RELEVANT_EVIDENCE`).
+
+---
+
+### D-20260925-003 — Step 3 Not Related Star Rating Disabling and Star Score Independence
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 3 evidence evaluation modal (`evidence-library.tsx`), admin submission audit drawer (`submission-drawer.tsx`), and AI evaluation pipeline (`lib/ai.ts`)
+- **Supersedes**: Required star ratings on irrelevant evidence and credibility-justification mismatch checks
+- **Superseded by**: None
+- **Related implementation**: `components/simulation/evidence-library.tsx`, `app/admin/dashboard/submissions/submission-drawer.tsx`, `lib/ai.ts`
+
+#### Context
+1. In Step 3 (Evaluating Digital Evidence), students examine scenario evidence sources, classify them by scope (Cause, Solution, Community Need, or Not Related / Irrelevant), and justify their assessment.
+2. Previously, students were required to select a 1-5 star credibility rating for every source regardless of whether they marked it as "Not Related", and the AI evaluation engine checked for contradictions between credibility star counts and justification sentiment (`EVIDENCE_RATING_MISMATCH`).
+3. The user requested:
+   - When "Not Related / Irrelevant" is selected, the star rating should be disabled.
+   - Star ratings should have no bearing on checking the work of the student (evaluation must focus on evidence auditing, relevance/irrelevance reasoning, and authentic student voice).
+
+#### Decision
+1. **Interactive Evidence Inspector Disabling**:
+   - In [`components/simulation/evidence-library.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/evidence-library.tsx), when "Not Related / Irrelevant" is toggled on, the 5-star rating buttons are disabled (`disabled={disabled || isNotRelated}`), with visual opacity reduction (`opacity-30`), `cursor-not-allowed`, and a clear badge indicator: *"Disabled (Unrelated source)"*.
+   - When "Not Related" is selected, credibility is automatically cleared to 0.
+   - The "Save Evaluation" button no longer requires `credibility > 0`; saving requires writing the justification and selecting at least one scope tag.
+   - On the evidence cards list, sources marked as "Not Related" display *"Not Applicable"* instead of empty star slots.
+   - In [`app/admin/dashboard/submissions/submission-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submission-drawer.tsx), audit timelines display *"N/A (Not Related)"* or *"No Rating"* rather than misleading empty stars.
+2. **AI Checker Star Independence**:
+   - Updated `evaluateStep3` in [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) to remove the `detectEvidenceRatingMismatch` check entirely.
+   - Star ratings have zero bearing on whether a student passes, their numerical step score, or assigned flags.
+   - Step 3 evaluation focuses strictly on:
+     - 100% completion of the evidence library audit (all sources inspected).
+     - Reasoned 2-3 sentence justifications explaining community relevance or why the item is unrelated.
+     - Multi-tier anti-AI authenticity screening.
+   - Updated `MASTER_SYSTEM_PROMPT` in `lib/ai.ts` to reflect the updated Step 3 rubric.
+
+#### Evidence
+- `npx tsc --noEmit` verified cleanly with 0 errors.
+- Verified live via `scratch/test_step3_stars.ts`:
+  - Evidence marked "Not Related" with 0 stars passed with 90% and 0 flags.
+  - Low star ratings (1 star) with positive text passed without triggering rating mismatch flags.
+  - Incomplete justifications appropriately failed with `INSUFFICIENT_EVIDENCE_JUSTIFICATION`.
+
+---
+
+### D-20260925-002 — Step 2 Designated Causal Hierarchy and Student Order Randomization
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 2 root cause hierarchy authoring (`causes-tab.tsx`), student simulation UI (`cause-ranker.tsx`, `activity-form.tsx`), and AI evaluation pipeline (`lib/ai.ts`, `lib/flag-utils.ts`)
+- **Supersedes**: Static unverified count check in `evaluateStep2` and pre-filled correct order on student side
+- **Superseded by**: None
+- **Related implementation**: `components/admin/mission-editor/causes-tab.tsx`, `components/simulation/cause-ranker.tsx`, `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `lib/ai.ts`, `lib/flag-utils.ts`
+
+#### Context
+1. In Step 2 (Analyzing the Causes), students must analyze systemic root causes versus contributing factors and secondary symptoms, establishing a causal hierarchy from most significant (#1) to least significant.
+2. Previously, students received `missionData.causes` in the exact order stored in the database, inadvertently pre-filling the educator's intended solution on the student side before they even started.
+3. The evaluation function `evaluateStep2` only checked whether `orderedCauseIds.length >= totalCauses` and assigned a flat passing score without verifying whether the student's ranking matched the educator's designated causal sequence.
+4. The user requested:
+   - In the admin side, the correct order is defined by how the admin orders the items.
+   - Add a clear note in the admin side informing educators that the correct order is how they arrange it.
+   - On the student side, randomize the initial causes order so students must actively analyze and discover the hierarchy.
+   - Update the AI checker so it knows the educator's designated correct order and evaluates student rankings against it.
+
+#### Decision
+1. **Admin Mission Authoring & Visual Feedback**:
+   - Added an educator notice banner in [`components/admin/mission-editor/causes-tab.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/admin/mission-editor/causes-tab.tsx) explaining: *"The correct ranking order is determined by how you arrange the items below (Top #1 = Primary Root Cause, descending to Bottom = Secondary / Contributing Factor). On the student side, these causes will appear randomized, and the AI evaluation engine checks student rankings against your arranged order."*
+   - Added hierarchical badges on each cause card: `#1 (Primary Root Cause)` in primary theme styling, middle numbered badges `#{i+1}`, and `#{i+1} (Least Significant)` on the final symptom.
+   - Added accessible Move Up and Move Down arrow buttons alongside the drag-and-drop sort handle for quick reordering.
+2. **Student Side Order Randomization**:
+   - In [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx), implemented `shuffledStep2Causes` using a Fisher-Yates shuffle in `useState` that randomizes the initial order for new student sessions, while safely restoring previously saved rankings if a student returns to a saved session.
+   - Guaranteed that the initial randomized list is non-identical to the correct answer.
+   - Bound `<CauseRanker>` to `shuffledStep2Causes` and updated `useEffect` in [`components/simulation/cause-ranker.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/cause-ranker.tsx) to ensure state synchronization.
+3. **AI Checker & Rubric Enforcement**:
+   - Updated `evaluateStep2` in [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts):
+     - Compares student's `orderedCauseIds` against the educator's designated order in `scenario.missionData.causes`.
+     - Calculates position deviation distance $D$ and normalized hierarchy alignment ratio ($0-100\%$).
+     - Checks whether the primary root cause (#1) is placed in the top tier (Rank 1 or 2) and verifies that downstream symptoms are not placed at #1.
+     - Calls Gemini AI (`callGeminiVerification`) with full scenario context, educator hierarchy, and student ranking to deliver personalized feedback explaining the distinction between root structural blockages and downstream symptoms.
+     - Enforces a policy hard gate: if the causal hierarchy is inverted or symptoms are prioritized over root causes, `passed: false` is guaranteed, `step_score` is capped strictly below the 70% threshold (45-60%), and the flag `INCORRECT_CAUSE_HIERARCHY` is assigned.
+   - Added user-friendly flag label mapping in [`lib/flag-utils.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/flag-utils.ts): `INCORRECT_CAUSE_HIERARCHY: "Cause Hierarchy Alignment Needed"`.
+
+#### Evidence
+- `npx tsc --noEmit` passed with 0 errors.
+- Verified live with Gemini 3.8 Flash via `scratch/test_step2_correct_order.ts`:
+  - **Exact Designated Order**: Scored 96%, `passed: true`, empty flags, with rich pedagogical praise for targeting structural infrastructure over downstream symptoms.
+  - **Inverted Order (Symptom at #1)**: Scored 50%, `passed: false`, flag `INCORRECT_CAUSE_HIERARCHY`, with targeted feedback explaining why stagnant pools and mosquito breeding are secondary symptoms of drainage blockages.
+  - **Minor Swap (Adjoining factors)**: Scored 90%, `passed: true`.
+  - **Incomplete Ranking**: Scored 45%, `passed: false`, flag `INCOMPLETE_RANKING`.
+
+---
+
+### D-20260925-001 — Step 1 Designated Correct Root Issue and Admin Option Ticking
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Step 1 question wording, admin mission authoring (`issues-tab.tsx`, `index.tsx`), scenario drawer preview, and AI evaluation pipeline (`lib/ai.ts`, `lib/definitions.ts`, `lib/mission-data.ts`)
+- **Supersedes**: Plain multiline text without correctness designation for Step 1
+- **Superseded by**: None
+- **Related implementation**: `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `components/admin/mission-editor/issues-tab.tsx`, `components/admin/mission-editor/index.tsx`, `lib/ai.ts`, `lib/definitions.ts`, `lib/mission-data.ts`, `lib/flag-utils.ts`
+
+#### Context
+1. In Step 1, students analyze candidate community issues and identify which one must be prioritized first. Previously, the question was phrased as "Which community issue should be prioritized?", and admin authors had no mechanism to mark which option is the primary root issue versus secondary symptoms or constraints (unlike Step 6 where admins could mark the optimal path).
+2. The user requested updating the main question to: *"What is the main issue that needs to be addressed first?"* and enabling admins to tick the correct answer in the admin editor just like in Step 6, while also updating the AI checker to evaluate student selections against the designated correct answer.
+
+#### Decision
+1. **Student Question & Presentation Update**:
+   - Updated the Step 1 card title and question prompt in [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx) to: *"What is the main issue that needs to be addressed first?"*.
+   - Removed the placeholder text from the 2-3 sentence justification textarea so students are not primed by placeholder text.
+   - Implemented student-side option order randomization (`shuffledIssues` via Fisher-Yates shuffle in `useState`) so candidate issues are presented in a randomized order per student while remaining stable across re-renders and input keystrokes.
+2. **Admin Option Ticking (Mirroring Step 6)**:
+   - Updated [`components/admin/mission-editor/issues-tab.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/admin/mission-editor/issues-tab.tsx) with a clickable round tick/radio button and "Mark as Correct Answer" button on each candidate issue card, with a prominent "Correct Answer" badge in primary theme styling.
+   - Updated [`components/admin/mission-editor/index.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/admin/mission-editor/index.tsx) to store `IssueOption[]` and persist `correctIssue` string alongside candidate issues.
+   - Updated [`app/admin/dashboard/scenarios/scenario-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/scenarios/scenario-drawer.tsx) to visually highlight the designated correct answer badge.
+3. **AI Checker & Rubric Enforcement**:
+   - Updated `evaluateStep1` and `MASTER_SYSTEM_PROMPT` in [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts):
+     - When the student selects the designated correct root issue, AI evaluates their 2-3 sentence justification and assigns passing marks (75-95%).
+     - When the student selects an incorrect symptom/constraint, AI sets `passed: false`, caps `step_score` at 45-58% (below the 70% passing threshold), adds the flag `INCORRECT_PRIORITY_ISSUE`, and provides constructive feedback explaining why the selection is a symptom rather than the primary root issue.
+   - Added user-friendly flag label mapping in [`lib/flag-utils.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/flag-utils.ts): `INCORRECT_PRIORITY_ISSUE: "Root Issue Identification Needed"`.
+
+#### Evidence
+- `npx tsc --noEmit` verified cleanly with 0 errors.
+- Verified live with Gemini 3.8 Flash via `scratch/test_step1_correct_choice.ts`:
+  - Correct answer selection scored 92% and passed.
+  - Incorrect selection scored 52% and returned `passed: false` with flag `INCORRECT_PRIORITY_ISSUE` and targeted educational feedback.
+
+---
 
 ### D-20260923-006 — Flat Color Vector Community Graphics and Open-Canvas Fluid Blob Blending
 
@@ -678,12 +1311,12 @@ This undermined authentic student decision-making, as students could proceed wit
 
 ### D-20260908-001 — Living Interactive Vector Mascot Companion ("Civi") for Student Dashboard
 
-- **Status**: Accepted
+- **Status**: Superseded by D-20260925-012
 - **Date**: 2026-09-08
 - **Decision owner**: Joint (User prompt & Agent design)
 - **Scope**: Student Welcome Command Center (`app/dashboard/page.tsx`, `components/civic-companion.tsx`, `app/globals.css`)
 - **Supersedes**: Static bitmap student mascot photo (`/images/student-hero-mascot.png`)
-- **Superseded by**: None
+- **Superseded by**: D-20260925-012
 - **Related foundation sections**: F-CIV-006, F-CIV-010
 - **Related implementation**: `components/civic-companion.tsx`, `app/dashboard/page.tsx`, `app/globals.css`
 

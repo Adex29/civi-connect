@@ -1,8 +1,15 @@
 "use server";
 
 import { getCurrentStudent } from "@/lib/dal";
-import { findScenarioById, getAllSubmissions, createSubmission, updateSubmission, getAllClassrooms, getAllClassroomScenarios } from "@/lib/db";
-import { Submission, SubmissionId, SimulationStateData, SIMULATION_PASSING_THRESHOLD } from "@/lib/definitions";
+import {
+  findScenarioById,
+  findClassroomById,
+  findClassroomScenario,
+  findSubmissionForStudent,
+  createSubmission,
+  updateSubmission,
+} from "@/lib/db";
+import { Submission, SubmissionId, SimulationStateData, SIMULATION_PASSING_THRESHOLD, AIEvaluationResult } from "@/lib/definitions";
 import {
   evaluateStep1,
   evaluateStep2,
@@ -11,9 +18,9 @@ import {
   evaluateStep5,
   evaluateStep6,
   evaluateStep7,
-  evaluateStep8,
   evaluateReflection,
   calculateMissionScores,
+  buildDeterministicEvaluation,
 } from "@/lib/ai";
 import { revalidatePath } from "next/cache";
 import { nanoid } from "nanoid";
@@ -26,30 +33,24 @@ export async function processSimulationStepAction(
   const student = await getCurrentStudent();
   if (!student) return { error: "Not authenticated" };
 
-  const scenario = await findScenarioById(scenarioId);
+  const [scenario, classroom, assignment, existingSubmission] = await Promise.all([
+    findScenarioById(scenarioId),
+    findClassroomById(student.classroomId),
+    findClassroomScenario(student.classroomId, scenarioId),
+    findSubmissionForStudent(scenarioId, student.id, student.groupId),
+  ]);
+
   if (!scenario) return { error: "Scenario not found" };
   if (scenario.status === "archived") return { error: "This civic mission has been archived. Submissions are disabled." };
 
-  // Validate classroom status and classroom-scenario mapping
-  const classrooms = await getAllClassrooms();
-  const classroom = classrooms.find((c) => c.id === student.classroomId);
   if (!classroom) return { error: "Classroom not found" };
   if (classroom.status === "archived") return { error: "This classroom is archived. Submissions are disabled." };
 
-  const classroomScenarios = await getAllClassroomScenarios();
-  const assignment = classroomScenarios.find(
-    (cs) => cs.classroomId === student.classroomId && cs.scenarioId === scenarioId
-  );
   if (!assignment || !assignment.isActive) {
     return { error: "This scenario is not active in your classroom." };
   }
 
-  const allSubmissions = await getAllSubmissions();
-  let submission = allSubmissions.find(
-    (s: Submission) =>
-      s.scenarioId === scenarioId &&
-      (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
-  );
+  let submission = existingSubmission;
 
   if (submission && submission.status === "completed") {
     return { error: "This mission has already been completed and cannot be modified." };
@@ -129,7 +130,11 @@ export async function processSimulationStepAction(
       state.currentStep = Math.max(state.currentStep, 5);
     }
   } else if (stepNumber === 5) {
-    evalResult = await evaluateStep5(scenario, payload.plan);
+    evalResult = await evaluateStep5(
+      scenario,
+      payload.plan,
+      state.step4?.consultedStakeholderIds || payload.consultedStakeholderIds
+    );
     state.step5 = {
       plan: payload.plan,
       feedback: evalResult.feedback,
@@ -140,19 +145,36 @@ export async function processSimulationStepAction(
       state.currentStep = Math.max(state.currentStep, 6);
     }
   } else if (stepNumber === 6) {
-    evalResult = await evaluateStep6(scenario, payload.selectedOptionText, payload.justification);
+    const challenge = payload.challenge;
+    const challengeFeedback = "Unexpected challenge encountered. Proceeding to Plan Revision.";
+    const step6Evaluation = buildDeterministicEvaluation(
+      6,
+      true,
+      100,
+      `Encountered ${challenge?.title || "unexpected simulation challenge"}.`,
+      "Challenge acknowledged. Revise the designated action plan component to adapt.",
+      ["Simulation obstacle acknowledged."],
+      []
+    );
     state.step6 = {
-      selectedOptionId: payload.selectedOptionId,
-      justification: payload.justification,
-      feedback: evalResult.feedback,
-      passed: evalResult.passed,
-      evaluation: evalResult.evaluation,
+      challenge,
+      feedback: challengeFeedback,
+      passed: true,
+      evaluation: step6Evaluation,
     };
-    if (isStepPassing(evalResult)) {
-      state.currentStep = Math.max(state.currentStep, 7);
-    }
+    evalResult = {
+      passed: true,
+      feedback: challengeFeedback,
+      evaluation: step6Evaluation,
+    };
+    state.currentStep = Math.max(state.currentStep, 7);
   } else if (stepNumber === 7) {
-    evalResult = await evaluateStep7(scenario, payload.revisedPlan, state.step5?.plan);
+    evalResult = await evaluateStep7(
+      scenario,
+      payload.revisedPlan,
+      state.step5?.plan,
+      state.step6?.challenge
+    );
     state.step7 = {
       revisedPlan: payload.revisedPlan,
       feedback: evalResult.feedback,
@@ -160,21 +182,10 @@ export async function processSimulationStepAction(
       evaluation: evalResult.evaluation,
     };
     if (isStepPassing(evalResult)) {
-      state.currentStep = Math.max(state.currentStep, 8);
-    }
-  } else if (stepNumber === 8) {
-    evalResult = await evaluateStep8(scenario, payload.impact);
-    state.step8 = {
-      impact: payload.impact,
-      feedback: evalResult.feedback,
-      passed: evalResult.passed,
-      evaluation: evalResult.evaluation,
-    };
-    if (isStepPassing(evalResult)) {
-      // Calculate final score performance breakdown across 7 dimensions
+      // Step 7 completes the simulation! Calculate final score across core competencies
       const scores = calculateMissionScores(state);
       state.scores = scores;
-      state.currentStep = 9; // Step 9 = Performance Scorecard & Reflection
+      state.currentStep = 8; // Step 8 = Performance Scorecard & Reflection
       submission.score = scores.overallScore;
     }
   }
@@ -203,42 +214,36 @@ export async function processSimulationStepAction(
   };
 }
 
-export async function submitReflectionAction(scenarioId: string, answer: string) {
+export async function submitReflectionAction(scenarioId: string, answer: string, question?: string) {
   const student = await getCurrentStudent();
   if (!student) return { error: "Not authenticated" };
 
-  const scenario = await findScenarioById(scenarioId);
+  const [scenario, classroom, assignment, submission] = await Promise.all([
+    findScenarioById(scenarioId),
+    findClassroomById(student.classroomId),
+    findClassroomScenario(student.classroomId, scenarioId),
+    findSubmissionForStudent(scenarioId, student.id, student.groupId),
+  ]);
+
   if (!scenario) return { error: "Scenario not found" };
   if (scenario.status === "archived") return { error: "This civic mission has been archived. Submissions are disabled." };
 
-  // Validate classroom status and classroom-scenario mapping
-  const classrooms = await getAllClassrooms();
-  const classroom = classrooms.find((c) => c.id === student.classroomId);
   if (!classroom) return { error: "Classroom not found" };
   if (classroom.status === "archived") return { error: "This classroom is archived. Submissions are disabled." };
 
-  const classroomScenarios = await getAllClassroomScenarios();
-  const assignment = classroomScenarios.find(
-    (cs) => cs.classroomId === student.classroomId && cs.scenarioId === scenarioId
-  );
   if (!assignment || !assignment.isActive) {
     return { error: "This scenario is not active in your classroom." };
   }
 
-  const allSubmissions = await getAllSubmissions();
-  let submission = allSubmissions.find(
-    (s: Submission) =>
-      s.scenarioId === scenarioId &&
-      (s.studentId === student.id || (student.groupId && s.groupId === student.groupId))
-  );
-
   if (!submission) return { error: "Submission not found" };
   if (submission.status === "completed") return { error: "This mission has already been completed and cannot be modified." };
 
-  const evalResult = await evaluateReflection(scenario, answer);
+  const assignedQuestion = question || submission.simulationState?.reflection?.question || "What did you learn about solving community problems?";
+  const evalResult = await evaluateReflection(scenario, answer, assignedQuestion);
 
   const state: SimulationStateData = submission.simulationState || { currentStep: 8 };
   state.reflection = {
+    question: assignedQuestion,
     answer,
     feedback: evalResult.feedback,
     evaluation: evalResult.evaluation,

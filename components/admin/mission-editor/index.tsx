@@ -8,6 +8,7 @@ import {
   EvidenceItem,
   Stakeholder,
   UnexpectedEvent,
+  IssueOption,
 } from "@/lib/definitions";
 import {
   AlertCircle,
@@ -33,9 +34,32 @@ export interface MissionEditorTabsProps {
 
 export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabsProps) {
   // Local state for each section - clean and empty by default when adding a new mission
-  const [issuesText, setIssuesText] = useState<string>(
-    (initialConfig?.issues || []).join("\n")
-  );
+  const [issues, setIssues] = useState<IssueOption[]>(() => {
+    const raw = initialConfig?.issues || [];
+    if (raw.length === 0) return [];
+    const list: IssueOption[] = raw.map((item, idx) => {
+      if (typeof item === "string") {
+        const isCorrect = initialConfig?.correctIssue
+          ? initialConfig.correctIssue.trim().toLowerCase() === item.trim().toLowerCase()
+          : idx === 0;
+        return {
+          id: `issue-${idx}-${Date.now()}`,
+          text: item,
+          isCorrect,
+        };
+      }
+      return {
+        id: item.id || `issue-${idx}-${Date.now()}`,
+        text: item.text,
+        isCorrect: Boolean(item.isCorrect),
+      };
+    });
+
+    if (list.length > 0 && !list.some((i) => i.isCorrect)) {
+      list[0].isCorrect = true;
+    }
+    return list;
+  });
 
   const [causes, setCauses] = useState<CauseItem[]>(
     initialConfig?.causes || []
@@ -62,17 +86,26 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
   );
 
   type UpdatePayload = Partial<MissionDataConfig> & {
-    issuesRawText?: string;
+    issues?: IssueOption[];
     evidence?: EvidenceItem[];
   };
 
   // Sync back to parent whenever local state updates
   const notifyChange = (updated: UpdatePayload) => {
-    const rawText = updated.issuesRawText !== undefined ? updated.issuesRawText : issuesText;
-    const issues = rawText
-      .split("\n")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
+    const nextIssues = updated.issues !== undefined ? updated.issues : issues;
+    const cleanedIssues = nextIssues
+      .map((item, idx) => ({
+        id: item.id || `iss-${idx}`,
+        text: item.text.trim(),
+        isCorrect: Boolean(item.isCorrect),
+      }))
+      .filter((item) => item.text.length > 0);
+
+    if (cleanedIssues.length > 0 && !cleanedIssues.some((i) => i.isCorrect)) {
+      cleanedIssues[0].isCorrect = true;
+    }
+
+    const correctIssue = cleanedIssues.find((i) => i.isCorrect)?.text || "";
 
     const nextCauses = updated.causes !== undefined ? updated.causes : causes;
     const nextEvidence = updated.evidence !== undefined
@@ -91,7 +124,8 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
     }
 
     const config: MissionDataConfig = {
-      issues,
+      issues: cleanedIssues,
+      correctIssue,
       causes: nextCauses,
       evidenceLibrary: nextEvidence,
       stakeholders: nextStakeholders,
@@ -101,10 +135,7 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
     onChange(config);
   };
 
-  const parsedIssuesCount = issuesText
-    .split("\n")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0).length;
+  const parsedIssuesCount = issues.filter((i) => i.text.trim().length > 0).length;
 
   const activeTipsCount = Object.values(stepTips).filter(
     (t) => t && t.trim().length > 0
@@ -201,10 +232,10 @@ export function MissionEditorTabs({ initialConfig, onChange }: MissionEditorTabs
         {/* Content Area - Maximizes 100% of remaining right column */}
         <main className="w-full min-w-0">
           <IssuesTab
-            issuesText={issuesText}
-            onChange={(val) => {
-              setIssuesText(val);
-              notifyChange({ issuesRawText: val });
+            issues={issues}
+            onChange={(nextIssues) => {
+              setIssues(nextIssues);
+              notifyChange({ issues: nextIssues });
             }}
           />
 

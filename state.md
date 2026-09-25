@@ -1,71 +1,169 @@
 # Current Project State
 
-- **Updated**: 2026-09-23
+- **Updated**: 2026-09-25
 - **Updated by**: Antigravity Agent
 - **Repository/branch**: `main`
-- **Current objective**: Multi-Tier AI Content Detection and Authentic Student Voice Enforcement
-- **Overall status**: Fully Operational & Live-Verified on Gemini 3.8 Flash with Dual Heuristic/LLM AI Screening
+- **Current objective**: Step-by-Step Mission Alignment with CIVITECH Specification
+- **Overall status**: Fully Operational & Live-Verified (Steps 1 through 7 Completed; Step 8 Removed)
 
 ---
 
 ## Completed
 
-1. **AI Content Detection Trigger Activation & Fix**:
-   - `[Verified]` Diagnosed and eliminated 4 root causes preventing AI detection from firing:
-     1. Lowered `detectAIGeneratedText` word threshold from 60 words to 15 words so standard 25–50 word justifications are actively screened.
-     2. Updated `MASTER_SYSTEM_PROMPT` to actively instruct the LLM to identify and reject AI-generated prose, buzzwords, and assistant scaffolding.
-     3. Combined deterministic screening and LLM evaluation in `callGeminiVerification` with `const isAi = Boolean(fallback.is_ai_generated || parsed.is_ai_generated);`.
-     4. Recalibrated risk threshold to flag submissions with assistant scaffolding, multiple cliché groups (`riskScore >= 28`), or aggregate `riskScore >= 45`.
-   - `[Verified]` Enforced academic integrity response on AI detection: sets `passed: false`, caps `step_score: 35%`, adds `"AI_GENERATED_CONTENT"` to flags, and supplies actionable educational feedback requiring authentic student voice.
-   - `[Verified]` Preserved authentic Grade 12 student responses referencing local barangays, numbers, and community observations, allowing them to pass with scores >= 70%.
+1. **Mission Clean-up and Canonical Seeding (`san-isidro-drainage-crisis`)**:
+   - `[Verified]` Pre-cleanup Backup: Preserved all original JSON data files in `data/backup_pre_cleanup/` before data alteration.
+   - `[Verified]` Purged Legacy Scenarios: Removed all 5 legacy scenarios (`ux2EoX1L61w4yPY9vbBwO`, `P4ugZ20X0Y-KS_zr_Uoup`, `7VE3D8n8BLQDx0ML4SBA9`, `7qdPFk6VauK1WMr1KPC89`, `mSg9windUj82l2sGCkk20`), their stale assignments, constraints, and 8 old test submissions from Supabase PostgreSQL and local storage.
+   - `[Verified]` Seeded Specification Mission: Seeded canonical mission **"Barangay San Isidro: Drainage and Waste Management"** directly from `media_1790332814348.pdf` verbatim:
+     - Step 1: 4 options with `"Clogged drainage canal causing stagnant water on the neighborhood street."` marked correct.
+     - Step 2: 4 causes in designated ranking sequence (Improper disposal -> Accumulation of debris -> Lack of regular cleaning -> Heavy rainfall).
+     - Step 3: 4 evidence items with credibility ratings and distractor designation on indoor rainy weather preference.
+     - Step 4: 4 stakeholders with statements and distractor designation on Nearby Store Owner.
+     - Step 5: SMART action plan structure with 7-day scope.
+     - Step 6: 3 challenge categories (Stakeholder, Budget, Resource).
+     - Step 7: Single-component locked plan revision.
+     - Step 8: 5 randomized reflection prompts with 5–15 sentence enforcement.
+   - `[Verified]` Assigned to Classroom: Assigned `san-isidro-drainage-crisis` to active classroom `KGacUYKN3j-Q3RHxWqp_j` (`CVC-3A`) in both Supabase `classroom_scenarios` and `data/classroom-scenarios.json`.
+   - `[Verified]` Supabase Verification: Verified exactly 1 scenario, 1 classroom scenario, and 0 stale submissions in Supabase database.
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed with 0 errors.
 
-2. **Google Cloud Vertex AI & Gemini 3.8 Flash Integration**:
-   - `[Verified]` Configured `location: "global"` and `model: "gemini-3.8-flash"` in [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) and [`.env.local`](file:///d:/Admin/Music/Janella/civi-connect/.env.local).
-   - `[Verified]` Implemented graceful fallback from Vertex AI to Gemini Developer API key when hitting rate limits (e.g. 429), preventing evaluation failures.
-   - `[Verified]` Service account credentials protected via [`.gitignore`](file:///d:/Admin/Music/Janella/civi-connect/.gitignore).
+2. **Step 8: Civic Action Reflection & Evaluation (5 Randomized Prompts & 5–15 Sentences Enforced)**:
+   - `[Verified]` Randomized Prompt Selection: Configured the 5 reflection questions directly from Page 7 of the CIVITECH specification (`CIVIC_REFLECTION_QUESTIONS` in [`lib/definitions.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/definitions.ts)):
+     1. *"What did you learn about solving community problems?"*
+     2. *"Why is it important to understand the causes of a community problem before proposing a solution?"*
+     3. *"How did evidence and stakeholder perspectives influence your plan?"*
+     4. *"What did the challenge teach you about flexibility and decision-making in community action?"*
+     5. *"How realistic and sustainable is your proposed community action?"*
+   - `[Verified]` Stable Session Persistence: Assigned questions pseudo-randomly per student and stored stably in `simState.reflection.question`, guaranteeing the student sees the exact same prompt across page reloads and browser refreshes.
+   - `[Verified]` Real-Time Sentence Counter: In [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx), added a dynamic live sentence counter displaying `${reflectionSentenceCount} / 5–15 Sentences` with color-coded feedback (amber under 5, green check for 5–15, red over 15).
+   - `[Verified]` AI Verification & Sentence Bound Enforcement: In [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) (`evaluateReflection`), enforced that submissions under 5 sentences are flagged `INSUFFICIENT_REFLECTION_LENGTH` and submissions over 15 sentences are flagged `EXCESSIVE_REFLECTION_LENGTH`, with prompt injection of the assigned question to verify coherence.
+   - `[Verified]` Admin Drawer Inspection: In [`app/admin/dashboard/submissions/submission-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submission-drawer.tsx), renders the student's assigned reflection prompt alongside their reflection response and AI score breakdown.
+   - `[Verified]` Automated Test Suite: Created and verified test suite in [`scratch/test_reflection_evaluation.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_reflection_evaluation.ts) (all 3 tests passing: <5 sentences rejected, 5–15 sentences accepted, >15 sentences rejected).
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed cleanly with 0 errors.
 
-3. **Mission Archiving Lifecycle & Admin Controls**:
-   - `[Verified]` Implemented `archiveScenarioAction` and `toggleScenarioStatusAction` in [`actions.ts`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/scenarios/actions.ts).
-   - `[Verified]` Added direct "Archive" / "Reactivate" toggle buttons with status badges in [`scenario-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/scenarios/scenario-drawer.tsx).
-   - `[Verified]` Added "Active" and "Archived" tabs, status badges, and dropdown action items in [`scenarios-view.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/scenarios/scenarios-view.tsx).
+2. **Database Schema & Field Parity Audit (Supabase PostgreSQL, TypeScript Definitions, and Local Storage)**:
+   - `[Verified]` Audited all 9 PostgreSQL tables in `supabase/schema.sql` against TypeScript interfaces in `lib/definitions.ts`, data layer mappers in `lib/db.ts`, and seeding scripts in `scripts/seed-supabase.mjs`:
+     - `admins` (5 columns): `id`, `email`, `password_hash`, `name`, `created_at` — 100% parity.
+     - `classrooms` (7 columns): `id`, `name`, `code`, `description`, `created_by`, `status`, `created_at` — 100% parity.
+     - `groups` (4 columns): `id`, `name`, `classroom_id`, `created_at` — 100% parity.
+     - `students` (7 columns): `id`, `full_name`, `lrn`, `password_hash`, `classroom_id`, `group_id`, `created_at` — 100% parity.
+     - `scenarios` (9 columns): `id`, `title`, `description`, `context`, `constraints`, `mission_data`, `status`, `created_by`, `created_at` — 100% parity.
+     - `classroom_scenarios` (5 columns): `id`, `classroom_id`, `scenario_id`, `is_active`, `assigned_at` — 100% parity.
+     - `constraints` (5 columns): `id`, `scenario_id`, `step_number`, `description`, `criteria` — 100% parity.
+     - `assignments` (6 columns): `id`, `scenario_id`, `classroom_id`, `student_id`, `group_id`, `assigned_at` — 100% parity.
+     - `submissions` (10 columns): `id`, `scenario_id`, `student_id`, `group_id`, `status`, `content`, `feedback`, `score`, `simulation_state`, `submitted_at` — 100% parity.
+   - `[Verified]` Fixed `mapSubmission` in `lib/db.ts` to derive `stepProgress: row.step_progress || simulationState?.currentStep || row.stepProgress || 1`, resolving a prior issue where Supabase records rendered `sub.stepProgress` as `undefined`.
+   - `[Verified]` Synchronized `SimulationStateData.step4` optionality: Made `interviewNotes?: string;` and `askedFollowUps?: Record<string, number[]>;` optional in `lib/definitions.ts` to match the streamlined statement-only consultation workflow.
+   - `[Verified]` Aligned Progress Counter in Admin Submissions View: Updated `submissions-view.tsx` line 273 from `/8` to `/7` (`Step {Math.min(sub.stepProgress, 7)}/7`).
+   - `[Verified]` Inspection Drawer Field Rendering Completeness:
+     - Step 4: Guarded consultation notes rendering when empty in `submission-drawer.tsx`.
+     - Step 5: Added `resources` to the action plan display card.
+     - Step 7: Added `objectives`, `stakeholders`, `resources`, and `expectedOutcomes` display in the revised plan card.
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed cleanly with 0 errors.
 
-4. **Student Access Guarding & Submission Lockdown**:
-   - `[Verified]` Filtered `assignedScenarios` in [`app/dashboard/page.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/page.tsx) to prevent archived scenarios from appearing in active missions.
-   - `[Verified]` Protected [`actions.ts`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/actions.ts) in both `processSimulationStepAction` and `submitReflectionAction` against archived missions and completed submissions.
-5. **Iconography Streamlining in Simulation UI**:
-   - `[Verified]` Removed per-step icons from timeline titles and mobile tracker in [`components/simulation/step-tracker.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/step-tracker.tsx).
-   - `[Verified]` Removed redundant step icon from the main activity card title in [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx).
-   - `[Verified]` Maintained the prominent step icon inside the rounded badge in the main step banner header (`MISSION STEP 0X OF 08`).
+2. **Mobile Layout: Mission Context & Legal Guidance Positioned Under Header**:
+   - `[Verified]` In [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx), relocated "Mission Context & Legal Guidance" on mobile/tablet viewports (`< xl`) so it renders directly under the Step Banner header before the main interactive screen.
+   - `[Verified]` Desktop Viewport (`xl:` >= 1280px): The card continues to render in the right panel underneath "Step 0X Mission Tips", preserving the full multi-column desktop workflow.
+   - `[Verified]` Mission Tips Unchanged: "Step 0X Mission Tips" remains in its dedicated right-column position (and sits cleanly below the main form on mobile).
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed cleanly with 0 errors.
 
-6. **Comprehensive AI Response Capture & Admin Review Audit**:
-   - `[Verified]` In [`actions.ts`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/actions.ts), continuously captures the latest AI feedback (`evalResult.feedback` / `evalResult.evaluation_summary`) into `submission.feedback` at every step, and populates `submission.content` with a human-readable civic summary instead of remaining empty or dumping raw JSON.
-   - `[Verified]` Added `extractSubmissionAiAnalysis` utility in [`lib/flag-utils.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/flag-utils.ts) to scan all completed steps for AI content detection flags, step scores, and feedback.
-   - `[Verified]` Enhanced Admin Submissions page [`submissions-view.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submissions-view.tsx):
-     - Added quick filter bar for `All`, `AI Content Flagged` (with dynamic counter), `Verified Voice`, `Completed`, and `In Progress`.
-     - Added AI verification badges (`AI Flagged` with `ShieldAlert`, `Verified Voice` with `Sparkles`, and evaluated step count).
-     - Displayed clean student work overview and a highlighted Latest AI Response box showing step score and actionable feedback.
-   - `[Verified]` Overhauled Admin Submission Drawer [`submission-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submission-drawer.tsx):
-     - Added full coverage for all 8 simulation steps + Reflection (including previously missing Step 2: Cause Hierarchy, Step 3: Evidence Audit, and Step 4: Stakeholder Consultation).
-     - Prominent red warning banner when any step triggers an academic integrity AI flag.
-     - Per-step diagnostic `StepAiEvaluationBox` showing step score, Authentic Voice vs. AI Content Flagged status, human-readable rubric tags, evaluation summaries, feedback, strengths, and areas for improvement.
+2. **Timeline Layout Overflow & Challenge Label Prefix Removal**:
+   - `[Verified]` Implementation Timeline Layout Fix (`components/simulation/community-action-plan-form.tsx`):
+     - Added `overflow-hidden` to the Timeline section card container to prevent any child overflow.
+     - Added `flex-wrap` and `min-w-0 flex-1` to the header row and text column so long descriptions wrap gracefully without pushing the Time Unit box outside the card borders.
+     - Moved status badges (`Affected (Editable)`, `Locked`) into the title row alongside the label rather than sharing container space with the Time Unit radio group.
+     - Styled the Time Unit box (`self-start sm:self-center`) and added responsive gap spacing to guarantee it remains completely within the card bounds at all viewport widths.
+     - Applied defensive `flex-wrap` and `min-w-0 flex-1` to Objectives and Expected Outcomes headers to eliminate horizontal clipping across all cards.
+   - `[Verified]` Challenge Label Prefix Removal ("C. Resource Challenge" -> "Resource Challenge"):
+     - Updated all challenge definitions in `lib/mission-data.ts` to remove letter prefixes (`"A. "`, `"B. "`, `"C. "`), standardizing on `"Stakeholder Challenge"`, `"Budget Challenge"`, and `"Resource Challenge"`.
+     - Added defensive regex sanitization (`.replace(/^[A-Z]\.\s*/i, "")`) in `app/dashboard/activity/[scenarioId]/activity-form.tsx` (Step 6 badge and Step 7 active challenge badge) and `app/admin/dashboard/submissions/submission-drawer.tsx` (admin inspection drawer).
+     - Updated existing stored records in `data/submissions.json`.
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed with 0 errors.
 
-7. **Home Page Redesign with Flat Vector Community Graphics & Open-Canvas Fluid Blob Blending**:
-   - `[Verified]` Removed all low-quality raster PNG/JPG images, boxed card wrappers, and dark pill borders from [`app/page.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/page.tsx).
-   - `[Verified]` Created [`components/landing-graphics.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/landing-graphics.tsx) containing 100% pure SVG flat vector artwork:
-     - **`CivicCommunityActionHeroGraphic`**: Faithful vector recreation of the community tree-planting scene:
-       - Volunteers planting and tending a young sapling
-       - Volunteer in yellow safety hat raking leaves
-       - Volunteer collecting leaves into a golden sack
-       - Volunteer watering trees with watering can
-       - Intergenerational mentorship (leader in safety vest guiding young student)
-       - Rolling hills, lush green trees, park lamp post, and park bench
-       - Organic fluid SVG blob backdrop in translucent primary/secondary tints
-       - Foreground sprouting leaves and white blooming daisies for natural softening
-       - Playful floating geometric tokens (hollow coral triangles, blue triangles, yellow dots, loop rings, breeze lines)
-     - **`EvidenceResearchStoryGraphic` (Stages 01–03)**: High school researchers with magnifying glass and digital tablet inspecting community soil/water evidence and barangay charts on a research easel.
-     - **`StakeholderConsultationStoryGraphic` (Stages 04–08)**: Barangay leader, student leader with proposal, and local citizen in consultation around a round table with blueprint map and speech bubbles.
-   - `[Verified]` Open-canvas visual blending: artwork sits directly on the page without rectangular card boxes, drop shadow containers, or boxy cutout edges.
-   - `[Verified]` 100% preserved all original text content, titles, descriptions, simulation steps, and buttons.
+3. **Production Navigation Performance & Latency Optimization (Vercel & Supabase)**:
+   - `[Verified]` Root Cause Identified: Helper functions in `lib/db.ts` (`findStudentById`, `findClassroomById`, `findScenarioById`, `findStudentByLrn`, `findSubmissionById`) were performing full table scans over remote Supabase HTTP REST and filtering in memory with `.find()`. In Vercel serverless functions, serial queries of entire tables (including heavy simulation state JSON blobs) compounded across network hops, causing 2–5 second navigation delays.
+   - `[Verified]` Direct Indexed Queries: Rewrote all helper queries in `lib/db.ts` to utilize Postgres indexed lookups via Supabase client (`.eq()`, `.maybeSingle()`, `.in()`).
+   - `[Verified]` Targeted Student Submissions: Added `getSubmissionsForStudent` and `findSubmissionForStudent` so the student dashboard and simulation forms fetch only their own submission rather than pulling every student's submission across all classrooms.
+   - `[Verified]` Request-Scoped Memoization: Wrapped all entity lookups (`findClassroomById`, `findStudentById`, `findScenarioById`, `findAdminById`, etc.) with React `cache()` to eliminate duplicate database hits in the same render pass.
+   - `[Verified]` Query Parallelization (`Promise.all`):
+     - `app/dashboard/page.tsx`: Replaced serial await cascade with `Promise.all([findClassroomById, getClassroomScenariosByClassroom, getAllScenarios, getSubmissionsForStudent])`.
+     - `app/dashboard/activity/[scenarioId]/page.tsx`: Replaced serial await cascade with `Promise.all([findScenarioById, findSubmissionForStudent, findClassroomById, findClassroomScenario])`.
+     - `app/dashboard/activity/[scenarioId]/actions.ts`: Parallelized scenario, classroom, and submission lookups in `processSimulationStepAction` and `submitReflectionAction`.
+     - Admin pages (`app/admin/dashboard/page.tsx`, `classrooms/page.tsx`, `scenarios/page.tsx`, `submissions/page.tsx`, `students/page.tsx`): Replaced serial awaits with `Promise.all`.
+   - `[Verified]` N+1 Elimination in Admin Classrooms: Eliminated the `for (const c of classrooms)` query loop in `classrooms/page.tsx` by computing the classroom scenario mapping in memory.
+   - `[Verified]` Build Verification: `npm run build` and `npx tsc --noEmit` pass with 0 errors.
+
+4. **Unified Delete Button Styling (Student & Admin Alignment)**:
+   - `[Verified]` Updated all item remove/delete buttons on the student side (`components/simulation/community-action-plan-form.tsx`) across Objectives, Timeline Phases, and Expected Outcomes to exactly match the admin side style:
+     - `size="icon-sm"` (compact `h-8 w-8`, and `h-7 w-7` in tables).
+     - Accent coloring: `text-destructive/80 hover:text-destructive`.
+     - Hover background & border: `hover:bg-destructive/10 hover:border-destructive/20`.
+     - Micro-interaction: `hover:shadow-xs transition-all duration-200 active:translate-x-0.5 active:translate-y-0.5`.
+
+5. **Complete Removal of Step 8 & Streamlining to 7 Simulation Steps**:
+   - `[Verified]` Total Step Streamlining: Completely removed Step 8 ("Assess Community Impact" / "Community Impact Assessment") from the civic simulation workflow.
+   - `[Verified]` Interactive Step Sequence (Exactly 7 Steps):
+     1. Identify Community Issues
+     2. Analyze Causes
+     3. Evaluate Digital Evidence
+     4. Consult Simulated Stakeholders
+     5. Community Action Planning
+     6. Challenge Simulation
+     7. Plan Revision
+   - `[Verified]` Step 7 Completion Transition: Completing and passing Step 7 directly calculates final competency scores across the 6 core dimensions, updates the submission status and score, and sets `currentStep = 8` to unlock the Performance Scorecard View.
+   - `[Verified]` Post-Simulation Progression:
+     - Step 8 / 9: Performance Scorecard & Evaluation Summary (`PerformanceReport` with 6-Core Competency Timeline).
+     - Step 8.5 / 9.5: Final Reflection Form with AI verification.
+     - Step 10: Official Completion Certificate.
+   - `[Verified]` Step Tracker & Mission Briefing:
+     - [`components/simulation/step-tracker.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/step-tracker.tsx): Updated to 7 steps, mobile progress "Step X of 7", and timeline header "X / 7".
+     - [`components/simulation/mission-briefing.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/mission-briefing.tsx): Progress calculation normalized over 7 steps; resumes at "Step 0X of 07". Civic Mission Briefing screen streamlined to exclusively display the mission title and description (removed statutory context, hardcoded objective, and constraints). Directly shows briefing on mid-mission overview.
+   - `[Verified]` Simulation Header & Card Forms:
+     - [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx): Step banner reads "Mission Step 0X of 07", CardTitle step 8 removed, step 8 inputs removed, and read-only mode checks Step 7 for completion. "Mission Context & Legal Guidance" sidebar card streamlined to display the mission title and description only (removed statutory framework inset).
+   - `[Verified]` 6-Core Competency Scoring:
+     - [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) (`calculateMissionScores`): Computed overall score as the average of the 6 core dimensions: Community Investigation, Evidence Evaluation, Stakeholder Analysis, Community Action Planning, Adaptive Decision-Making, and Plan Revision.
+     - [`components/simulation/performance-report.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/performance-report.tsx) and [`app/admin/dashboard/submissions/submission-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submission-drawer.tsx): Updated to "6-Core Competency Evaluation Timeline" and "6-Core Competency Scores".
+   - `[Verified]` Admin Submissions & Scenario Authoring:
+     - [`submission-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submission-drawer.tsx): Step progress displays `Step X/7`, and Step 8 Community Impact timeline card is retired.
+     - [`components/admin/mission-editor/tips-tab.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/admin/mission-editor/tips-tab.tsx): Allows authoring tips for Steps 1 through 7.
+     - [`lib/flag-utils.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/flag-utils.ts): Diagnostic analysis aligned with the 7 steps plus reflection.
+   - `[Verified]` Student Dashboard Hero Clean Slate: Removed the animated robotic companion (`CivicCompanion`) from [`app/dashboard/page.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/page.tsx), streamlining the hero command center into a clean, unified full-width layout.
+
+6. **Step 6: Challenge Simulation Narrative Transition & Randomized Crisis Presentation**:
+   - `[Verified]` Streamlined Interface (Removal of Options and Justification): Completely removed the "What are you going to do?" radio list and the "Justify your adaptive decision" textarea from `activity-form.tsx`.
+   - `[Verified]` Randomized Challenge Presentation: In Step 6, an unexpected community crisis randomly appears to the student across the 3 curriculum categories defined in `lib/mission-data.ts` (`getScenarioChallenges`): Stakeholder Challenge, Budget Challenge, and Resource Challenge.
+   - `[Verified]` Session Stability: Challenge selection is persisted in student state (`simState.step6.challenge`) ensuring the exact same challenge remains stable across browser refreshes and page re-renders.
+   - `[Verified]` Button Labels & Workflow:
+     - Step 5 button label: **"Submit Initial Plan"**.
+     - Step 6 button label: **"Revise Initial Plan"**.
+   - `[Verified]` Immediate Redirection to Step 7: Clicking "Revise Initial Plan" on Step 6 records the challenge in Supabase/db via `processSimulationStepAction` and immediately redirects the student directly to Step 7 ("Plan Revision") without an evaluation modal.
+   - `[Verified]` Teacher/Admin Inspection: `submission-drawer.tsx` displays the challenge title, category label, crisis narrative, and affected component in the Step 6 timeline.
+
+7. **Step 7: Plan Revision Single-Component Editability & Locked Integrity**:
+   - `[Verified]` Single-Component Editability (`editableFields`): Whichever challenge was presented in Step 6, only that specific component is editable in the community action plan during Plan Revision in `community-action-plan-form.tsx`.
+   - `[Verified]` Visual Locking: All other 8 components are locked with `<Lock className="h-3 w-3" /> Locked` indicators, dimmed backgrounds (`bg-muted/20`), and disabled input fields/buttons.
+   - `[Verified]` Visual Highlight for Affected Component: Highlighted with an amber glowing border (`border-amber-500/60`), ambient ring, and `<Badge className="bg-amber-600 text-white">Affected (Editable)</Badge>`.
+   - `[Verified]` Challenge Context Banner: Step 7 header displays the active challenge from Step 6 (`step6Challenge.title`, category badge, full crisis description, and target section badge).
+   - `[Verified]` Removed Reference Accordion: Completely removed the "View Original Step 5 Plan (Reference Only)" collapsible accordion from Step 7 in `activity-form.tsx`, leaving a clean, focused editing interface.
+   - `[Verified]` Reset Section Control: Reset button in Step 7 resets only the affected component back to the Step 5 plan.
+   - `[Verified]` AI Verification of Adaptation: Updated `evaluateStep7` in `lib/ai.ts` to verify that the student actually modified the affected component. If left unmodified, flags `CHALLENGE_REVISION_UNMODIFIED` and requires revision.
+
+8. **Step 5: Community Action Planning Architecture, Structured Arrays, & 7-Criteria AI Checking**:
+   - `[Verified]` Main Goal Textarea: Converted "Main Goal" from a single-line input into a dedicated multi-line `<Textarea>` (`rows={3}`, `min-h-[72px]`), formatted as a full-width block without placeholders or default pre-filled text.
+   - `[Verified]` Step Renaming: Renamed step from "Intervention Planning" to **"Community Action Planning"** across all components, trackers, and inspection drawers.
+   - `[Verified]` Objectives (List, Max 3): Dynamic list with add/remove buttons, enforcing maximum of 3 items.
+   - `[Verified]` Activities 10–15 Sentences & 7 Mandatory Criteria: Real-time sentence counter and 7-criteria verification in `lib/ai.ts` (`evaluateCommunityActionActivity`).
+   - `[Verified]` Stakeholders Note & Step 4 Consulted Stakeholder Validation: Tagalog note reminder, unified `BadgeCombobox` with keyboard navigation, and AI validation rejecting submissions that omit all Step 4 consulted stakeholders.
+   - `[Verified]` Resources: Unified `BadgeCombobox` without secondary input fields or add buttons; user types inside the combobox and presses Enter to insert as a badge.
+   - `[Verified]` Budget: Estimated budget required with ₱ prefix, guided by reasonableness relative to the small-scale community problem.
+   - `[Verified]` Tabular Timeline & 7-Day Scope: Tabular table with `(Phase, Activity, Time)` columns, Base UI radio buttons for `Days` vs `Weeks`, and `+ Add Row` button. 7-day scope enforced by AI.
+   - `[Verified]` Clean Slate Inputs: Removed all ghost `placeholder` attributes across all inputs and textareas; all fields start completely blank.
+   - `[Verified]` Expected Outcomes (List, Max 3): Dynamic list with maximum of 3 items that directly justify the objectives.
+
+5. **Steps 1 through 4 Alignment**:
+   - `[Verified]` Step 4: Statement-only stakeholder UI, click-gated selection, non-scored irrelevant stakeholder checker, and "Continue Mission" button.
+   - `[Verified]` Step 3: Digital evidence evaluation, duplicate/unrelated copy-paste rejection, non-scored star ratings, and admin distractor configuration.
+   - `[Verified]` Step 2: Causal hierarchy ranking with student-side order randomization and root cause AI evaluation.
+   - `[Verified]` Step 1: Priority community issue identification with student-side order randomization and admin correct issue marking.
 
 ---
 
@@ -73,4 +171,7 @@
 
 - `[Verified]` `npx tsc --noEmit` executed and passed cleanly with 0 errors (exit code: 0).
 - `[Verified]` Dev server running on `http://localhost:3000` with 0 compile or runtime errors.
-- `[Verified]` Flat colors, smooth vector edges, and organic fluid blob blending active on `/`.
+- `[Verified]` Step 6 & Step 7 automated tests passed (`scratch/test_step6_step7.ts` - all 3 tests passing: challenge generation, unmodified target detection, revised adaptation passing, and 6-core score calculation).
+- `[Verified]` Step 5 automated test suite passed (`scratch/test_step5_action_plan.ts` - 6/6 tests passing).
+- `[Verified]` Step 4 automated test suite passed (`scratch/test_step4_stakeholders.ts` - 4/4 tests passing).
+- `[Verified]` Step 3 automated test suite passed (`scratch/test_step3_irrelevant_check.ts` - 7/7 tests passing).

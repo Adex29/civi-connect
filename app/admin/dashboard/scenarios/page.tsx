@@ -8,11 +8,14 @@ import {
 import { ScenariosView } from "./scenarios-view";
 
 export default async function ScenariosPage() {
-  const scenarios = await getAllScenarios();
-  const classrooms = await getAllClassrooms();
-  const assignments = await getAllClassroomScenarios();
-  const submissions = await getAllSubmissions();
-  const students = await getAllStudents();
+  const [scenarios, classrooms, assignments, submissions, students] =
+    await Promise.all([
+      getAllScenarios(),
+      getAllClassrooms(),
+      getAllClassroomScenarios(),
+      getAllSubmissions(),
+      getAllStudents(),
+    ]);
 
   return (
     <ScenariosView
