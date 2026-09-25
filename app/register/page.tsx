@@ -78,7 +78,7 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>Class Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. CVC-3A" {...field} />
+                      <Input placeholder="CVC-3A" {...field} />
                     </FormControl>
                     <FormDescription>The 6-character code provided by your teacher.</FormDescription>
                     <FormMessage />
@@ -153,7 +153,7 @@ export default function RegisterPage() {
                     <FormItem className="animate-in fade-in slide-in-from-top-2">
                       <FormLabel>Group Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Group A" {...field} />
+                        <Input placeholder="Group A" {...field} />
                       </FormControl>
                       <FormDescription>If your group already exists, type the exact name to join it.</FormDescription>
                       <FormMessage />

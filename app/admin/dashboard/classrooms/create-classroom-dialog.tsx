@@ -94,7 +94,7 @@ export function CreateClassroomDialog({
               </Label>
               <Input
                 id="classroom-name"
-                placeholder="e.g. CVC-3A Community Action"
+                placeholder="CVC-3A Community Action"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoFocus

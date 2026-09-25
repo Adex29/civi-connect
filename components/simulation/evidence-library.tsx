@@ -360,7 +360,7 @@ export function EvidenceLibrary({ items, evaluated, onUpdateEvaluated, disabled 
                   onChange={(e) => setJustification(e.target.value)}
                   placeholder={
                     isNotRelated
-                      ? "Explain why this document is irrelevant to the scenario (e.g., how its topic, focus, or location does not apply to our community crisis)..."
+                      ? "Explain why this document is irrelevant to the scenario (how its topic, focus, or location does not apply to our community crisis)..."
                       : "Explain why this evidence is credible and how it connects to the community issue..."
                   }
                   className="min-h-[90px]"
