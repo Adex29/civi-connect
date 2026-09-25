@@ -734,7 +734,7 @@ function getAIClient(): AIClientConfig | null {
           credentials: JSON.parse(process.env.GCP_SERVICE_ACCOUNT_KEY),
         };
       } catch (e) {
-        console.error("[CiviConnect AI] Failed to parse GCP_SERVICE_ACCOUNT_KEY JSON:", e);
+        console.error("[Civi-Tech AI] Failed to parse GCP_SERVICE_ACCOUNT_KEY JSON:", e);
       }
     } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       const rawPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
@@ -744,7 +744,7 @@ function getAIClient(): AIClientConfig | null {
           keyFilename: credsPath,
         };
       } else {
-        console.warn(`[CiviConnect AI] GOOGLE_APPLICATION_CREDENTIALS file not found at ${credsPath}.`);
+        console.warn(`[Civi-Tech AI] GOOGLE_APPLICATION_CREDENTIALS file not found at ${credsPath}.`);
       }
     }
 
@@ -757,7 +757,7 @@ function getAIClient(): AIClientConfig | null {
       });
       return { client, model, provider: "vertex" };
     } catch (err) {
-      console.error("[CiviConnect AI] Vertex AI initialization failed:", err);
+      console.error("[Civi-Tech AI] Vertex AI initialization failed:", err);
     }
   }
 
@@ -768,7 +768,7 @@ function getAIClient(): AIClientConfig | null {
       const model = process.env.GEMINI_MODEL || "gemini-3.7-flash";
       return { client, model, provider: "gemini-studio" };
     } catch (err) {
-      console.error("[CiviConnect AI] Gemini Studio initialization failed:", err);
+      console.error("[Civi-Tech AI] Gemini Studio initialization failed:", err);
     }
   }
 
@@ -797,7 +797,7 @@ async function callGeminiVerification(prompt: string, fallback: AIEvaluationResu
       text = res.text || "";
     } catch (primaryErr) {
       if (config.provider === "vertex" && process.env.GEMINI_API_KEY) {
-        console.warn("[CiviConnect AI] Vertex AI request failed. Attempting fallback to Gemini Studio API Key:", primaryErr);
+        console.warn("[Civi-Tech AI] Vertex AI request failed. Attempting fallback to Gemini Studio API Key:", primaryErr);
         try {
           const studioClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
           const res = await studioClient.models.generateContent({
@@ -810,7 +810,7 @@ async function callGeminiVerification(prompt: string, fallback: AIEvaluationResu
           });
           text = res.text || "";
         } catch (fallbackErr) {
-          console.error("[CiviConnect AI] Gemini Studio fallback also failed:", fallbackErr);
+          console.error("[Civi-Tech AI] Gemini Studio fallback also failed:", fallbackErr);
           return fallback;
         }
       } else {

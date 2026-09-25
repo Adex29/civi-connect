@@ -1,6 +1,6 @@
 # Project Foundation
 
-> This document preserves context, raw intent, and domain research for CiviConnect.
+> This document preserves context, raw intent, and domain research for Civi-Tech.
 > It is not the final authority when an accepted decision in [`decisions.md`](file:///d:/Admin/Music/Janella/civi-connect/decisions.md) supersedes it.
 
 ---
@@ -25,7 +25,7 @@
 ## F-CIV-001: Product Vision & Core Mission
 
 ### Vision
-CiviConnect (Civi-Tech Simulation Engine) is an educational simulation and assessment platform designed to cultivate civic problem-solving, structured public-policy analysis, and collaborative civic literacy in students. 
+Civi-Tech is an educational simulation and assessment platform designed to cultivate civic problem-solving, structured public-policy analysis, and collaborative civic literacy in students. 
 
 Through realistic municipal scenarios (such as stray animal rabies threats, public health crises, traffic interventions, or waste management challenges), students step through a guided 7-stage civic inquiry cycle. The platform leverages AI-assisted evaluation (Google Gemini) to provide formative feedback against structured criteria without replacing teacher judgment.
 
@@ -144,9 +144,9 @@ Through realistic municipal scenarios (such as stray animal rabies threats, publ
 
 ## F-CIV-009: Comparable Systems and Precedents
 
-- **iCivics**: Scenario-based civic games; CiviConnect differentiates by focusing on collaborative classroom teams, rubric constraints, and generative AI feedback.
-- **Harvard Case Method Simulations**: High-level policy simulations; CiviConnect adapts this to secondary education with structured 7-step scaffolding.
-- **Google Classroom / Canvas LMS**: General assignment distribution; CiviConnect acts as a specialized civic simulation engine integrated into classroom cohorts.
+- **iCivics**: Scenario-based civic games; Civi-Tech differentiates by focusing on collaborative classroom teams, rubric constraints, and generative AI feedback.
+- **Harvard Case Method Simulations**: High-level policy simulations; Civi-Tech adapts this to secondary education with structured 7-step scaffolding.
+- **Google Classroom / Canvas LMS**: General assignment distribution; Civi-Tech acts as a specialized civic simulation engine integrated into classroom cohorts.
 
 ---
 

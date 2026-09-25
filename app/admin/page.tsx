@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-md border-border shadow-lg">
         <CardHeader className="space-y-1">
           <CardTitle className="page-title text-2xl">Admin Access</CardTitle>
-          <CardDescription className="text-muted-foreground">Restricted area for CiviConnect administrators.</CardDescription>
+          <CardDescription className="text-muted-foreground">Restricted area for Civi-Tech administrators.</CardDescription>
         </CardHeader>
         <CardContent>
           {serverError && (

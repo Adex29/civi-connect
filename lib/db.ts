@@ -399,20 +399,35 @@ export async function getAllAdmins(): Promise<Admin[]> {
 }
 
 export const findAdminByEmail = cache(async (email: string): Promise<Admin | null> => {
+  const normalized = email.toLowerCase().trim();
+  const candidateEmails = Array.from(
+    new Set([
+      normalized,
+      normalized.replace("@civiconnect.local", "@civi-tech.local"),
+      normalized.replace("@civi-tech.local", "@civiconnect.local"),
+    ])
+  );
+
   if (isSupabaseConfigured) {
     try {
-      const { data, error } = await supabase
-        .from("admins")
-        .select("*")
-        .ilike("email", email)
-        .maybeSingle();
-      if (!error && data) {
-        return mapAdmin(data);
+      for (const candidate of candidateEmails) {
+        const { data, error } = await supabase
+          .from("admins")
+          .select("*")
+          .ilike("email", candidate)
+          .maybeSingle();
+        if (!error && data) {
+          return mapAdmin(data);
+        }
       }
     } catch (err) {}
   }
   const admins = readData<Admin>("admins");
-  return admins.find((a) => a.email.toLowerCase() === email.toLowerCase()) || null;
+  return (
+    admins.find((a) =>
+      candidateEmails.some((cand) => a.email.toLowerCase() === cand)
+    ) || null
+  );
 });
 
 export const findAdminById = cache(async (id: string): Promise<Admin | null> => {

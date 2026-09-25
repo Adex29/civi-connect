@@ -1,12 +1,13 @@
 # Decision Register
 
-This document is the authoritative record of accepted, provisional, superseded, and rejected decisions for the CiviConnect project.
+This document is the authoritative record of accepted, provisional, superseded, and rejected decisions for the Civi-Tech project.
 When guidance in other documentation conflicts with an accepted decision recorded here, the accepted decision in this document governs.
 
 ---
 
 ## Active Decisions
 
+- [D-20260925-023: Global Branding and Entity Alignment from CiviConnect to Civi-Tech](#d-20260925-023--global-branding-and-entity-alignment-from-civiconnect-to-civi-tech)
 - [D-20260925-022: Reset of User Accounts, Classrooms, and Simulation Submissions (Preserving Canonical Mission and Administrator)](#d-20260925-022--reset-of-user-accounts-classrooms-and-simulation-submissions-preserving-canonical-mission-and-administrator)
 - [D-20260925-021: Elimination of Extraneous Route Top-Loader and 'Loading...' Pill in Favor of Clean Pencil Preloader](#d-20260925-021--elimination-of-extraneous-route-top-loader-and-loading-pill-in-favor-of-clean-pencil-preloader)
 - [D-20260925-020: Multi-Tier AI-Generated Authorship Detection Calibration and Submissions Flagging](#d-20260925-020--multi-tier-ai-generated-authorship-detection-calibration-and-submissions-flagging)
@@ -80,6 +81,41 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 - [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
 
+### D-20260925-023 — Global Branding and Entity Alignment from CiviConnect to Civi-Tech
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Branding, naming tokens, package definition, administrative labels, AI logger tags, documentation, and administrator email domains.
+- **Supersedes**: Legacy "CiviConnect" project naming
+- **Superseded by**: None
+- **Related implementation**: `package.json`, `package-lock.json`, `app/admin/page.tsx`, `lib/ai.ts`, `lib/db.ts`, `data/admins.json`, `supabase/schema.sql`, `lab/README.md`, `foundation.md`, `learnings.md`
+
+#### Context
+1. The curriculum specification and canonical branding define the platform as **Civi-Tech** (Philippine Grade 12 Senior High School Civic Engagement Simulation Platform).
+2. While the front-facing landing page, navbar, simulation forms, and report components were already labeled "Civi-Tech", legacy remnants of "CiviConnect" and "civiconnect" persisted in `package.json`, admin descriptions, AI log prefixes, database schema comments, laboratory documentation, and foundational documentation.
+3. The user requested: *"inspect for the civi-connect civiconnect wordings in the codebase and change it to civi-tech"*.
+
+#### Decision
+1. **Administrative Interface**:
+   - In `app/admin/page.tsx`, updated the admin login card description from `"Restricted area for CiviConnect administrators."` to `"Restricted area for Civi-Tech administrators."`.
+2. **AI Logger Tags**:
+   - In `lib/ai.ts`, replaced all `[CiviConnect AI]` console logging prefixes across Vertex AI and Gemini Studio resolvers with `[Civi-Tech AI]`, harmonizing with the existing `[Civi-Tech AI Evaluator]` prefix.
+3. **Package & Repository Identifiers**:
+   - Updated package name in `package.json` and `package-lock.json` from `"civi-connect"` to `"civi-tech"`.
+   - Updated header in `supabase/schema.sql` to `-- Civi-Tech Supabase Database Schema`.
+   - Updated `lab/README.md` to `# Civi-Tech Research Laboratory (lab/)`.
+4. **Administrator Account & Domain Backward Compatibility**:
+   - In `data/admins.json`, updated the administrator email from `admin@civiconnect.local` to `admin@civi-tech.local`.
+   - In `lib/db.ts` (`findAdminByEmail`), added dual-domain candidate matching supporting both `@civi-tech.local` and legacy `@civiconnect.local` so administrators cannot be locked out whether logging in with current or legacy credentials.
+5. **Memory & Foundation Alignment**:
+   - Updated `foundation.md`, `learnings.md`, and `decisions.md` to reference the canonical name "Civi-Tech".
+
+#### Evidence
+- Comprehensive codebase scan via Node AST/filesystem traversal confirmed zero lingering instances of `civi-connect` or `civiconnect` in project source files (excluding git directory paths).
+- Live Supabase admin synchronization executed via `scratch/sync_admin.mjs`: successfully updated admin record `admin-1` to `admin@civi-tech.local`.
+- TypeScript verification passed cleanly via `npx tsc --noEmit` (`exit code: 0`).
+
 ---
 
 ### D-20260925-022 — Reset of User Accounts, Classrooms, and Simulation Submissions (Preserving Canonical Mission and Administrator)
@@ -98,7 +134,7 @@ When guidance in other documentation conflicts with an accepted decision recorde
 3. The platform requires a clean production-ready state where teachers can create fresh classrooms, enroll student cohorts, and assign the canonical civic mission without lingering test data.
 4. Crucially:
    - The canonical mission (**"Barangay San Isidro: Drainage and Waste Management"**, `san-isidro-drainage-crisis`) must be strictly preserved.
-   - The platform administrator (`admin@civiconnect.local`) must be preserved so administrators can continue to log in, author scenarios, and manage classrooms.
+   - The platform administrator (`admin@civi-tech.local`, aliased with legacy `admin@civiconnect.local`) must be preserved so administrators can continue to log in, author scenarios, and manage classrooms.
 
 #### Decision
 1. **Pre-Purge Safety Backup**:
@@ -122,7 +158,7 @@ When guidance in other documentation conflicts with an accepted decision recorde
      - `data/constraints.json`
 3. **Preserved Canonical Mission & Administrator**:
    - `scenarios` / `data/scenarios.json`: Preserved 1 record — canonical mission *"Barangay San Isidro: Drainage and Waste Management"*.
-   - `admins` / `data/admins.json`: Preserved 1 record — System Administrator (`admin@civiconnect.local`).
+   - `admins` / `data/admins.json`: Preserved 1 record — System Administrator (`admin@civi-tech.local`).
 
 #### Evidence
 - Inspected Supabase database counts post-purge:
@@ -1214,7 +1250,7 @@ Verified via `npx tsc --noEmit` (`exit code: 0`). Automated checks confirm zero 
 
 #### Context
 1. **Promotional Credit Billing Discrepancy**: Google Cloud Developer / Subscriber $10 monthly credits (from Google AI Pro/Ultra benefits) apply exclusively to Google Cloud Platform SKUs (Vertex AI), not consumer Google AI Studio API Keys (`generativelanguage.googleapis.com`). Users attempting to use AI Studio keys with promotional credits were unexpectedly billed to their personal credit cards.
-2. **SDK Modernization**: CiviConnect previously used the legacy `@google/generative-ai` SDK, which only supported Google AI Studio. The new unified `@google/genai` SDK natively supports both Google Cloud Vertex AI (`aiplatform.googleapis.com`) and Gemini Developer API.
+2. **SDK Modernization**: Civi-Tech previously used the legacy `@google/generative-ai` SDK, which only supported Google AI Studio. The new unified `@google/genai` SDK natively supports both Google Cloud Vertex AI (`aiplatform.googleapis.com`) and Gemini Developer API.
 
 #### Decision
 1. **Modernized SDK**: Replaced `@google/generative-ai` with `@google/genai`.
@@ -1461,7 +1497,7 @@ Direct user report and screenshot: *"these buttons are not working except in the
 
 #### Context
 In early prototyping phases, `Scenario` was a flat entity (`title`, `description`, `context`, `constraints`). When the 8-step simulation architecture was introduced, `missionData?: MissionDataConfig` was added as an optional field. A UI badge was added that displayed `"Civic Mission"` (with a sparkles icon) if `scenario.missionData` was present, and `"Standard Mission"` if `scenario.missionData` was absent.
-However, in CiviConnect all missions are civic inquiry simulations, and the concept of an alternate "Standard Mission" mode does not exist in the curriculum. The badge created user confusion as to why some missions were labeled "Standard" and others "Civic".
+However, in Civi-Tech all missions are civic inquiry simulations, and the concept of an alternate "Standard Mission" mode does not exist in the curriculum. The badge created user confusion as to why some missions were labeled "Standard" and others "Civic".
 
 #### Decision
 1. **Remove "Civic Mission" / "Standard Mission" Badges**:

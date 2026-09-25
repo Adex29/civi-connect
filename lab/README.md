@@ -1,4 +1,4 @@
-# CiviConnect Research Laboratory (`lab/`)
+# Civi-Tech Research Laboratory (`lab/`)
 
 This directory is an isolated environment dedicated to exploratory research, disposable prototypes, bug reproductions, performance benchmarks, and architectural proofs of concept.
 

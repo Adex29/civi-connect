@@ -1,6 +1,6 @@
 # Engineering Learnings
 
-This document records non-obvious engineering lessons, traps, and debugging discoveries in CiviConnect to prevent future agents and developers from repeating past mistakes.
+This document records non-obvious engineering lessons, traps, and debugging discoveries in Civi-Tech to prevent future agents and developers from repeating past mistakes.
 
 ---
 

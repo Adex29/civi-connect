@@ -10,11 +10,19 @@
 
 ## Completed
 
-1. **Reset of User Accounts, Classrooms, and Simulation Submissions (Preserving Canonical Mission and Administrator)**:
+1. **Global Branding and Entity Alignment from CiviConnect to Civi-Tech**:
+   - `[Verified]` Admin Interface: Updated card description in [`app/admin/page.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/page.tsx) to *"Restricted area for Civi-Tech administrators."*
+   - `[Verified]` AI Engine Logging: Replaced all `[CiviConnect AI]` console logs across Vertex AI and Gemini Studio resolvers in [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) with `[Civi-Tech AI]`.
+   - `[Verified]` Package and Database Identifiers: Renamed package name in [`package.json`](file:///d:/Admin/Music/Janella/civi-connect/package.json) and [`package-lock.json`](file:///d:/Admin/Music/Janella/civi-connect/package-lock.json) to `"civi-tech"`. Updated [`supabase/schema.sql`](file:///d:/Admin/Music/Janella/civi-connect/supabase/schema.sql) and [`lab/README.md`](file:///d:/Admin/Music/Janella/civi-connect/lab/README.md).
+   - `[Verified]` Admin Credentials & Dual-Domain Backward Compatibility: Updated [`data/admins.json`](file:///d:/Admin/Music/Janella/civi-connect/data/admins.json) administrator email to `admin@civi-tech.local`. Enhanced `findAdminByEmail` in [`lib/db.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/db.ts) to match both `civi-tech.local` and legacy `civiconnect.local` so administrators are never locked out.
+   - `[Verified]` Live Database Admin Sync: Executed [`scratch/sync_admin.mjs`](file:///d:/Admin/Music/Janella/civi-connect/scratch/sync_admin.mjs) to upsert the admin account to the live Supabase PostgreSQL database. Verified that record `admin-1` is synced with `admin@civi-tech.local`.
+   - `[Verified]` TypeScript Validation: Verified via `npx tsc --noEmit` (0 errors).
+
+2. **Reset of User Accounts, Classrooms, and Simulation Submissions (Preserving Canonical Mission and Administrator)**:
    - `[Verified]` Pre-Purge Safety Backup: Saved complete snapshots of all local data files and Supabase database tables to `data/backup_user_cleanup/`. Updated `.gitignore` to ignore `data/backup_*/`.
    - `[Verified]` Database & Local Storage Purge: In strict FK-compliant order, cleared `submissions` (student works), `assignments`, `classroom_scenarios`, `students` (user accounts), `groups`, and `classrooms` from both Supabase PostgreSQL and local JSON storage.
    - `[Verified]` Canonical Mission Strictly Preserved: Preserved exactly 1 scenario (`san-isidro-drainage-crisis`: *"Barangay San Isidro: Drainage and Waste Management"*).
-   - `[Verified]` Administrator Account Preserved: Preserved 1 administrator account (`admin@civiconnect.local`), allowing administrators to log in and author or manage fresh classrooms.
+   - `[Verified]` Administrator Account Preserved: Preserved 1 administrator account (`admin@civi-tech.local`, aliased with legacy `admin@civiconnect.local`), allowing administrators to log in and author or manage fresh classrooms.
    - `[Verified]` Post-Purge Verification: Verified 0 students, 0 classrooms, 0 groups, 0 assignments, 0 classroom_scenarios, and 0 submissions in Supabase and local data files.
 
 2. **Elimination of Extraneous Route Top-Loader and 'Loading...' Pill in Favor of Clean Pencil Preloader**:

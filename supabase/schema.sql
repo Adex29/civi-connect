@@ -1,4 +1,4 @@
--- CiviConnect Supabase Database Schema
+-- Civi-Tech Supabase Database Schema
 
 -- Enable UUID extension if needed
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
