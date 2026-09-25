@@ -14,18 +14,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2, School, Lightbulb, Key, BookOpen } from "lucide-react";
+import { Plus, Loader2, School, Key, BookOpen } from "lucide-react";
 import { createClassroomAction } from "./actions";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-
-const PRESET_NAMES = [
-  "Grade 10 - Rizal",
-  "Grade 10 - Bonifacio",
-  "CVC-3A Civic Action",
-  "Social Studies 2B",
-  "Leadership 101",
-];
 
 export function CreateClassroomDialog({
   trigger,
@@ -63,10 +54,6 @@ export function CreateClassroomDialog({
     } finally {
       setLoading(false);
     }
-  };
-
-  const handlePresetClick = (preset: string) => {
-    setName(preset);
   };
 
   return (
@@ -117,23 +104,6 @@ export function CreateClassroomDialog({
                 required
                 className="h-10"
               />
-
-              {/* Quick suggestions */}
-              <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <Lightbulb className="h-3 w-3 text-primary" /> Suggestions:
-                </span>
-                {PRESET_NAMES.map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => handlePresetClick(preset)}
-                    className="rounded-md border bg-muted/50 px-2 py-0.5 text-[11px] transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    {preset}
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Description */}
