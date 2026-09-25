@@ -10,7 +10,13 @@
 
 ## Completed
 
-1. **Multi-Tier AI-Generated Authorship Detection Calibration and Submissions Flagging**:
+1. **Elimination of Extraneous Route Top-Loader and 'Loading...' Pill in Favor of Clean Pencil Preloader**:
+   - `[Verified]` Diagnosis of Stuck Loading Elements: Identified that a secondary `RoutePreloader` component in `components/ui/route-preloader.tsx` was creating a top emerald progress bar and a floating `Loading...` pill badge with a pulsing beacon. Timer races on internal link clicks and route transitions caused it to freeze at 88% width and opacity 1, permanently remaining on screen.
+   - `[Verified]` Complete Removal of `RoutePreloader`: Removed `<RoutePreloader />` and its import from [`app/layout.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/layout.tsx) and completely deleted [`components/ui/route-preloader.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/ui/route-preloader.tsx).
+   - `[Verified]` Strict Pencil-Only Implementation: Preserved solely `AppPreloader` with the requested animated SVG pencil loader in brand theme colors. Refined its lifecycle with an explicit `isFading` state for smooth CSS dissolution over 400ms followed by unmounting from the DOM at 1450ms.
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed with 0 errors.
+
+2. **Multi-Tier AI-Generated Authorship Detection Calibration and Submissions Flagging**:
    - `[Verified]` Conversational Assistant Scaffolding Detection: Flagged opening formulas like *"here is the/our plan/strategy"*, *"as requested based on the scenario"*, *"hope this helps/assists"* with instant high risk (Confidence: 95%, `isAi: true`), capturing unedited copy-pastes from ChatGPT/Claude.
    - `[Verified]` Cliché Formulas & Score Cap Removal: Expanded regexes to detect variations of *"paramount importance"*, *"fostering/leveraging"*, *"pivotal role"*, *"testament/beacon/cornerstone"*, *"multifaceted approach/strategy/intervention"*, *"catalyst for change"*, *"pave the way"*, *"underscores the urgency/vulnerability"*, *"risk mitigation"*, and Filipino formulas (`mahalagang bigyang-diin`, `komprehensibong pamamaraan`, `gumaganap ng mahalagang papel`, `pagtataguyod ng`, `mapagaan ang mga panganib`). Removed the 32-point cap (`Math.min(60, matchedPhrases.length * 15)`). 2+ matching clichés directly trigger high risk (`isAi = true`).
    - `[Verified]` Vocabulary Density for Short Submissions: Calibrated formal vocabulary detection so that submissions under 70 words trigger the `formal_vocabulary_density` signal group with $\ge 2$ distinct high-formality AI terms (`multifaceted`, `holistic`, `imperative`, `underscores`, `spearhead`, `leverage`, `catalyst`).

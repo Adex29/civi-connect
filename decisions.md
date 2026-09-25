@@ -7,6 +7,7 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ## Active Decisions
 
+- [D-20260925-021: Elimination of Extraneous Route Top-Loader and 'Loading...' Pill in Favor of Clean Pencil Preloader](#d-20260925-021--elimination-of-extraneous-route-top-loader-and-loading-pill-in-favor-of-clean-pencil-preloader)
 - [D-20260925-020: Multi-Tier AI-Generated Authorship Detection Calibration and Submissions Flagging](#d-20260925-020--multi-tier-ai-generated-authorship-detection-calibration-and-submissions-flagging)
 - [D-20260925-019: Pedagogical Non-Spoil Policy in AI Evaluation (Socratic Guidance, No Direct Answers)](#d-20260925-019--pedagogical-non-spoil-policy-in-ai-evaluation-socratic-guidance-no-direct-answers)
 - [D-20260925-018: Complete Removal of AI Sparkles Iconography Across User and Admin Interfaces](#d-20260925-018--complete-removal-of-ai-sparkles-iconography-across-user-and-admin-interfaces)
@@ -77,6 +78,39 @@ When guidance in other documentation conflicts with an accepted decision recorde
 ## Rejected Alternatives
 
 - [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+
+---
+
+### D-20260925-021 — Elimination of Extraneous Route Top-Loader and 'Loading...' Pill in Favor of Clean Pencil Preloader
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Layout preloaders (`app/layout.tsx`, `components/ui/route-preloader.tsx`, `components/ui/app-preloader.tsx`)
+- **Supersedes**: `RoutePreloader` component in `D-20260925-015`
+- **Superseded by**: None
+- **Related implementation**: `app/layout.tsx`, `components/ui/app-preloader.tsx`
+
+#### Context
+1. The user explicitly directed: *"just the pencil only, dont add other elements"*.
+2. However, a secondary route-level top-loader (`RoutePreloader` in `components/ui/route-preloader.tsx`) had previously been added to `app/layout.tsx`.
+3. This component rendered an emerald top progress bar and a floating top-right pill badge (`"Loading..."` with a pulsating green beacon).
+4. Due to internal link-click interception timer races and route transitions that did not change pathname, `RoutePreloader` frequently became stuck in an active state (`progress = 88`), leaving the emerald top bar and `"Loading..."` pill permanently visible on screen.
+5. The user provided a screenshot pointing directly to this stuck progress bar and pill: *"this included in the pre loader does not disapear"*.
+
+#### Decision
+1. **Complete Removal of `RoutePreloader`**:
+   - Removed `<RoutePreloader />` and its import from `app/layout.tsx`.
+   - Deleted `components/ui/route-preloader.tsx`.
+2. **Strict Adherence to "Pencil Only" Preloader**:
+   - Preserved only `AppPreloader` featuring the requested animated SVG pencil loader in brand theme colors.
+   - Refined `AppPreloader` lifecycle with a distinct `isFading` state, allowing the pencil loader to play smoothly, transition out via CSS fade/scale dissolution, and cleanly unmount from the DOM after 1450ms.
+3. **No Extraneous Loading Badges**:
+   - Zero floating "Loading..." pills, top progress bars, or auxiliary banners remain in the global layout.
+
+#### Evidence
+- Verified complete deletion of `components/ui/route-preloader.tsx`.
+- Verified `npx tsc --noEmit` passed with 0 errors.
 
 ---
 

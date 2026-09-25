@@ -125,17 +125,26 @@ export function PencilLoader({ className }: { className?: string }) {
 
 export function AppPreloader() {
   const [mounted, setMounted] = useState(false);
+  const [isFading, setIsFading] = useState(false);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     setMounted(true);
 
-    // Smoothly dissolve preloader after animation plays on load
-    const timer = setTimeout(() => {
-      setVisible(false);
-    }, 1250);
+    // Start fading out after animation plays
+    const fadeTimer = setTimeout(() => {
+      setIsFading(true);
+    }, 1000);
 
-    return () => clearTimeout(timer);
+    // Completely unmount after transition completes
+    const removeTimer = setTimeout(() => {
+      setVisible(false);
+    }, 1450);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+    };
   }, []);
 
   if (!mounted || !visible) return null;
@@ -146,8 +155,8 @@ export function AppPreloader() {
       aria-live="polite"
       aria-label="Loading..."
       className={cn(
-        "fixed inset-0 z-[99999] flex items-center justify-center bg-background/95 backdrop-blur-md select-none transition-all duration-500 ease-out",
-        !visible ? "opacity-0 scale-105 pointer-events-none" : "opacity-100 scale-100"
+        "fixed inset-0 z-[99999] flex items-center justify-center bg-background/95 backdrop-blur-md select-none transition-all duration-400 ease-out",
+        isFading ? "opacity-0 scale-105 pointer-events-none" : "opacity-100 scale-100"
       )}
     >
       <PencilLoader />
