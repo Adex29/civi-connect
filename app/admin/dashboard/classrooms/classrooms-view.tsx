@@ -38,7 +38,6 @@ import {
   List,
   MoreVertical,
   Archive,
-  Sparkles,
   RotateCcw,
   GraduationCap,
   Edit2,
@@ -245,7 +244,7 @@ function ClassroomCard({
             {assignedScenarios.length > 0 ? (
               <div className="space-y-1.5 pt-1">
                 <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                  <Sparkles className="h-3 w-3 text-primary" /> Active Civic Missions:
+                  <BookOpen className="h-3 w-3 text-primary" /> Active Civic Missions:
                 </div>
                 <div className="flex gap-1.5 flex-wrap">
                   {assignedScenarios.slice(0, 2).map((sc) => (

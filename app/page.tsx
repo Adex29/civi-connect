@@ -20,7 +20,6 @@ import {
   RefreshCw,
   Search,
   ShieldCheck,
-  Sparkles,
   Target,
   UserPlus,
   Users,
@@ -354,7 +353,6 @@ export default function LandingPage() {
               {/* Left Column: Heading, Subtitle, and CTAs */}
               <div className="relative z-20 text-center lg:col-span-6 lg:text-left">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary">
-                  <Sparkles className="size-3.5 text-secondary" />
                   <span>Civic Engagement Simulation</span>
                 </div>
 

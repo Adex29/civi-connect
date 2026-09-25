@@ -171,7 +171,7 @@ export function extractSubmissionAiAnalysis(submission: Submission): SubmissionA
     }
     const isAi = Boolean(
       s.evaluation?.is_ai_generated ||
-      s.evaluation?.flags?.some((f) => f === "AI_GENERATED_CONTENT" || f === "AI_REVIEW_REQUIRED")
+      s.evaluation?.flags?.some((f) => f === "AI_GENERATED_CONTENT" || f === "AI_REVIEW_REQUIRED" || f === "AI_REVIEW_RECOMMENDED")
     );
     if (isAi) {
       flaggedSteps.push(s.step);

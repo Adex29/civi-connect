@@ -16,7 +16,6 @@ import {
   Clock,
   Archive,
   AlertTriangle,
-  Sparkles,
   ArrowRight,
   ShieldCheck,
   Search,
@@ -136,7 +135,6 @@ export default async function StudentDashboard() {
 
         <div className="relative z-10 max-w-4xl space-y-5">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-primary">
-            <Sparkles className="size-3.5 text-secondary" />
             <span>Senior High School Citizenship Simulation</span>
           </div>
 
@@ -309,8 +307,7 @@ export default async function StudentDashboard() {
                           <span>Step {Math.min(currentStep, 8)}/8</span>
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="shrink-0 border-primary/30 text-primary font-bold gap-1 text-[10px]">
-                          <Sparkles className="size-3" />
+                        <Badge variant="outline" className="shrink-0 border-primary/30 text-primary font-bold text-[10px]">
                           <span>New Mission</span>
                         </Badge>
                       )}

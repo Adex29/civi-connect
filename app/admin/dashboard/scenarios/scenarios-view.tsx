@@ -26,7 +26,6 @@ import { toast } from "sonner";
 import {
   BookOpen,
   School,
-  Sparkles,
   Search,
   X,
   Plus,

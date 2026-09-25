@@ -10,7 +10,36 @@
 
 ## Completed
 
-1. **Step 2 Mandatory Exact Causal Hierarchy Identification and Progression Gating**:
+1. **Multi-Tier AI-Generated Authorship Detection Calibration and Submissions Flagging**:
+   - `[Verified]` Conversational Assistant Scaffolding Detection: Flagged opening formulas like *"here is the/our plan/strategy"*, *"as requested based on the scenario"*, *"hope this helps/assists"* with instant high risk (Confidence: 95%, `isAi: true`), capturing unedited copy-pastes from ChatGPT/Claude.
+   - `[Verified]` Cliché Formulas & Score Cap Removal: Expanded regexes to detect variations of *"paramount importance"*, *"fostering/leveraging"*, *"pivotal role"*, *"testament/beacon/cornerstone"*, *"multifaceted approach/strategy/intervention"*, *"catalyst for change"*, *"pave the way"*, *"underscores the urgency/vulnerability"*, *"risk mitigation"*, and Filipino formulas (`mahalagang bigyang-diin`, `komprehensibong pamamaraan`, `gumaganap ng mahalagang papel`, `pagtataguyod ng`, `mapagaan ang mga panganib`). Removed the 32-point cap (`Math.min(60, matchedPhrases.length * 15)`). 2+ matching clichés directly trigger high risk (`isAi = true`).
+   - `[Verified]` Vocabulary Density for Short Submissions: Calibrated formal vocabulary detection so that submissions under 70 words trigger the `formal_vocabulary_density` signal group with $\ge 2$ distinct high-formality AI terms (`multifaceted`, `holistic`, `imperative`, `underscores`, `spearhead`, `leverage`, `catalyst`).
+   - `[Verified]` Ordered Templates: Removed restrictive `wordCount >= 80` constraint on sequential transition markers (`"First... Second... Finally..."` / `"Una... Pangalawa... Sa huli..."`).
+   - `[Verified]` Authentic Student Voice Protection: Authentic student writing in English, Taglish, or Filipino that describes concrete local conditions produces 0 formula matches and 0 AI signals (Confidence 0%, `isAi: false`).
+   - `[Verified]` Admin Review Drawer Integration: Updated `extractSubmissionAiAnalysis` in [`lib/flag-utils.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/flag-utils.ts) and `StepAiEvaluationBox` in [`app/admin/dashboard/submissions/submission-drawer.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/admin/dashboard/submissions/submission-drawer.tsx) to check for `AI_REVIEW_RECOMMENDED` alongside `AI_GENERATED_CONTENT` and `AI_REVIEW_REQUIRED`.
+   - `[Verified]` Automated Test Suite: Verified via [`scratch/test_ai_detection.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_ai_detection.ts) with 6/6 test cases passing (4 synthetic AI submissions flagged with high confidence, 2 authentic student texts passing cleanly).
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed with 0 errors.
+
+2. **Pedagogical Non-Spoil Policy Across AI Evaluation Engine (Socratic Guidance, No Direct Answers)**:
+   - `[Verified]` Universal System Prompt Directive: Added Principle 7 to `MASTER_SYSTEM_PROMPT` in [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) mandating Socratic inquiry—prohibiting Gemini from revealing designated correct options, rankings, or distractor classifications.
+   - `[Verified]` Step 1 Non-Spoil: Removed `"${correctIssue}"` from `fallbackFeedback` and updated prompt to guide students in distinguishing underlying physical breakdowns from symptoms without naming the correct option.
+   - `[Verified]` Step 2 Non-Spoil: Removed `"${primaryRootCause.title}"` and ranking positions (`#${primaryRootStudentRank}`) from all 3 branches of `fallbackFeedback`. Replaced with reflective questions contrasting structural breakdowns against weather catalysts.
+   - `[Verified]` Step 3 Non-Spoil: Removed distractor title leaks (`${titles}`) and instructions telling students to click "Not Related". Replaced with prompts guiding students to re-examine geographic boundaries and local jurisdictional scope.
+   - `[Verified]` Step 4 Non-Spoil: Removed `${relevantNames}` answer cheat sheet from feedback; guidance encourages focusing on authority, legal mandates, and community roles.
+   - `[Verified]` Step 5 Non-Spoil: Generalized hardcoded "drainage clogs" text to scenario-independent sustainability criteria.
+   - `[Verified]` Automated Non-Spoil Assertions: Added assertions in [`scratch/test_step1_rules.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_step1_rules.ts) and [`scratch/test_step2_rules.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_step2_rules.ts) proving zero leakage of answer strings in feedback.
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed with 0 errors.
+
+3. **Complete Removal of AI Sparkles Iconography Across User and Admin Interfaces**:
+   - `[Verified]` Hero Badges & Header Cleanliness: Removed `Sparkles` from landing page and student dashboard hero pills (`app/page.tsx`, `app/dashboard/page.tsx`) and the "New Mission" card badge.
+   - `[Verified]` Simulation Activity Forms: Replaced Step 8 reflection header with `BookOpen`, prompt indicator with `HelpCircle`, and feedback alerts with deterministic `CheckCircle2` and `AlertTriangle` in [`app/dashboard/activity/[scenarioId]/activity-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/app/dashboard/activity/[scenarioId]/activity-form.tsx).
+   - `[Verified]` Action Plan Matrix: Replaced matrix header with `ClipboardList` and all 9 "Affected (Editable)" badges with `AlertCircle` in [`components/simulation/community-action-plan-form.tsx`](file:///d:/Admin/Music/Janella/civi-connect/components/simulation/community-action-plan-form.tsx).
+   - `[Verified]` Admin Dashboard & Submissions: Replaced icons in submissions list, step diagnostics, suggestion buttons, dialogs, and scenario drawers with `CheckCircle2`, `FileText`, `Lightbulb`, and `BookOpen`.
+   - `[Verified]` Landing Page & Mascot Clean-up: Replaced parallax `FloatingSparkle` background stars with `FloatingDewDrop` nature elements, and replaced dormant mascot sparkles with stars.
+   - `[Verified]` Zero Remaining Occurrences: Grep verified 0 remaining occurrences of `Sparkles` across all `.tsx` and `.ts` codebase files.
+   - `[Verified]` TypeScript Verification: `npx tsc --noEmit` passed with 0 errors.
+
+2. **Step 2 Mandatory Exact Causal Hierarchy Identification and Progression Gating**:
    - `[Verified]` Exact Causal Hierarchy Gate: In [`lib/ai.ts`](file:///d:/Admin/Music/Janella/civi-connect/lib/ai.ts) (`evaluateStep2`), verified `isExactMatch` where student's `orderedCauseIds` must match `correctOrder` at every position (supporting both cause IDs and titles).
    - `[Verified]` Progression Block on Deviation: If the student's ranking deviates from the designated causal sequence in any position, `passed: false` is enforced deterministically, score is capped strictly between 35% and 45%, and the flag `INCORRECT_CAUSE_HIERARCHY` is assigned. The student CANNOT proceed to Step 3 until the exact correct order is identified.
    - `[Verified]` Pedagogical Actionable Feedback: Explains specifically whether the primary root cause was misplaced or secondary symptoms/environmental triggers were elevated above root causes, prompting the student to reorganize the causes properly.

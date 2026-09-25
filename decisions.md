@@ -7,6 +7,9 @@ When guidance in other documentation conflicts with an accepted decision recorde
 
 ## Active Decisions
 
+- [D-20260925-020: Multi-Tier AI-Generated Authorship Detection Calibration and Submissions Flagging](#d-20260925-020--multi-tier-ai-generated-authorship-detection-calibration-and-submissions-flagging)
+- [D-20260925-019: Pedagogical Non-Spoil Policy in AI Evaluation (Socratic Guidance, No Direct Answers)](#d-20260925-019--pedagogical-non-spoil-policy-in-ai-evaluation-socratic-guidance-no-direct-answers)
+- [D-20260925-018: Complete Removal of AI Sparkles Iconography Across User and Admin Interfaces](#d-20260925-018--complete-removal-of-ai-sparkles-iconography-across-user-and-admin-interfaces)
 - [D-20260925-017: Step 2 Mandatory Exact Causal Hierarchy Identification and Progression Gating](#d-20260925-017--step-2-mandatory-exact-causal-hierarchy-identification-and-progression-gating)
 - [D-20260925-016: Step 1 Mandatory Correct Root Issue Enforcement, Justification Rigor, and Elimination of Admin "Alternative Choice" Labels](#d-20260925-016--step-1-mandatory-correct-root-issue-enforcement-justification-rigor-and-elimination-of-admin-alternative-choice-labels)
 - [D-20260925-015: Interactive Preloader Architecture and Logout Confirmation Prompt](#d-20260925-015--interactive-preloader-architecture-and-logout-confirmation-prompt)
@@ -74,6 +77,135 @@ When guidance in other documentation conflicts with an accepted decision recorde
 ## Rejected Alternatives
 
 - [D-20260901-004: Standard Email/Password Login for Student Accounts](#d-20260901-004--standard-emailpassword-login-for-student-accounts)
+
+---
+
+### D-20260925-020 — Multi-Tier AI-Generated Authorship Detection Calibration and Submissions Flagging
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: Submission evaluation engine (`lib/ai.ts`), submission audit flags (`lib/flag-utils.ts`), admin submissions review interface (`app/admin/dashboard/submissions/submission-drawer.tsx`), and automated test suite (`scratch/test_ai_detection.ts`)
+- **Supersedes**: Prior heuristic thresholds and signal-group caps in `D-20260923-003` that failed to detect short AI submissions and multi-formula responses
+- **Superseded by**: None
+- **Related implementation**: `lib/ai.ts`, `lib/flag-utils.ts`, `app/admin/dashboard/submissions/submission-drawer.tsx`, `scratch/test_ai_detection.ts`
+
+#### Context
+1. The user reported: *"and also the submission does not correctly identified the AI generated works of the students"*.
+2. Investigation into `detectAIGeneratedText` in `lib/ai.ts` revealed several structural bottlenecks that prevented blatant AI-generated submissions from being detected:
+   - **Formulaic Scoring Cap at 32 Points**: In `detectAIGeneratedText`, `riskScore += Math.min(32, matchedPhrases.length * 8)` prevented submissions composed of multiple cliché AI phrases from reaching the threshold on cliché density alone.
+   - **Signal Group Conjunction Requirement**: The heuristic required `signalGroups.size >= 2 && riskScore >= 28` or `riskScore >= 45`. When a student response contained 3-5 standard ChatGPT clichés (e.g. *"it is of paramount importance to leverage a multifaceted approach that plays a pivotal role"*), all matches fell under the single signal group `formulaic_phrases`. Because the cap held the score at 32 (below 45), `isAi` evaluated to `false`.
+   - **Length Gating on Short Submissions**: Simulation steps like Step 1 (Problem Justification) and Step 6 (Obstacle Analysis) often consist of 30–60 words. Prior heuristics required `wordCount >= 80` for ordered templates ("First... Second... Finally...") and required 4+ high-formality vocabulary terms (`multifaceted`, `imperative`, `holistic`, etc.) before triggering `vocabulary_density`.
+   - **Missing Assistant Scaffolding & Filipino AI Patterns**: Submissions beginning with conversational assistant boilerplate (e.g., *"Here is the action plan based on the scenario: ..."*, *"As requested, here is our strategy..."*) or utilizing common Filipino/Tagalog AI phrasings (`mahalagang bigyang-diin`, `komprehensibong pamamaraan`, `gumaganap ng mahalagang papel`) bypassed the English-only regexes.
+   - **Admin Submissions Review Inconsistency**: In `lib/flag-utils.ts` and `app/admin/dashboard/submissions/submission-drawer.tsx`, `extractSubmissionAiAnalysis` inspected flags for `AI_GENERATED_CONTENT` and `AI_REVIEW_REQUIRED`, but did not check `AI_REVIEW_RECOMMENDED`, causing flagged submissions to fail to highlight the AI diagnostic review box in the admin view.
+
+#### Decision
+1. **Calibrated Multi-Tier Heuristic (`lib/ai.ts`)**:
+   - **Tier 1: Conversational Assistant Scaffolding**: Added instant high-risk detection (`riskScore = 55`, `isAi: true`) for opening formulas such as *"here is the/our plan"*, *"as requested based on the scenario"*, *"hope this helps/assists"*, which indicate direct copy-pasting from an LLM chat window.
+   - **Tier 2: Formulaic Clichés & Cap Removal**: Expanded regexes to detect variations of *"paramount importance"*, *"fostering/leveraging"*, *"pivotal role"*, *"testament/beacon/cornerstone"*, *"multifaceted approach/strategy/intervention"*, *"catalyst for change"*, *"pave the way"*, *"underscores the urgency/vulnerability"*, *"risk mitigation"*, and Filipino formulas (`mahalagang bigyang-diin`, `komprehensibong pamamaraan`, `gumaganap ng mahalagang papel`, `pagtataguyod ng`, `mapagaan ang mga panganib`). Removed the 32-point cap (`Math.min(60, matchedPhrases.length * 15)`). 2+ matching clichés directly trigger high risk (`isAi = true`).
+   - **Tier 3: Vocabulary Density for Short Submissions**: Calibrated formal vocabulary detection so that submissions under 70 words trigger the `formal_vocabulary_density` signal group with $\ge 2$ distinct high-formality AI terms (e.g., `multifaceted`, `holistic`, `imperative`, `underscores`, `spearhead`, `leverage`, `catalyst`).
+   - **Tier 4: Ordered Structural Templates**: Removed the restrictive `wordCount >= 80` threshold on sequential transition markers (`"First... Second... Finally..."` / `"Una... Pangalawa... Sa huli..."`).
+2. **Decision Boundary Recalibration**:
+   - `isAi` evaluates to `true` if:
+     - `hasAssistantScaffold === true` (Confidence: 95%)
+     - `hasHighDensityCliches === true` (2+ distinct formulaic clichés; Confidence: 82%)
+     - `hasIndependentSignals && riskScore >= 24` (Confidence: 65%–78%)
+     - `riskScore >= 38` (Confidence: 75%+)
+3. **Preservation of Authentic Student Voice**:
+   - Authentic student writing in English, Taglish, or Filipino that describes concrete local conditions (e.g., *"barado ang kanal sa Purok 4 kaya bumabaha tuwing umuulan"*, *"The barangay captain needs to meet with youth leaders this Saturday"*) produces 0 formula matches and 0 AI signals, ensuring zero false positives.
+4. **Admin Submission Review Integration (`lib/flag-utils.ts`, `submission-drawer.tsx`)**:
+   - Updated `extractSubmissionAiAnalysis` and `StepAiEvaluationBox` to evaluate `AI_REVIEW_RECOMMENDED` alongside `AI_GENERATED_CONTENT` and `AI_REVIEW_REQUIRED`, ensuring teacher and administrator visibility in the audit drawer.
+
+#### Evidence
+- Executed [`scratch/test_ai_detection.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_ai_detection.ts):
+  - 4/4 synthetic AI student responses (Assistant scaffold, English clichés, short formal vocabulary, Filipino LLM phrasing) correctly flagged `isAi: true` with `riskLevel: 'high'` (Confidence 82%–95%).
+  - 2/2 authentic student responses (Filipino local community description, English student plan) correctly passed with `isAi: false`, `confidence: 0`, and `riskLevel: 'low'`.
+- Type verification passed cleanly (`npx tsc --noEmit`).
+
+---
+
+### D-20260925-019 — Pedagogical Non-Spoil Policy in AI Evaluation (Socratic Guidance, No Direct Answers)
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: AI evaluation engine across all 8 simulation steps (`lib/ai.ts`) and evaluation prompt templates
+- **Supersedes**: Prior fallback feedback templates and evaluation prompts that directly cited the correct answers or distractor titles
+- **Superseded by**: None
+- **Related implementation**: `lib/ai.ts`, `scratch/test_step1_rules.ts`, `scratch/test_step2_rules.ts`
+
+#### Context
+1. The user explicitly directed:
+   - *"ive also check that in the AI respose like in the step 2, you are giving the answer to the student which you should not. Double check it for all the steps"*
+   - *"you just need to guide the student not gove the anser"*
+2. Inspection across `lib/ai.ts` revealed multiple evaluation steps where fallback feedback templates and Gemini prompt instructions inadvertently leaked designated answers:
+   - **Step 1**: The fallback feedback for an incorrect root issue selection included `"${correctIssue}"` directly in the message (`"Focus on "${correctIssue}" as the core civic challenge..."`).
+   - **Step 2**: The fallback feedback for unaligned causal ranking printed `"${primaryRootCause.title}"` and its exact target rank (`"The foundational root cause is "${primaryRootCause.title}" which should be ranked #1..."`).
+   - **Step 3**: The fallback feedback for misclassified irrelevant evidence explicitly named the distractors (`"${titles}"`) and instructed students: `"mark them as 'Not Related'"`.
+   - **Step 4**: The fallback feedback for consulted stakeholders leaked the list of designated key stakeholders (`"${relevantNames}"`).
+   - **Step 5**: Hardcoded feedback specifically referenced "drainage clogs" even for non-flooding scenarios.
+   - **Global System Prompt**: The system prompt lacked a universal pedagogical directive instructing Gemini never to spoil designated answers, rankings, or distractor classifications.
+
+#### Decision
+1. **Universal Non-Spoil Pedagogical Directive in `MASTER_SYSTEM_PROMPT`**:
+   - Added Principle 7: *"CRITICAL PEDAGOGICAL DIRECTIVE - GUIDE THE STUDENT, NEVER GIVE THE ANSWER"*.
+   - Mandated Socratic inquiry: the AI must point out where reasoning falls short, highlight conflicting facts, or prompt the student to re-examine scenario constraints, but MUST NEVER reveal the designated correct choice, ranking order, distractor item names, or stakeholder lists.
+2. **Step-by-Step Answer Leak Eradication (`lib/ai.ts`)**:
+   - **Step 1 (`evaluateStep1`)**: Removed `"${correctIssue}"` from `fallbackFeedback`. Replaced with Socratic questions prompting the student to distinguish underlying physical/systemic breakdowns from downstream weather events or surface symptoms. Updated Gemini prompt with explicit non-spoil constraints.
+   - **Step 2 (`evaluateStep2`)**: Removed `"${primaryRootCause.title}"` and position indices (`#${primaryRootStudentRank}`) from all branches of `fallbackFeedback`. Replaced with reflective questions asking students to contrast foundational infrastructure neglect against natural weather catalysts. Added non-spoil prompt rules.
+   - **Step 3 (`evaluateStep3`)**: Removed explicit naming of distractor evidence items (`${titles}`) and removed the command to click "Not Related". Replaced with prompts guiding students to re-examine geographic boundaries and local jurisdictional scope.
+   - **Step 4 (`evaluateStep4`)**: Removed `${relevantNames}` answer leak. Guided students to review community mandates and legal roles.
+   - **Step 5 (`evaluateStep5`)**: Generalized scenario-specific references ("drainage clogs") to scenario-agnostic sustainability criteria.
+3. **Automated Non-Spoil Assertions**:
+   - Updated [`scratch/test_step1_rules.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_step1_rules.ts) and [`scratch/test_step2_rules.ts`](file:///d:/Admin/Music/Janella/civi-connect/scratch/test_step2_rules.ts) with assertions verifying that feedback text contains zero occurrences of the designated answer strings or titles.
+
+#### Evidence
+- Executed `scratch/test_step1_rules.ts`: 4/4 tests passed (including non-spoil assertion).
+- Executed `scratch/test_step2_rules.ts`: 4/4 tests passed (including non-spoil assertion).
+- `npx tsc --noEmit` verified with 0 errors.
+
+---
+
+### D-20260925-018 — Complete Removal of AI Sparkles Iconography Across User and Admin Interfaces
+
+- **Status**: Accepted
+- **Date**: 2026-09-25
+- **Decision owner**: User steering
+- **Scope**: User interfaces (`app/page.tsx`, `app/dashboard/page.tsx`, `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `components/simulation/community-action-plan-form.tsx`), Admin portals (`app/admin/dashboard/submissions/`, `app/admin/dashboard/scenarios/`, `app/admin/dashboard/classrooms/`), and Mascot expressions (`components/civic-companion.tsx`)
+- **Supersedes**: Usage of generic `Sparkles` AI iconography
+- **Superseded by**: None
+- **Related implementation**: `app/page.tsx`, `app/dashboard/page.tsx`, `app/dashboard/activity/[scenarioId]/activity-form.tsx`, `components/simulation/community-action-plan-form.tsx`, `app/admin/dashboard/submissions/submissions-view.tsx`, `app/admin/dashboard/submissions/submission-drawer.tsx`, `app/admin/dashboard/scenarios/scenario-form.tsx`, `app/admin/dashboard/scenarios/scenario-drawer.tsx`, `app/admin/dashboard/scenarios/scenarios-view.tsx`, `app/admin/dashboard/classrooms/create-classroom-dialog.tsx`, `app/admin/dashboard/classrooms/classrooms-view.tsx`
+
+#### Context
+1. The user explicitly requested: *"remove all the AI icons . These icon"* providing a screenshot of the 4-pointed Lucide `Sparkles` icon within a rounded pill badge.
+2. In civic and citizenship simulation platforms, generic "AI sparkles" iconography creates misleading impressions of AI-generated content or futuristic tech branding rather than grounded civic problem-solving, local governance inquiry, and authentic student inquiry.
+
+#### Decision
+1. **Hero Badge & Header Cleanliness (`app/page.tsx`, `app/dashboard/page.tsx`)**:
+   - Removed `<Sparkles />` from landing page and student dashboard hero status pills (`"Civic Engagement Simulation"`, `"Senior High School Citizenship Simulation"`).
+   - Removed `<Sparkles />` from `"New Mission"` card badges.
+2. **Simulation Activity Form (`app/dashboard/activity/[scenarioId]/activity-form.tsx`)**:
+   - Replaced `Sparkles` fallback in `CurrentStepIcon` with `BookOpen`.
+   - Replaced `Sparkles` in Step 8 reflection card header with `BookOpen`.
+   - Replaced `Sparkles` in Step 8 assigned prompt title with `HelpCircle`.
+   - Replaced `Sparkles` in reflection evaluation feedback alerts with deterministic `CheckCircle2` (success) and `AlertTriangle` (revision required).
+3. **Action Plan Matrix & Plan Revision (`components/simulation/community-action-plan-form.tsx`)**:
+   - Replaced `Sparkles` header icon with `ClipboardList` (canonical Step 5 icon).
+   - Replaced `Sparkles` in all 9 `"Affected (Editable)"` field badges with `AlertCircle`.
+4. **Admin Portals & Submissions (`app/admin/dashboard/`)**:
+   - Replaced `Sparkles` in submissions list and steps evaluated badges with `CheckCircle2`.
+   - Replaced `Sparkles` in diagnostic summary boxes and submission drawers with `FileText`.
+   - Replaced `Sparkles` in limitation suggestions buttons and panels with `Lightbulb`.
+   - Replaced `Sparkles` in scenario structure fallbacks and active mission tags with `BookOpen`.
+5. **Background & Mascot Clean-up**:
+   - Removed `FloatingSparkle` 4-pointed star shapes from the landing page parallax background, replacing them with civic `FloatingDewDrop` nature elements.
+   - Replaced dormant `Sparkles` expressions in `civic-companion.tsx` with `Star`.
+
+#### Evidence
+- `npx tsc --noEmit` verified with 0 errors.
+- Verified 0 remaining occurrences of `<Sparkles` across all `.tsx` and `.ts` files in the repository.
+
+---
 
 ### D-20260925-017 — Step 2 Mandatory Exact Causal Hierarchy Identification and Progression Gating
 

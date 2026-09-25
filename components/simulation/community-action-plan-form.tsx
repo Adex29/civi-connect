@@ -29,7 +29,7 @@ import {
   FileText,
   Boxes,
   CalendarDays,
-  Sparkles,
+  ClipboardList,
   AlertCircle,
   Lock,
 } from "lucide-react";
@@ -255,7 +255,7 @@ export function CommunityActionPlanForm({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-muted/40 border border-border">
         <div>
           <span className="font-bold text-foreground text-xs sm:text-sm flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <ClipboardList className="h-4 w-4 text-primary" />
             {isRevised ? "Adaptive Action Plan Matrix" : "Community Action Plan Matrix"}
           </span>
           <span className="text-[11px] sm:text-xs text-muted-foreground block mt-0.5">
@@ -291,7 +291,7 @@ export function CommunityActionPlanForm({
           <div className="flex items-center gap-2">
             {isFieldTarget("projectTitle") && (
               <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-[10px] font-bold gap-1">
-                <Sparkles className="h-3 w-3" /> Affected (Editable)
+                <AlertCircle className="h-3 w-3" /> Affected (Editable)
               </Badge>
             )}
             {isFieldDisabled("projectTitle") && isRevised && (
@@ -328,7 +328,7 @@ export function CommunityActionPlanForm({
           <div className="flex items-center gap-2">
             {isFieldTarget("goal") && (
               <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-[10px] font-bold gap-1">
-                <Sparkles className="h-3 w-3" /> Affected (Editable)
+                <AlertCircle className="h-3 w-3" /> Affected (Editable)
               </Badge>
             )}
             {isFieldDisabled("goal") && isRevised && (
@@ -373,7 +373,7 @@ export function CommunityActionPlanForm({
           <div className="flex items-center gap-2 shrink-0">
             {isFieldTarget("objectives") && (
               <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-[10px] font-bold gap-1">
-                <Sparkles className="h-3 w-3" /> Affected (Editable)
+                <AlertCircle className="h-3 w-3" /> Affected (Editable)
               </Badge>
             )}
             {isFieldDisabled("objectives") && isRevised && (
@@ -454,7 +454,7 @@ export function CommunityActionPlanForm({
           <div className="flex items-center gap-2 shrink-0">
             {isFieldTarget("activities") && (
               <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-[10px] font-bold gap-1">
-                <Sparkles className="h-3 w-3" /> Affected (Editable)
+                <AlertCircle className="h-3 w-3" /> Affected (Editable)
               </Badge>
             )}
             {isFieldDisabled("activities") && isRevised && (
@@ -506,7 +506,7 @@ export function CommunityActionPlanForm({
             <div className="flex items-center gap-2">
               {isFieldTarget("stakeholders") && (
                 <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-[10px] font-bold gap-1">
-                  <Sparkles className="h-3 w-3" /> Affected (Editable)
+                  <AlertCircle className="h-3 w-3" /> Affected (Editable)
                 </Badge>
               )}
               {isFieldDisabled("stakeholders") && isRevised && (
@@ -557,7 +557,7 @@ export function CommunityActionPlanForm({
               <div className="flex items-center gap-2">
                 {isFieldTarget("resources") && (
                   <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-[10px] font-bold gap-1">
-                    <Sparkles className="h-3 w-3" /> Affected (Editable)
+                    <AlertCircle className="h-3 w-3" /> Affected (Editable)
                   </Badge>
                 )}
                 {isFieldDisabled("resources") && isRevised && (
@@ -606,7 +606,7 @@ export function CommunityActionPlanForm({
               <div className="flex items-center gap-2">
                 {isFieldTarget("budget") && (
                   <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-[10px] font-bold gap-1">
-                    <Sparkles className="h-3 w-3" /> Affected (Editable)
+                    <AlertCircle className="h-3 w-3" /> Affected (Editable)
                   </Badge>
                 )}
                 {isFieldDisabled("budget") && isRevised && (
@@ -658,7 +658,7 @@ export function CommunityActionPlanForm({
               </Label>
               {isFieldTarget("timeline") && (
                 <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-[10px] font-bold gap-1">
-                  <Sparkles className="h-3 w-3" /> Affected (Editable)
+                  <AlertCircle className="h-3 w-3" /> Affected (Editable)
                 </Badge>
               )}
               {isFieldDisabled("timeline") && isRevised && (
@@ -797,7 +797,7 @@ export function CommunityActionPlanForm({
           <div className="flex items-center gap-2 shrink-0">
             {isFieldTarget("expectedOutcomes") && (
               <Badge className="bg-amber-600 hover:bg-amber-600 text-white text-[10px] font-bold gap-1">
-                <Sparkles className="h-3 w-3" /> Affected (Editable)
+                <AlertCircle className="h-3 w-3" /> Affected (Editable)
               </Badge>
             )}
             {isFieldDisabled("expectedOutcomes") && isRevised && (

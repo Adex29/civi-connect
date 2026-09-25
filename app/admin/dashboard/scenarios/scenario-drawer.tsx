@@ -21,7 +21,6 @@ import {
   BookOpen,
   School,
   FileText,
-  Sparkles,
   Edit,
   Trash2,
   ListChecks,
@@ -350,7 +349,7 @@ export function ScenarioDrawer({
               {!scenario.missionData ? (
                 <div className="py-12 text-center border rounded-xl border-dashed bg-muted/20 space-y-3">
                   <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mx-auto text-muted-foreground">
-                    <Sparkles className="h-5 w-5" />
+                    <BookOpen className="h-5 w-5" />
                   </div>
                   <div className="space-y-1 max-w-xs mx-auto">
                     <p className="text-sm font-semibold">Custom Structure Not Configured</p>

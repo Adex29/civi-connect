@@ -20,7 +20,6 @@ import {
   User,
   GraduationCap,
   Award,
-  Sparkles,
   ShieldAlert,
   CheckCircle2,
   FileText,
@@ -53,7 +52,7 @@ function StepAiEvaluationBox({
 }) {
   const isAi = Boolean(
     evaluation?.is_ai_generated ||
-    evaluation?.flags?.some((f) => f === "AI_GENERATED_CONTENT" || f === "AI_REVIEW_REQUIRED")
+    evaluation?.flags?.some((f) => f === "AI_GENERATED_CONTENT" || f === "AI_REVIEW_REQUIRED" || f === "AI_REVIEW_RECOMMENDED")
   );
   const score = evaluation?.step_score;
   const summary = evaluation?.evaluation_summary;
@@ -75,7 +74,7 @@ function StepAiEvaluationBox({
       {/* Header bar: Diagnostic label, Score & Voice status */}
       <div className="flex items-center justify-between flex-wrap gap-1.5 pb-1 border-b border-border/40">
         <span className="font-bold flex items-center gap-1.5 text-primary">
-          <Sparkles className="h-3.5 w-3.5 shrink-0" />
+          <FileText className="h-3.5 w-3.5 shrink-0" />
           AI Step {stepNumber} Diagnostic
         </span>
         <div className="flex items-center gap-1.5">
@@ -643,7 +642,7 @@ export function SubmissionDrawer({
                     <TimelineTitle className="text-xs font-bold">Overall AI Verification Summary</TimelineTitle>
                   </TimelineHeader>
                   <Alert className="bg-primary/5 border-primary/30 text-foreground mt-2">
-                    <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                    <FileText className="h-4 w-4 text-primary shrink-0" />
                     <AlertTitle className="text-primary font-bold text-xs">
                       AI Diagnostic Summary
                     </AlertTitle>

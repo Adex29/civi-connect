@@ -31,7 +31,7 @@ import {
   Lightbulb,
   ArrowRight,
   RotateCcw,
-  Sparkles,
+  HelpCircle,
   Trophy,
   Award,
   Archive,
@@ -106,7 +106,7 @@ export function ActivityForm({
     if (existingSubmission?.status === "completed") return 10;
     return initialState.currentStep || 1;
   });
-  const CurrentStepIcon = STEP_ICONS[step] || Sparkles;
+  const CurrentStepIcon = STEP_ICONS[step] || BookOpen;
   const [simState, setSimState] = useState<SimulationStateData>(initialState);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{
@@ -586,7 +586,7 @@ export function ActivityForm({
           <CardHeader className="bg-primary/5 border-b">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <CardTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-                <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /> Step 08: Civic Action Reflection
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary" /> Step 08: Civic Action Reflection
               </CardTitle>
               <Badge variant="outline" className="text-xs font-mono font-semibold">
                 Post-Simulation Evaluation
@@ -601,7 +601,7 @@ export function ActivityForm({
             <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-bold text-primary flex items-center gap-1.5 uppercase tracking-wide">
-                  <Sparkles className="h-3.5 w-3.5" /> Assigned Reflection Prompt
+                  <HelpCircle className="h-3.5 w-3.5" /> Assigned Reflection Prompt
                 </span>
                 <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">
                   5–15 Sentences Required
@@ -655,11 +655,11 @@ export function ActivityForm({
                 }`}
               >
                 <div className="flex items-start gap-3 w-full">
-                  <Sparkles
-                    className={`h-5 w-5 shrink-0 mt-0.5 ${
-                      feedback.success ? "text-primary" : "text-rose-600"
-                    }`}
-                  />
+                  {feedback.success ? (
+                    <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5 text-primary" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-rose-600" />
+                  )}
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <AlertTitle className="font-bold text-xs flex items-center gap-1.5 mb-0">

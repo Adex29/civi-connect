@@ -17,7 +17,6 @@ import {
   List,
   ShieldAlert,
   CheckCircle2,
-  Sparkles,
   AlertTriangle,
 } from "lucide-react";
 import { extractSubmissionAiAnalysis } from "@/lib/flag-utils";
@@ -199,7 +198,7 @@ export function SubmissionsView({
                 </Badge>
               ) : aiAnalysis.totalEvaluatedSteps > 0 ? (
                 <Badge variant="outline" className="gap-1 text-xs text-primary border-primary/30">
-                  <Sparkles className="h-3.5 w-3.5" /> {aiAnalysis.totalEvaluatedSteps} Steps Evaluated
+                  <CheckCircle2 className="h-3.5 w-3.5" /> {aiAnalysis.totalEvaluatedSteps} Steps Evaluated
                 </Badge>
               ) : null}
 
@@ -243,7 +242,7 @@ export function SubmissionsView({
                   {aiAnalysis.hasAiFlag ? (
                     <ShieldAlert className="h-3.5 w-3.5 text-rose-600 shrink-0" />
                   ) : (
-                    <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
                   )}
                   Latest AI Evaluation Response {aiAnalysis.latestStepEvaluated ? `(Step 0${aiAnalysis.latestStepEvaluated})` : ""}
                 </span>

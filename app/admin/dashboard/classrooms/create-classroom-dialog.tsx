@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2, School, Sparkles, Key, BookOpen } from "lucide-react";
+import { Plus, Loader2, School, Lightbulb, Key, BookOpen } from "lucide-react";
 import { createClassroomAction } from "./actions";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -121,7 +121,7 @@ export function CreateClassroomDialog({
               {/* Quick suggestions */}
               <div className="flex items-center gap-1.5 flex-wrap pt-1">
                 <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <Sparkles className="h-3 w-3 text-primary" /> Suggestions:
+                  <Lightbulb className="h-3 w-3 text-primary" /> Suggestions:
                 </span>
                 {PRESET_NAMES.map((preset) => (
                   <button

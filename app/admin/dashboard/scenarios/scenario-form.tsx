@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, Save, Sparkles, Plus, Check, Lightbulb } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Plus, Check, Lightbulb } from "lucide-react";
 import { createScenarioAction, updateScenarioAction } from "./actions";
 import { Scenario, MissionDataConfig } from "@/lib/definitions";
 import { MissionEditorTabs } from "@/components/admin/mission-editor";
@@ -260,7 +260,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
                     onClick={() => setShowSuggestions(!showSuggestions)}
                     className="h-7 text-xs gap-1.5 text-primary border-primary/30 hover:bg-primary/10 font-semibold"
                   >
-                    <Sparkles className="h-3.5 w-3.5 text-primary" />
+                    <Lightbulb className="h-3.5 w-3.5 text-primary" />
                     {showSuggestions ? "Hide Suggestions" : "Suggest Limitations"}
                   </Button>
                 </div>
@@ -295,7 +295,7 @@ export function ScenarioForm({ scenario }: ScenarioFormProps) {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-primary/15 pb-2.5">
                     <div className="flex items-center gap-2">
                       <div className="p-1 rounded bg-primary/10 text-primary">
-                        <Sparkles className="h-3.5 w-3.5" />
+                        <Lightbulb className="h-3.5 w-3.5" />
                       </div>
                       <div>
                         <span className="text-xs font-bold text-foreground">Suggested Mission Limitations</span>

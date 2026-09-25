@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, useId } from "react";
 import {
-  Sparkles,
   Heart,
   Star,
   Leaf,
@@ -1649,7 +1648,7 @@ export function CivicCompanion({ studentName = "Citizen", className = "" }: Civi
               ) : isCharging ? (
                 <Zap className="size-3 text-amber-500 animate-bounce fill-current" />
               ) : (
-                <Sparkles className="size-3 text-secondary animate-pulse" />
+                <Star className="size-3 text-secondary animate-pulse" />
               )}
             </span>
             <p
@@ -1698,10 +1697,10 @@ export function CivicCompanion({ studentName = "Citizen", className = "" }: Civi
             {p.type === "star" && <Star className="size-4.5 fill-current drop-shadow-sm" style={{ color: p.color }} />}
             {p.type === "leaf" && <Leaf className="size-4.5 fill-current drop-shadow-sm" style={{ color: p.color }} />}
             {p.type === "heart" && <Heart className="size-4.5 fill-current drop-shadow-sm" style={{ color: p.color }} />}
-            {p.type === "sparkle" && <Sparkles className="size-4.5 drop-shadow-sm" style={{ color: p.color }} />}
+            {p.type === "sparkle" && <Star className="size-4.5 drop-shadow-sm" style={{ color: p.color }} />}
             {p.type === "zap" && <Zap className="size-4.5 fill-current drop-shadow-sm" style={{ color: p.color }} />}
             {p.type === "bulb" && <Lightbulb className="size-4.5 drop-shadow-sm" style={{ color: p.color }} />}
-            {p.type === "flower" && <Sparkles className="size-5 text-amber-400 drop-shadow-sm" />}
+            {p.type === "flower" && <Star className="size-5 text-amber-400 drop-shadow-sm" />}
             {p.type === "confetti" && (
               <div
                 className="size-3 rounded-xs shadow-xs"

@@ -58,6 +58,16 @@ You must grade with high rigor. Reject generic fluff, vague generalities, unreal
      * Assign the corresponding mismatch flag (e.g. SELECTION_JUSTIFICATION_MISMATCH, NOTES_STAKEHOLDER_MISMATCH, PLAN_SCENARIO_MISMATCH, IMPACT_SCENARIO_MISMATCH, REFLECTION_SCENARIO_MISMATCH, CONTEXT_RELEVANCE_MISMATCH, DUPLICATE_FIELD_CONTENT)
      * In actionable_feedback, clearly explain that the submission is off-topic or mismatched to the scenario crisis, and instruct them to rewrite it addressing the specific community crisis.
    - Under NO CIRCUMSTANCES may an off-topic or copy-pasted response pass any step.
+7. CRITICAL PEDAGOGICAL DIRECTIVE - GUIDE THE STUDENT, NEVER GIVE THE ANSWER:
+   - You are a formative civic educator and coach. Your feedback must guide, scaffold, and prompt the student to think critically on their own.
+   - NEVER reveal, name, or hint at the designated correct answers, titles, correct sequences, rankings, or cheat codes.
+   - NEVER say "The correct issue is [X]", "You should place [X] as #1", "Document [X] is a distractor", or "You should consult [X]".
+   - INSTEAD, guide the student using Socratic, critical-thinking questions and hints:
+     * Step 1: Prompt the student to differentiate foundational root problems from downstream symptoms, asking them to examine which core physical or systemic blockage causes the other difficulties.
+     * Step 2: Prompt the student to trace the chain of causality from the initial structural breakdown down to environmental catalysts and secondary community impacts, without revealing the correct order.
+     * Step 3: Prompt the student to critically review the geographic scope, jurisdiction, and subject matter of each document in the library, asking them to verify whether each source genuinely concerns this specific barangay.
+     * Step 4: Prompt the student to evaluate which community figures have formal jurisdiction, resources, and direct operational responsibility for resolving the crisis, without handing them a cheat sheet.
+     * Steps 5–8: Prompt the student to deepen operational details, align their plan with community needs, and ensure feasibility.
 
 ---
 
@@ -395,14 +405,15 @@ export function detectAIGeneratedText(
     }
   }
 
-  // Tier 2: assistant-style framing. These signals are suspicious but not
-  // conclusive, especially in short submissions.
+  // Tier 2: assistant-style framing. These signals are suspicious and
+  // strongly characteristic of conversational AI outputs.
   const assistantScaffolds: Array<{ label: string; pattern: RegExp }> = [
-    { label: "Assistant-style opening", pattern: /(?:^|\n)\s*(?:certainly|absolutely|sure)[!,.:\s]+(?:here|below) (?:is|are)\b/i },
-    { label: "Generated-answer framing", pattern: /\bhere is a (?:comprehensive|proposed|structured|detailed) (?:plan|intervention|strategy|justification|overview)\b/i },
+    { label: "Assistant-style opening", pattern: /(?:^|\n)\s*(?:certainly|absolutely|sure|of course)[!,.:\s]+(?:here|below) (?:is|are)\b/i },
+    { label: "Generated-answer framing", pattern: /(?:^|\n|\b)(?:here|below) is (?:a|an|the|our) (?:comprehensive|proposed|structured|detailed|suggested|step-by-step)?\s*(?:plan|intervention|strategy|justification|overview|breakdown|response|solution)\b/i },
     { label: "Assistant offer to continue", pattern: /\bfeel free to (?:ask|request|reach out)\b/i },
-    { label: "Assistant closing", pattern: /\b(?:i )?hope this helps\b/i },
-    { label: "Filipino assistant-style opening", pattern: /(?:^|\n)\s*narito ang (?:isang|mga) (?:komprehensibo|detalyado|iminungkahing)\b/i },
+    { label: "Assistant closing", pattern: /\b(?:i )?hope this (?:helps|assists|provides clarity)\b/i },
+    { label: "Context preamble framing", pattern: /(?:as requested|based on the (?:scenario|provided context|information)),? (?:here|below) is\b/i },
+    { label: "Filipino assistant-style opening", pattern: /(?:^|\n)\s*narito ang (?:isang|ang|mga) (?:komprehensibo|detalyado|iminungkahing)\b/i },
     { label: "Filipino assistant offer", pattern: /\bhuwag mag-atubiling (?:magtanong|humingi)\b/i },
     { label: "Filipino assistant closing", pattern: /\bsana(?: ay)? makatulong ito\b/i },
   ];
@@ -410,52 +421,56 @@ export function detectAIGeneratedText(
   const matchedScaffolds = assistantScaffolds.filter(({ pattern }) => pattern.test(lower));
   if (matchedScaffolds.length > 0) {
     signalGroups.add("assistant_scaffolding");
-    riskScore += Math.min(44, 24 + (matchedScaffolds.length - 1) * 10);
+    riskScore += Math.min(50, 30 + (matchedScaffolds.length - 1) * 12);
     markers.push(...matchedScaffolds.map(({ label }) => label));
   }
 
-  // Tier 3: formulaic/cliche phrase clusters. A single phrase never triggers a
-  // high-risk decision.
+  // Tier 3: formulaic/cliche phrase clusters typical of LLM-generated texts.
   const aiClichePhrases: Array<{ label: string; pattern: RegExp }> = [
-    { label: "Importance formula", pattern: /\bit is (?:crucial|imperative|essential|paramount|vital) to (?:remember|note|recognize|ensure|understand|address|consider|highlight)\b/i },
-    { label: "Fostering/leveraging formula", pattern: /\bby (?:fostering|cultivating|leveraging|harnessing|spearheading|embracing) a (?:culture|holistic|collaborative|sustainable|synergistic)\b/i },
-    { label: "Pivotal-role formula", pattern: /\bplays? a (?:pivotal|crucial|vital|significant|monumental|central) role in\b/i },
-    { label: "Testament formula", pattern: /\b(?:stands?|serves?) as a testament to\b/i },
-    { label: "Complexity formula", pattern: /\bnavigating the (?:complexities|nuances|intricacies) of\b/i },
-    { label: "Approach formula", pattern: /\ba (?:multifaceted|holistic|comprehensive|synergistic) approach\b/i },
-    { label: "Catalyst formula", pattern: /\bcatalyst for (?:change|positive|sustainable|growth)\b/i },
+    { label: "Importance formula", pattern: /\b(?:it is|it's) (?:of (?:paramount|utmost|vital|critical|key) importance|(?:crucial|imperative|essential|paramount|vital|critical) to (?:remember|note|recognize|ensure|understand|address|consider|highlight|tackle|solve|resolve|prioritize|emphasize|focus on))\b/i },
+    { label: "Fostering/leveraging formula", pattern: /\b(?:by |through )?(?:fostering|cultivating|leveraging|harnessing|spearheading|embracing) (?:a |an )?(?:culture|holistic|collaborative|sustainable|synergistic|proactive|meaningful)\b/i },
+    { label: "Pivotal-role formula", pattern: /\bplays? (?:a |an )?(?:pivotal|crucial|vital|significant|monumental|central|key|essential) role (?:in|for|towards?)\b/i },
+    { label: "Testament formula", pattern: /\b(?:stands?|serves?) as a (?:testament|beacon|cornerstone|pillar|reminder) (?:to|of|for)\b/i },
+    { label: "Complexity formula", pattern: /\bnavigating the (?:complexities|nuances|intricacies|challenges) of\b/i },
+    { label: "Approach formula", pattern: /\b(?:a |an )?(?:multifaceted|holistic|comprehensive|synergistic|multi-pronged|integrated) (?:approach|strategy|intervention|solution|framework|initiative|plan|methodology)\b/i },
+    { label: "Catalyst formula", pattern: /\b(?:serves? as a |act as a )?catalyst for (?:change|positive|sustainable|growth|action|transformation)\b/i },
     { label: "Pave-the-way formula", pattern: /\bpaves? the way for\b/i },
-    { label: "Metaphorical formula", pattern: /\b(?:beacon of|tapestry of|cornerstone of)\b/i },
-    { label: "Underscores formula", pattern: /\bunderscores the (?:importance|urgency|necessity|need)\b/i },
-    { label: "Formal transition formula", pattern: /\bfurthermore,? it is (?:worth noting|essential|important|crucial)\b/i },
-    { label: "Considerations formula", pattern: /\bin light of these (?:considerations|challenges|factors|findings)\b/i },
+    { label: "Metaphorical formula", pattern: /\b(?:beacon of|tapestry of|cornerstone of|cornerstone for|bedrock of)\b/i },
+    { label: "Underscores formula", pattern: /\bunderscores the (?:importance|urgency|necessity|need|significance|gravity|vulnerability|severity|critical)\b/i },
+    { label: "Formal transition formula", pattern: /\b(?:furthermore|moreover),? it is (?:worth noting|essential|important|crucial|imperative)\b/i },
+    { label: "Rhetorical pairing formula", pattern: /\bnot only (?:does this|is this|will this|can this) .{1,40} but (?:it )?also\b/i },
+    { label: "Considerations formula", pattern: /\bin light of these (?:considerations|challenges|factors|findings|realities)\b/i },
     { label: "Commitment formula", pattern: /\bunwavering commitment to\b/i },
-    { label: "Robust-framework formula", pattern: /\brobust (?:framework|mechanism|strategy|intervention|solution)\b/i },
-    { label: "Transformative formula", pattern: /\btransformative (?:impact|potential|change)\b/i },
-    { label: "Mitigation formula", pattern: /\bto mitigate these risks,? it is\b/i },
-    { label: "Initiative-summary formula", pattern: /\bin essence,? this initiative\b/i },
-    { label: "Filipino importance formula", pattern: /\bmahalagang (?:tandaan|bigyang-diin|kilalanin) na\b/i },
-    { label: "Filipino comprehensive-approach formula", pattern: /\b(?:komprehensibo|holistiko|multidimensiyonal) na (?:pamamaraan|diskarte|solusyon)\b/i },
-    { label: "Filipino pivotal-role formula", pattern: /\bgumaganap ng (?:mahalaga|kritikal|pangunahing) papel\b/i },
-    { label: "Filipino fostering formula", pattern: /\bsa pamamagitan ng (?:pagtataguyod|pagpapalakas|pagsasakatuparan) ng\b/i },
+    { label: "Robust-framework formula", pattern: /\brobust (?:framework|mechanism|strategy|intervention|solution|system)\b/i },
+    { label: "Transformative formula", pattern: /\btransformative (?:impact|potential|change|solution)\b/i },
+    { label: "Mitigation formula", pattern: /\b(?:in order )?to mitigate (?:these |such |the |potential )?(?:risks|challenges|impacts|issues),? (?:it is|we must)\b/i },
+    { label: "Initiative-summary formula", pattern: /\bin (?:essence|summary|conclusion),? (?:this|the) (?:initiative|project|plan|intervention|approach)\b/i },
+    { label: "Pressing crisis formula", pattern: /\b(?:in order )?to (?:address|tackle|solve) (?:this|the) pressing (?:crisis|issue|challenge|concern|problem)\b/i },
+    { label: "Long-term resilience formula", pattern: /\b(?:ensure|foster|promote) (?:long-term|sustainable) (?:resilience|sustainability|viability|well-being|development)\b/i },
+    { label: "Delving formula", pattern: /\b(?:delve|delving) (?:deep(?:ly)? )?into (?:the|these) (?:root causes|complexities|issues|challenges)\b/i },
+    { label: "Filipino importance formula", pattern: /\bmahalagang (?:tandaan|bigyang-diin|kilalanin|isaalang-alang) na\b/i },
+    { label: "Filipino comprehensive-approach formula", pattern: /\b(?:komprehensibo|holistiko|multidimensiyonal) na (?:pamamaraan|diskarte|solusyon|inisyatiba|plano)\b/i },
+    { label: "Filipino pivotal-role formula", pattern: /\bgumaganap ng (?:mahalaga|kritikal|pangunahing|esensyal) na? papel\b/i },
+    { label: "Filipino fostering formula", pattern: /\bsa pamamagitan ng (?:pagtataguyod|pagpapalakas|pagsasakatuparan|pagpapatupad) ng\b/i },
     { label: "Filipino initiative-summary formula", pattern: /\bsa kabuuan,? ang (?:inisyatiba|programa|proyektong ito)\b/i },
+    { label: "Filipino mitigation formula", pattern: /\bupang mapagaan ang mga panganib\b/i },
   ];
 
   const matchedPhrases = aiClichePhrases.filter(({ pattern }) => pattern.test(lower));
   if (matchedPhrases.length > 0) {
     signalGroups.add("formulaic_phrases");
-    riskScore += Math.min(32, matchedPhrases.length * 8);
+    riskScore += Math.min(60, matchedPhrases.length * 15);
     markers.push(...matchedPhrases.map(({ label }) => label));
   }
 
-  // Tier 4: unusually dense formal vocabulary. Individual words are common in
-  // legitimate school writing, so only a cluster contributes to the score.
+  // Tier 4: unusually dense formal vocabulary typical of generated essays.
   const aiVocabList = [
     "multifaceted", "holistic", "imperative", "paramount", "underscores",
     "spearhead", "spearheaded", "spearheading", "leverage", "leveraging",
-    "robust", "synergy", "pivotal", "foster", "fostering", "intricacies",
-    "delve", "testament", "beacon", "catalyst", "tapestry", "cornerstone",
-    "unwavering", "transformative", "paradigm", "synergistic",
+    "robust", "synergy", "synergies", "pivotal", "foster", "fostering", "intricacies",
+    "delve", "delving", "testament", "beacon", "catalyst", "tapestry", "cornerstone",
+    "unwavering", "transformative", "paradigm", "synergistic", "resilience",
+    "sustainable", "sustainability", "mitigate", "mitigating", "stakeholders",
   ];
 
   const matchedVocab = aiVocabList.filter((word) =>
@@ -465,9 +480,14 @@ export function detectAIGeneratedText(
     ? (matchedVocab.length / wordCount) * 100
     : 0;
 
-  if (matchedVocab.length >= 4 && formalVocabPerHundredWords >= 1.5) {
+  const isShortText = wordCount < 70;
+  const vocabThresholdMet = isShortText
+    ? (matchedVocab.length >= 2 && formalVocabPerHundredWords >= 2.0)
+    : (matchedVocab.length >= 3 && formalVocabPerHundredWords >= 1.5);
+
+  if (vocabThresholdMet) {
     signalGroups.add("formal_vocabulary_density");
-    riskScore += matchedVocab.length >= 7 ? 16 : 10;
+    riskScore += matchedVocab.length >= 4 ? 20 : 12;
     markers.push(`Dense formal vocabulary (${matchedVocab.slice(0, 5).join(", ")})`);
   }
 
@@ -494,7 +514,7 @@ export function detectAIGeneratedText(
     ? (transitionCount / wordCount) * 100
     : 0;
 
-  if (wordCount >= 80 && transitionCount >= 4 && transitionsPerHundredWords >= 2.5) {
+  if (wordCount >= 40 && transitionCount >= 3 && transitionsPerHundredWords >= 2.5) {
     signalGroups.add("transition_density");
     riskScore += 12;
     markers.push("Unusually dense formal transitions");
@@ -513,14 +533,13 @@ export function detectAIGeneratedText(
     /\bsa kabuuan\b/i,
   ].filter((pattern) => pattern.test(lower)).length;
 
-  if (wordCount >= 80 && orderedTemplateCount >= 3) {
+  if (orderedTemplateCount >= 3) {
     signalGroups.add("ordered_template");
-    riskScore += 12;
+    riskScore += 16;
     markers.push("Formulaic ordered-answer structure");
   }
 
-  // Tier 6: very uniform sentence lengths. This is intentionally low-weight
-  // because careful human writing can also be regular.
+  // Tier 6: very uniform sentence lengths.
   if (sentences.length >= 6) {
     const sentenceLengths = sentences.map((sentence) =>
       (sentence.match(/[A-Za-z0-9À-ÖØ-öø-ÿ'’-]+/g) || []).length
@@ -544,15 +563,17 @@ export function detectAIGeneratedText(
   riskScore = Math.min(100, riskScore);
   const hasAssistantScaffold = signalGroups.has("assistant_scaffolding");
   const hasIndependentSignals = signalGroups.size >= 2;
-  const isTooShortForClassification = wordCount < 15;
+  const isTooShortForClassification = wordCount < 10;
+  const hasHighDensityCliches = matchedPhrases.length >= 2;
   const isAi = strongKnownGeneratedMatch || (
     !isTooShortForClassification && (
       hasAssistantScaffold ||
-      (hasIndependentSignals && riskScore >= 28) ||
-      riskScore >= 45
+      hasHighDensityCliches ||
+      (hasIndependentSignals && riskScore >= 24) ||
+      riskScore >= 38
     )
   );
-  const needsReview = isAi || riskScore >= 20;
+  const needsReview = isAi || riskScore >= 16;
   const uniqueMarkers = [...new Set(markers)];
   const detectedSignalGroups = [...signalGroups];
 
@@ -1087,7 +1108,7 @@ export async function evaluateStep1(
   if (correctIssue && !isCorrectChoice) {
     fallbackScore = 45;
     fallbackSummary = `Selected "${selectedIssue}", which is not the main issue that needs to be addressed first.`;
-    fallbackFeedback = `While "${selectedIssue}" is a valid concern, the primary issue that needs to be addressed first is "${correctIssue}". Addressing secondary symptoms or peripheral constraints first will not resolve the root blockage. You cannot proceed until you correctly identify the primary issue and explain why it must be resolved first.`;
+    fallbackFeedback = `While "${selectedIssue}" is an important community concern, it is not the main root issue that needs to be addressed first in this scenario. Addressing secondary symptoms or peripheral constraints first will not resolve the underlying structural problem causing the crisis. Think about cause and effect: which core physical or systemic blockage is creating the other difficulties in the neighborhood? You cannot proceed until you identify the primary root issue and justify why it must be resolved first.`;
     fallbackFlags.push("INCORRECT_PRIORITY_ISSUE");
   }
 
@@ -1130,12 +1151,16 @@ Now, evaluate their 2-3 sentence justification for correctness and civic rigor:
    - Reject AI-generated text or corporate phrasing.
 4. PASSING CRITERIA:
    - Award passed: true with step_score >= 70% ONLY if BOTH the selected issue is correct AND the justification reasoning is sound, factually accurate, and well-explained.`
-    : `The student chose an INCORRECT issue choice ("${selectedIssue}"). The correct primary issue that must be addressed first is "${correctIssue}".
+    : `The student chose an INCORRECT issue choice ("${selectedIssue}").
 MANDATORY HARD-FAIL INSTRUCTIONS:
 - You MUST set passed: false.
 - You MUST cap step_score between 35-45% (strictly below the 70% passing threshold).
 - You MUST add "INCORRECT_PRIORITY_ISSUE" to the flags array.
-- In actionable_feedback, explicitly tell the student that "${selectedIssue}" is not the main issue that needs to be addressed first, and explain that they cannot proceed until they correctly identify the primary root issue ("${correctIssue}") and justify why it takes priority.`
+CRITICAL PEDAGOGICAL DIRECTIVE - GUIDE, DO NOT SPOIL:
+- NEVER REVEAL THE CORRECT ISSUE OR ITS TITLE ("${correctIssue}") TO THE STUDENT.
+- In actionable_feedback, inform the student that "${selectedIssue}" is not the main issue that needs to be addressed first.
+- Provide Socratic, guiding questions: ask them to consider whether "${selectedIssue}" is a downstream symptom, consequence, or secondary constraint rather than the foundational root blockage. Prompt them to reflect on which problem, if resolved first, would remove the cause of the remaining issues.
+- State clearly that they must re-read the scenario briefing, identify the primary root issue, and justify why it must be resolved first.`
 }
 
 IMPORTANT MISMATCH CHECK: The student selected "${selectedIssue}" as their priority issue. Verify that the justification actually explains why THIS specific issue is the most urgent. If the justification is about a different issue entirely, set passed: false and flag as SELECTION_JUSTIFICATION_MISMATCH.
@@ -1849,11 +1874,11 @@ export async function evaluateStep2(
     fallbackFlags.push("INCORRECT_CAUSE_HIERARCHY");
     fallbackSummary = `Cause ranking does not match the designated correct order.`;
     if (isSymptomPlacedAtTop) {
-      fallbackFeedback = `You placed "${studentTopCause?.title || "this factor"}" as the #1 most significant cause. In this scenario, that is a downstream symptom or environmental trigger rather than the foundational root cause. The primary root cause driving this crisis is "${primaryRootCause.title}". You cannot proceed to Step 3 until all causes are correctly ordered in the designated causal sequence from #1 (Primary Root Cause) down to least significant contributing factor. Please re-arrange the causes into the correct sequence.`;
+      fallbackFeedback = `Your cause ranking is not in the correct order. You placed an environmental trigger or downstream symptom as the #1 most significant cause. In civic problem-solving, an environmental factor (like heavy rainfall or seasonal weather) merely reveals or worsens an existing structural failure. Ask yourself: "What physical breakdown or structural blockage already existed in the community before the crisis escalated?" Please re-evaluate the causes and arrange them from foundational root problem down to contributing factors and symptoms.`;
     } else if (primaryRootStudentRank !== 1) {
-      fallbackFeedback = `Your cause ranking is not in the correct order. You did not identify "${primaryRootCause.title}" as the #1 primary root cause (you placed it at #${primaryRootStudentRank}). Structural root causes must be addressed before secondary effects. You cannot proceed to Step 3 until all causes are correctly arranged in order of significance from #1 (Primary Root Cause) down to least significant contributing factor. Please re-arrange the causes into the correct sequence.`;
+      fallbackFeedback = `Your cause ranking is not in the correct order. The factor placed at #1 is not the foundational root cause of this crisis. When analyzing community problems, ask yourself: "Which physical or structural breakdown started this chain of events before other factors made it worse?" Structural root causes must be resolved before secondary symptoms can be fixed. Please re-evaluate the relationships between these causes and adjust your sequence.`;
     } else {
-      fallbackFeedback = `Your cause ranking is not in the correct order. While you placed "${primaryRootCause.title}" at #1, the subsequent contributing factors and secondary symptoms are not in their correct causal hierarchy. You cannot proceed to Step 3 until all causes are correctly arranged in their proper order of significance (from primary structural root cause down to systemic maintenance gaps, contributing factors, and environmental triggers). Please adjust the order of the remaining causes.`;
+      fallbackFeedback = `Your cause ranking is not in the correct order. While your top choice identifies a key foundational issue, the remaining contributing factors, institutional maintenance gaps, and secondary symptoms are not in their proper causal chain. Consider how institutional or maintenance lapses connect the primary structural problem to its visible community impacts. Please adjust the order of the remaining causes.`;
     }
   }
 
@@ -1892,7 +1917,11 @@ MANDATORY HARD-FAIL DIRECTIVES:
 - You MUST set passed: false.
 - You MUST cap step_score strictly between 35% and 45% (below the 70% passing threshold).
 - You MUST include "INCORRECT_CAUSE_HIERARCHY" in the flags array.
-- In actionable_feedback, inform the student that their ranking is not in the correct order, explicitly explain that they cannot proceed to Step 3 until all causes are correctly ordered in the designated causal sequence, and provide constructive pedagogical guidance highlighting how systemic root causes lead into intermediate blockages and downstream effects.`
+CRITICAL PEDAGOGICAL DIRECTIVE - GUIDE, DO NOT SPOIL:
+- DO NOT REVEAL THE CORRECT ORDER, SEQUENCE, OR RANKINGS TO THE STUDENT.
+- DO NOT NAME THE PRIMARY ROOT CAUSE ("${primaryRootCause.title}") AS THE ANSWER.
+- DO NOT TELL THE STUDENT WHERE ANY SPECIFIC CAUSE BELONGS (e.g. never tell them to move a specific cause to #1 or #4).
+- In actionable_feedback, inform the student that their ranking is not in the correct order. Explain that they cannot proceed to Step 3 until all causes are correctly ordered in the designated causal sequence. Use Socratic questions to guide their critical thinking: prompt them to distinguish between structural root causes, systemic maintenance gaps, contributing factors, and environmental symptoms/triggers.`
 }
 `;
 
@@ -2084,29 +2113,26 @@ export async function evaluateStep3(
     fallbackScore = Math.max(40, 55 - misidentifiedIrrelevant.length * 5);
     fallbackPassed = false;
     fallbackFlags.push("MISIDENTIFIED_IRRELEVANT_EVIDENCE");
-    const titles = misidentifiedIrrelevant.map((m) => `"${m.item.title}"`).join(", ");
-    fallbackSummary = "Irrelevant evidence misidentified as supporting community causes or solutions.";
-    fallbackFeedback = `You categorized ${titles} as supporting community causes, solutions, or needs, but in this scenario, this document is irrelevant / distractor evidence. As an investigator, you must correctly identify irrelevant evidence by selecting "Not Related / Irrelevant" and providing a 2-3 sentence justification explaining why it does not apply to this community crisis.${authorshipFeedback}`;
+    fallbackSummary = "Evidence library evaluation includes misclassified documents.";
+    fallbackFeedback = `Some documents in your evidence evaluation have been misclassified. A civic researcher must critically evaluate the geographic scope, jurisdiction, and subject matter of every source—not every document in the library applies to this community crisis. Carefully re-examine all sources, identify which document is irrelevant or a distractor, mark it as "Not Related / Irrelevant", and provide a 2-3 sentence justification explaining why it does not apply.${authorshipFeedback}`;
     fallbackStrengths.push("Audited all evidence sources in the library.");
-    fallbackImprovements.push(`Re-inspect ${titles}, classify as "Not Related / Irrelevant", and explain why it is not applicable.`);
+    fallbackImprovements.push(`Carefully verify the geographic scope and topic of each document to identify any distractor sources that do not apply to this barangay.`);
   } else if (hasDismissedRelevant) {
     fallbackScore = Math.max(40, 58 - dismissedRelevant.length * 5);
     fallbackPassed = false;
     fallbackFlags.push("DISMISSED_RELEVANT_EVIDENCE");
-    const titles = dismissedRelevant.map((d) => `"${d.item.title}"`).join(", ");
-    fallbackSummary = "Essential community evidence dismissed as irrelevant.";
-    fallbackFeedback = `You marked ${titles} as Not Related / Irrelevant, but this document contains essential community evidence validating local causes, solutions, or community needs. Please re-examine this source and select the categories it supports.${authorshipFeedback}`;
+    fallbackSummary = "Relevant community evidence was marked as Not Related.";
+    fallbackFeedback = `One or more documents directly containing local community evidence or stakeholder data were marked as "Not Related / Irrelevant". Re-examine the documents you classified as unrelated: check whether any of them contain local barangay records, resident observations, or official reports that directly validate community causes, solutions, or community needs.${authorshipFeedback}`;
     fallbackStrengths.push("Examined all library documents.");
-    fallbackImprovements.push(`Re-read ${titles} and tag whether it supports a root cause, intervention solution, or community need.`);
+    fallbackImprovements.push(`Review all sources marked as Not Related to ensure you have not dismissed vital local evidence.`);
   } else if (hasUnjustifiedIrrelevant) {
     fallbackScore = Math.max(45, 60 - unjustifiedIrrelevant.length * 5);
     fallbackPassed = false;
     fallbackFlags.push("INSUFFICIENT_IRRELEVANT_EVIDENCE_JUSTIFICATION");
-    const titles = unjustifiedIrrelevant.map((u) => `"${u.item.title}"`).join(", ");
     fallbackSummary = "Justification for irrelevant evidence is insufficient or missing explanation.";
-    fallbackFeedback = `For ${titles}, you correctly identified the source as Not Related, but your written justification is too brief or merely states that it is unrelated. You must provide a complete 2-3 sentence justification explaining WHY it is irrelevant to this scenario (e.g., contrasting its topic, location, or scope with our barangay's crisis).${authorshipFeedback}`;
-    fallbackStrengths.push("Correctly identified irrelevant distractor evidence.");
-    fallbackImprovements.push(`Write a substantive justification for ${titles} explaining why it does not apply to the community issue.`);
+    fallbackFeedback = `For the document(s) you identified as Not Related, your written justification is too brief or merely asserts that it is unrelated. You must provide a complete 2-3 sentence justification explaining WHY it is irrelevant to this scenario (e.g., contrasting its topic, location, or scope with our barangay's crisis).${authorshipFeedback}`;
+    fallbackStrengths.push("Identified irrelevant distractor evidence.");
+    fallbackImprovements.push(`Write a substantive 2-3 sentence justification explaining why the irrelevant source does not apply to the community issue.`);
   } else if (hasWeakRelevant) {
     fallbackScore = 62;
     fallbackPassed = false;
@@ -2161,9 +2187,9 @@ EVALUATION ANALYSIS & METRICS:
 - Designated Irrelevant Distractor Sources: ${groundTruthDistractors.length}
 - Duplicate / Copy-Pasted Justifications Detected: ${hasDuplicates ? `YES (Copy-pasted on: ${duplicateCheck.duplicateGroups.map((g) => g.join(", ")).join("; ")})` : "NO (All unique)"}
 - Off-Topic / Unrelated Justifications Detected: ${hasUnrelatedJustifications ? `YES (Unrelated on: ${unrelatedJustifications.map((u) => u.item.title).join(", ")})` : "NO (All grounded in evidence/scenario)"}
-- Did Student Correctly Identify All Irrelevant Distractors as "Not Related": ${!hasMisidentifiedIrrelevant ? "YES" : `NO (Misidentified: ${misidentifiedIrrelevant.map((m) => m.item.title).join(", ")})`}
-- Did Student Falsely Dismiss Any Relevant Sources as "Not Related": ${!hasDismissedRelevant ? "NO" : `YES (Falsely Dismissed: ${dismissedRelevant.map((d) => d.item.title).join(", ")})`}
-- Are Justifications for Irrelevant Evidence Substantive (Explaining WHY Unrelated): ${!hasUnjustifiedIrrelevant ? "YES" : `NO (Insufficient on: ${unjustifiedIrrelevant.map((u) => u.item.title).join(", ")})`}
+- Did Student Correctly Identify All Irrelevant Distractors as "Not Related": ${!hasMisidentifiedIrrelevant ? "YES" : `NO (Misidentified distractor as relevant)`}
+- Did Student Falsely Dismiss Any Relevant Sources as "Not Related": ${!hasDismissedRelevant ? "NO" : `YES (Falsely dismissed relevant evidence)`}
+- Are Justifications for Irrelevant Evidence Substantive (Explaining WHY Unrelated): ${!hasUnjustifiedIrrelevant ? "YES" : `NO (Insufficient explanation)`}
 - Are Justifications for Relevant Evidence Substantive: ${!hasWeakRelevant ? "YES" : "NO"}
 - Multi-Tier AI Authorship Risk: ${aiCheck.isAi ? "HIGH RISK (AI Generated)" : aiCheck.needsReview ? "REVIEW RECOMMENDED" : "LOW (Authentic)"}
 - Note on Star Ratings: Star ratings are disabled for unrelated sources and have ZERO bearing on scoring or evaluation.
@@ -2175,11 +2201,15 @@ ${
 MANDATORY SCORING & INTEGRITY INSTRUCTIONS:
 - You MUST set passed: false.
 - You MUST cap step_score strictly between 40% and 58% (below the 70% passing threshold).
+CRITICAL PEDAGOGICAL DIRECTIVE - GUIDE, DO NOT SPOIL:
+- DO NOT REVEAL WHICH SPECIFIC EVIDENCE ITEM IS THE DISTRACTOR.
+- DO NOT NAME SPECIFIC TITLES AND TELL THE STUDENT TO TAG THEM AS "Not Related" OR AS "Relevant".
+- In actionable_feedback, guide the student with Socratic questions to re-check the geographic scope, jurisdiction, and subject matter of each document in the library. Explain how a civic researcher determines whether evidence applies to a specific local crisis versus an unrelated matter.
 ${hasDuplicates ? `- You MUST include "DUPLICATE_EVIDENCE_JUSTIFICATION" in flags. Point out that the student copy-pasted identical justifications across multiple sources (${duplicateCheck.duplicateGroups.map((g) => g.join(", ")).join("; ")}). Each source requires an original justification.` : ""}
 ${hasUnrelatedJustifications ? `- You MUST include "EVIDENCE_JUSTIFICATION_MISMATCH" in flags. Point out that the justification for ${unrelatedJustifications.map((u) => `"${u.item.title}"`).join(", ")} is off-topic or unrelated to the document and scenario.` : ""}
-${hasMisidentifiedIrrelevant ? `- You MUST include "MISIDENTIFIED_IRRELEVANT_EVIDENCE" in flags. Point out that ${misidentifiedIrrelevant.map((m) => `"${m.item.title}"`).join(", ")} is irrelevant to the scenario and must be tagged as "Not Related / Irrelevant".` : ""}
-${hasDismissedRelevant ? `- You MUST include "DISMISSED_RELEVANT_EVIDENCE" in flags. Point out that ${dismissedRelevant.map((d) => `"${d.item.title}"`).join(", ")} contains crucial evidence and must not be marked as Not Related.` : ""}
-${hasUnjustifiedIrrelevant ? `- You MUST include "INSUFFICIENT_IRRELEVANT_EVIDENCE_JUSTIFICATION" in flags. Instruct the student to write a 2-3 sentence justification explaining WHY ${unjustifiedIrrelevant.map((u) => `"${u.item.title}"`).join(", ")} is irrelevant to the scenario (e.g., contrasting its topic, location, or scope).` : ""}
+${hasMisidentifiedIrrelevant ? `- You MUST include "MISIDENTIFIED_IRRELEVANT_EVIDENCE" in flags. Guide the student to re-examine all documents for any that discuss a different location, jurisdiction, or unrelated problem.` : ""}
+${hasDismissedRelevant ? `- You MUST include "DISMISSED_RELEVANT_EVIDENCE" in flags. Guide the student to review their "Not Related" selections to ensure they did not dismiss genuine local barangay evidence.` : ""}
+${hasUnjustifiedIrrelevant ? `- You MUST include "INSUFFICIENT_IRRELEVANT_EVIDENCE_JUSTIFICATION" in flags. Instruct the student to write a 2-3 sentence justification explaining WHY the source they tagged as Not Related is irrelevant to the scenario (e.g., contrasting its topic, location, or scope).` : ""}
 ${hasWeakRelevant ? `- You MUST include "INSUFFICIENT_EVIDENCE_JUSTIFICATION" in flags. Require 2-3 complete sentences explaining evidence relevance.` : ""}`
     : `The student successfully audited all evidence sources, provided unique justifications grounded in the data, correctly differentiated relevant community data from irrelevant distractor sources, and provided reasoned justifications explaining why each source connects or does not apply.
 - Award a passing score (${fallbackScore - 3}% to ${Math.min(98, fallbackScore + 3)}%).
@@ -2263,8 +2293,7 @@ export async function evaluateStep4(
   // Checker for irrelevant stakeholders
   if (selectedIrrelevant.length > 0) {
     const irrelevantNames = selectedIrrelevant.map((s) => `${s.name} (${s.role})`).join(", ");
-    const relevantNames = relevantStakeholders.map((s) => `${s.name} (${s.role})`).join(", ");
-    const feedback = `You selected ${irrelevantNames}, which is an irrelevant stakeholder who does not directly contribute to addressing this community problem. When developing your intervention plan in the next step, focus on key stakeholders such as ${relevantNames}.`;
+    const feedback = `You consulted ${irrelevantNames}. While community consultation is valuable, consider whether this stakeholder holds direct jurisdiction or operational responsibility for resolving this specific crisis. When developing your community action plan in Step 5, ensure your primary partnerships focus on stakeholders who have the legal authority, operational resources, and community presence needed to address the root problem.`;
 
     return {
       passed: true, // Step 4 has no bearing on scoring
@@ -2279,10 +2308,10 @@ export async function evaluateStep4(
         flags: ["IRRELEVANT_STAKEHOLDER_SELECTED"],
         strengths: ["Completed stakeholder consultation and review of community figures."],
         areas_for_improvement: [
-          `Re-evaluate why ${irrelevantNames} is not directly relevant to this issue.`,
-          "Focus your upcoming intervention plan on stakeholders with direct jurisdiction and community presence.",
+          "Evaluate whether all consulted figures hold direct jurisdiction or operational responsibility for this crisis.",
+          "Focus your upcoming action plan on stakeholders with direct jurisdiction, authority, and community presence.",
         ],
-        evaluation_summary: `Stakeholder consultation completed. Identified irrelevant stakeholder: ${irrelevantNames}.`,
+        evaluation_summary: `Stakeholder consultation completed. Identified need to prioritize stakeholders with direct operational authority.`,
       },
     };
   }
@@ -2501,7 +2530,7 @@ function checkStep4ConsultedStakeholderIncluded(
     return {
       isIncluded: false,
       consultedNames,
-      feedback: `Kailangan ay mailagay ang at least isa sa consulated niya na stakeholders from Step 4. You consulted: ${consultedNames.join(", ")}. Please include at least one of these stakeholders as a key partner in your action plan.`,
+      feedback: `You must include at least one of the stakeholders you consulted in Step 4 as a key partner in your action plan. Please include one of your consulted community figures.`,
     };
   }
 
@@ -2653,7 +2682,7 @@ export async function evaluateStep5(
       "Detailed 10–15 sentence activity breakdown covering all operational criteria.",
       "Included key consulted stakeholders and feasible 7-day timeline.",
     ],
-    improvements: ["Ensure continuous monitoring to prevent recurring drainage clogs."],
+    improvements: ["Ensure continuous monitoring mechanisms are established to sustain community outcomes."],
     authorshipOptions,
     prompt: `Step 5: Community Action Planning\nScenario: ${quoteUntrustedText(scenario.title)}\nPlan Title: ${quoteUntrustedText(plan.projectTitle)}\nGoal: ${quoteUntrustedText(plan.goal)}\nObjectives: ${quoteUntrustedText(plan.objectives)}\nActivities: ${quoteUntrustedText(plan.activities)}\nStakeholders: ${quoteUntrustedText(plan.stakeholders)}\nResources: ${quoteUntrustedText(plan.resources)}\nBudget: ${quoteUntrustedText(plan.budget)}\nTimeline: ${quoteUntrustedText(plan.timeline)}\nExpected Outcomes: ${quoteUntrustedText(plan.expectedOutcomes)}\n\nCRITICAL COMMUNITY ACTION RUBRIC:\n1. Activities Description: Must be 10–15 sentences explaining: (a) what the activity is, (b) how it will be conducted, (c) who will participate, (d) what participants will do, (e) how it addresses the cause/need, (f) why it is appropriate, and (g) what it expects to accomplish. If any of these 7 points are missing, explicitly note them in actionable_feedback and set passed: false with MISSING_ACTIVITY_CRITERIA.\n2. Stakeholders: Must include 2-5 stakeholders and at least one stakeholder consulted in Step 4.\n3. Timeline: Must be implemented within 7 days (on or by the 7th day, the activity is completed/implemented).\n4. Objectives & Expected Outcomes: Objectives must be specific (max 3), and expected outcomes (max 3) must directly justify and align with the objectives.\n5. Budget & Resources: Budget must be reasonable for a small-scale neighborhood project.\n\nAI & AUTHENTICITY NOTE: Check for authentic student voice vs. generic AI-generated prose. If the student's submission is copied from ChatGPT/AI, set is_ai_generated: true, passed: false, step_score: 35, and add AI_GENERATED_CONTENT to flags.`,
   });
